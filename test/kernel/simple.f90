@@ -40,7 +40,7 @@
 program pdgenmv
   use psb_base_mod
   use psb_util_mod
-  use psb_gpu_mod
+  use psb_ext_mod
   implicit none
 
   ! input parameters
@@ -57,7 +57,7 @@ program pdgenmv
   type(psb_desc_type)   :: desc_a
   ! dense matrices
   type(psb_d_vect_type) :: xv, bv, xg, bg 
-  type(psb_d_vect_gpu)  :: vmold
+  !type(psb_d_vect_gpu)  :: vmold
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
   integer            :: ictxt, iam, np
@@ -69,11 +69,11 @@ program pdgenmv
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_dia_sparse_mat), target   :: adia
   type(psb_d_ell_sparse_mat), target   :: aell
-  type(psb_d_elg_sparse_mat), target   :: aelg
-  type(psb_d_csrg_sparse_mat), target  :: acsrg
-  type(psb_d_hybg_sparse_mat), target  :: ahybg
+  !type(psb_d_elg_sparse_mat), target   :: aelg
+  !type(psb_d_csrg_sparse_mat), target  :: acsrg
+  !type(psb_d_hybg_sparse_mat), target  :: ahybg
   type(psb_d_hll_sparse_mat), target   :: ahll
-  type(psb_d_hlg_sparse_mat), target   :: ahlg
+  !type(psb_d_hlg_sparse_mat), target   :: ahlg
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.true.
@@ -107,7 +107,7 @@ program pdgenmv
   !
   !  get parameters
   !
-  call get_parms(ictxt,acfmt,agfmt,idim)
+  call get_parms(ictxt,acfmt,idim)
 
   !
   !  allocate and fill in the coefficient matrix and initial vectors
@@ -154,8 +154,6 @@ program pdgenmv
 
   call xv%set(done)
 
-  write(*,*) 'Prima spmm'
-
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   do i=1,ntests 
@@ -164,10 +162,6 @@ program pdgenmv
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
-
-  write(*,*) 'Dopo spmm', iam,bv%get_vect()
-
-  !call a%print(1)
 
   call psb_barrier(ictxt)
 
@@ -323,9 +317,9 @@ contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,acfmt,agfmt,idim)
+  subroutine  get_parms(ictxt,acfmt,idim)
     integer      :: ictxt
-    character(len=*) :: agfmt, acfmt
+    character(len=*) :: acfmt
     integer      :: idim
     integer      :: np, iam
     integer      :: intbuf(10), ip
@@ -334,11 +328,9 @@ contains
 
     if (iam == 0) then
       read(psb_inp_unit,*) acfmt
-      read(psb_inp_unit,*) agfmt
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)
-    call psb_bcast(ictxt,agfmt)
     call psb_bcast(ictxt,idim)
 
     if (iam == 0) then

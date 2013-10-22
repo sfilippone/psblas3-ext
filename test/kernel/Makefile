@@ -6,7 +6,7 @@ LIBDIR=../../lib/
 PSBLIBDIR=$(PSBLASDIR)/lib/
 OPTDIR=$(LIBDIR)
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_gpu -lpsb_util -lpsb_base 
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_base 
 
 LDLIBS=$(PSBLDLIBS)
 
