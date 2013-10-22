@@ -1,0 +1,4 @@
+a.mtx                  ! Matrix file
+MM                     ! Matrix file format
+HLG                    ! Storage format
+0                      ! Partition type

@@ -1,0 +1,19 @@
+# This is Make.inc file generated automatically by the PSBLAS configure script.
+# It should be ready to use, included by Makefile.
+# If it gives problems, consider editing it.
+PSBLASDIR=@PSBLAS_DIR@
+include $(PSBLASDIR)/Make.inc
+
+
+PSB_EXTLIBNAME=libpsb_ext.a
+
+INSTALL=@INSTALL@
+INSTALL_DATA=@INSTALL_DATA@
+INSTALL_DIR=@INSTALL_DIR@
+INSTALL_LIBDIR=@INSTALL_LIBDIR@
+INSTALL_INCLUDEDIR=@INSTALL_INCLUDEDIR@
+INSTALL_DOCSDIR=@INSTALL_DOCSDIR@
+
+CDEFINES=@CDEFINES@ $(PSBCDEFINES)
+FDEFINES=@FDEFINES@ $(PSBFDEFINES)
+

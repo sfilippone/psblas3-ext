@@ -1,0 +1,102 @@
+This is the GPU plugin for PSBLAS, version 1.0-beta.
+
+This is intended to be used with NVIDIA GPUs, with a software layer
+written in CUDA. 
+
+The architectural ideas of the GPU plugin are explained in 
+
+D. Barbieri, V. Cardellini, S. Filippone and D. Rouson 
+Design Patterns for Scientific Computations on Sparse Matrices
+M. Alexander et al. (Eds.): Euro-Par 2011 Workshops, Part I, LNCS
+7155, pp. 367--376. Springer, Heidelberg (2012)  
+ 
+The architecture of the Fortran 2003 sparse BLAS is described in 
+
+S. Filippone, A. Buttari:
+Object-Oriented Techniques for Sparse Matrix Computations in Fortran
+2003, 
+ACM Trans. on Math. Software, vol. 38, No. 4, 2012.
+
+
+
+PREREQUISITES
+
+To build this code you need to have PSBLAS 3.1.0 or later, together
+with its prerequisites. 
+
+To make use of the NVIDIA GPU you'll need:
+1. An installation of the CUDA toolkit (version 4.1 or later); 
+2. The SPGPU code from http://spgpu.googlecode.com
+
+Note however that PSBLAS-GPU will compile even WITHOUT these; in which
+case you will not, of course, get the GPU performance, but you get
+the definition of the new data structures. 
+Note that you'll need either both CUDA and SPGU, or neither of them:
+using only the base CUDA version is not supported, since SPGPU
+provides some facilities for handling vectors. 
+
+
+WHAT IS INSIDE
+
+We define the following data structures for storing sparse matrices:
+
+ELL:   ELLPACK style data storage, slightly modified;
+HLL:   The HackedELLpack format devised in SPGPU, to save memory
+
+ELG:   The GPU-enabled version of ELL.
+HLG:   The GPU-enabled version of HLL.
+CSRG:  An interface to the CSR storage format available in the
+       CuSPARSE library 4.0 and later
+HYBG:  An interface to the HYB storage format available in the
+       CuSPARSE library version 4.1 and later.
+
+All GPU-enabled storage formats have dual memory storage, on the CPU
+side and on the GPU side; for HYBG the CPU side is just in CSR, since
+the HYB format is opaque and therefore we could not reproduce it. 
+
+We also define the data structures for the vectors, keeping track of
+dual storage on CPU/GPU sides. 
+
+The HLG format is our preferred: it is essentially as fast as ELG (and
+as fast or faster than HYBG), but is not memory hungry as ELG can
+sometimes be.  
+
+
+INSTALLING
+
+./configure --prefix=/path/to/install \
+            --with-psblas=/path/to/PSBLAS/install \
+	    --with-cuda=/CUDA/install --with-spgpu=/SPGPU/install
+
+make;
+make install
+
+Note: we have only tested with GNU Fortran compiler. 
+Note: CUDA nvcc currently only supports old versions of GCC/GNU
+      Fortran up to 4.6; so the SPGPU library has to be compiled with 
+      an old  version of gcc whereas our preferred version is  4.7.2
+      or later.   
+      Mixing CUDA compiled with 4.6 and the rest with another version
+      has worked fine so far: YMMV.  
+
+
+TODO
+
+The support for MPI communications is very basic and not fully tested;
+we are currently working on other ideas that show promises of very
+good performance but are not complete yet. 
+
+
+WHAT IS NOT HERE
+
+Good preconditioners for the GPU. Performance of  triangular system
+solves on the GPU is very bad: we enable it in CSRG and HYBG, we do
+not even bother to implement it in ELG and HLG.  
+So if you use the GPU, you are limited to no preconditioning, or
+diagonal scaling. We are working on an independent plugin for mld2p4 
+(www.mld2p4.it) that will deliver better alternatives. 
+
+
+
+Contact: Salvatore Filippone     salvatore.filippone@uniroma2.it
+	 Alessandro Fanfarillo   alessandro.fanfarillo@gmail.com   
