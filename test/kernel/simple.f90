@@ -226,71 +226,71 @@ program pdgenmv
   ! call psb_amx(ictxt,eps)
   ! if (iam==0) write(*,*) 'Max diff on GPU',eps
 
-  ! annz     = a%get_nzeros()
-  ! amatsize = a%sizeof()
-  ! descsize = psb_sizeof(desc_a)
-  ! call psb_sum(ictxt,annz)
-  ! call psb_sum(ictxt,amatsize)
-  ! call psb_sum(ictxt,descsize)
+  annz     = a%get_nzeros()
+  amatsize = a%sizeof()
+  descsize = psb_sizeof(desc_a)
+  call psb_sum(ictxt,annz)
+  call psb_sum(ictxt,amatsize)
+  call psb_sum(ictxt,descsize)
 
-  ! if (iam == psb_root_) then
-  !   write(psb_out_unit,&
-  !        & '("Matrix: ell1 ",i0)') idim
-  !   write(psb_out_unit,&
-  !        &'("Test on                          : ",i20," processors")') np
-  !   write(psb_out_unit,&
-  !        &'("Size of matrix                   : ",i20,"           ")') nr
-  !   write(psb_out_unit,&
-  !        &'("Number of nonzeros               : ",i20,"           ")') annz
-  !   write(psb_out_unit,&
-  !        &'("Memory occupation                : ",i20,"           ")') amatsize
-  !   flops  = ntests*(2*1.d0*annz-1.d0*nr)
-  !   tflops = flops
-  !   gflops = flops * ngpu
-  !   flops  = flops / (t2)
-  !   tflops = tflops / (tt2)
-  !   gflops = gflops / (gt2)
-  !   write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
-  !   write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
-  !   write(psb_out_unit,&
-  !        & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
-  !        &  ntests,flops
-  !   write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
-  !        &  ntests,t2
-  !   write(psb_out_unit,'("Time per product    (ms)     (CPU)   : ",F20.3)')&
-  !        & t2*1.d3/(1.d0*ntests)
-  !   write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
-  !        & flops/1.d6
+  if (iam == psb_root_) then
+    write(psb_out_unit,&
+         & '("Matrix: ell1 ",i0)') idim
+    write(psb_out_unit,&
+         &'("Test on                          : ",i20," processors")') np
+    write(psb_out_unit,&
+         &'("Size of matrix                   : ",i20,"           ")') nr
+    write(psb_out_unit,&
+         &'("Number of nonzeros               : ",i20,"           ")') annz
+    write(psb_out_unit,&
+         &'("Memory occupation                : ",i20,"           ")') amatsize
+    flops  = ntests*(2*1.d0*annz-1.d0*nr)
+    tflops = flops
+    gflops = flops * ngpu
+    flops  = flops / (t2)
+    tflops = tflops / (tt2)
+    gflops = gflops / (gt2)
+    write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+    write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+    write(psb_out_unit,&
+         & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
+         &  ntests,flops
+    write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
+         &  ntests,t2
+    write(psb_out_unit,'("Time per product    (ms)     (CPU)   : ",F20.3)')&
+         & t2*1.d3/(1.d0*ntests)
+    write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
+         & flops/1.d6
 
-  !   write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
-  !        & ntests, tt2
-  !   write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
-  !        & tt2*1.d3/(1.d0*ntests)
-  !   write(psb_out_unit,'("MFLOPS                       (xGPU)  : ",F20.3)')&
-  !        & tflops/1.d6
+    write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
+         & ntests, tt2
+    write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
+         & tt2*1.d3/(1.d0*ntests)
+    write(psb_out_unit,'("MFLOPS                       (xGPU)  : ",F20.3)')&
+         & tflops/1.d6
 
-  !   write(psb_out_unit,'("Time for ",i6," products (s) (GPU.)  : ",F20.3)')&
-  !        & ngpu*ntests,gt2
-  !   write(psb_out_unit,'("Time per product    (ms)     (GPU.)  : ",F20.3)')&
-  !        & gt2*1.d3/(1.d0*ntests*ngpu)
-  !   write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
-  !        & gflops/1.d6
-  !   !
-  !   ! This computation assumes the data movement associated with CSR:
-  !   ! it is minimal in terms of coefficients. Other formats may either move
-  !   ! more data (padding etc.) or less data (if they can save on the indices). 
-  !   !
-  !   nbytes = nr*(2*psb_sizeof_dp + psb_sizeof_int)+&
-  !        & annz*(psb_sizeof_dp + psb_sizeof_int)
-  !   bdwdth = ntests*nbytes/(t2*1.d6)
-  !   write(psb_out_unit,*)
-  !   write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
-  !   bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
-  !   write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
-  !   write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
-  !   write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
+    write(psb_out_unit,'("Time for ",i6," products (s) (GPU.)  : ",F20.3)')&
+         & ngpu*ntests,gt2
+    write(psb_out_unit,'("Time per product    (ms)     (GPU.)  : ",F20.3)')&
+         & gt2*1.d3/(1.d0*ntests*ngpu)
+    write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
+         & gflops/1.d6
+    !
+    ! This computation assumes the data movement associated with CSR:
+    ! it is minimal in terms of coefficients. Other formats may either move
+    ! more data (padding etc.) or less data (if they can save on the indices). 
+    !
+    nbytes = nr*(2*psb_sizeof_dp + psb_sizeof_int)+&
+         & annz*(psb_sizeof_dp + psb_sizeof_int)
+    bdwdth = ntests*nbytes/(t2*1.d6)
+    write(psb_out_unit,*)
+    write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
+    bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
+    write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
+    write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
+    write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 
-  ! end if
+  end if
 
   !  
   !  cleanup storage and exit
