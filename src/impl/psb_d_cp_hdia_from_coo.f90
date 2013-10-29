@@ -43,7 +43,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   !locals
   type(psb_d_coo_sparse_mat) :: tmp
   integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd,bi
-  integer(psb_ipk_),allocatable  :: d(:,:),pres(:,:) 
+  integer(psb_ipk_),allocatable  :: d(:,:)
   integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd,h,hack,nblocks
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
@@ -69,10 +69,9 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   hack = a%hack
 
   ndiag = hack+nc-1
-  allocate(d(nblocks,ndiag),pres(nblocks,ndiag), a%hdia(nblocks),a%offset(nblocks))
+  allocate(d(nblocks,ndiag), a%hdia(nblocks),a%offset(nblocks))
 
   d=0
-  pres=0
 
   do i=1,nza
      k = hack + tmp%ja(i)
@@ -95,7 +94,6 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
     nd = 0
     do j=1,ndiag
         if (d(i,j)>0) then
-            pres(i,j)=1
             nd = nd + 1
         endif
     enddo
@@ -163,7 +161,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
    a%hdia(bi)%data(nr,nc) = tmp%val(h)
   enddo
 
-  deallocate(d,pres)
+  deallocate(d)
 
   call tmp%free
 
