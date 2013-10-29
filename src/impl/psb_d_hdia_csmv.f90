@@ -85,7 +85,7 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
 
   do i=1,a%nblocks
      call psb_d_hdia_csmv_inner(m,n,alpha,size(a%hdia(i)%data,1),&
-          & size(a%hdia(i)%data,2),a%hdia(i)%data,a%hdia(i)%offset,x,beta,y,i)
+          & size(a%hdia(i)%data,2),a%hdia(i)%data,a%offset(i)%off,x,beta,y,i)
   enddo
   
   call psb_erractionrestore(err_act)
@@ -110,6 +110,8 @@ contains
 
     integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
     real(psb_dpk_)   :: acc(4) 
+    
+    ir2 = a%hack*(bl-1)
 
     do j=1,nc
        ! if (off(j) > 0) then 
@@ -121,7 +123,7 @@ contains
        ! end if
        do i=1,nr
           if (data(i,j)/=0) then
-             y(i+a%hack*(bl-1)) = y(i+a%hack*(bl-1)) + alpha*data(i,j)*x((i+a%hack*(bl-1))+off(j))
+             y(i+ir2) = y(i+ir2) + alpha*data(i,j)*x((i+ir2)+off(j))
           endif
        enddo
     enddo

@@ -32,16 +32,24 @@
 module psb_d_hdia_mat_mod
 
   use psb_d_base_mat_mod
-  use psb_d_dia_mat_mod
+
+  type pm
+     real(psb_dpk_), pointer :: data(:,:)
+  end type pm
+
+  type po
+     integer(psb_ipk_), pointer :: off(:)
+  end type po
 
   type, extends(psb_d_base_sparse_mat) :: psb_d_hdia_sparse_mat
     !
     ! HDIA format, extended.
-    !     
+    !
     
-    type(psb_d_dia_sparse_mat), allocatable :: hdia(:)
+    type(pm), allocatable :: hdia(:)
+    type(po), allocatable :: offset(:)
     integer(psb_ipk_) :: nblocks, nzeros
-    integer(psb_ipk_) :: hack = 16
+    integer(psb_ipk_) :: hack = 2
     integer(psb_long_int_k_) :: dim=0
 
   contains
@@ -418,9 +426,12 @@ contains
      integer(psb_long_int_k_) :: res
      integer(psb_ipk_) :: i
 
+     res = 0
+
      if(a%dim==0.and.allocated(a%hdia)) then
         do i=1,a%nblocks
-           res = res + a%hdia(i)%sizeof()
+           res = res + (size(a%hdia(i)%data,1) + size(a%hdia(i)%data,2))*8
+           res = res + size(a%offset(i)%off)*8
         enddo
      else
         !Dim is set during cp_hdia_from_coo
@@ -505,9 +516,16 @@ contains
 
     if(allocated(a%hdia)) then
        do i=1,a%nblocks
-          call a%hdia(i)%free()
+          deallocate(a%hdia(i)%data)
        enddo
        deallocate(a%hdia)
+    endif
+
+    if(allocated(a%offset)) then
+       do i=1,a%nblocks
+          deallocate(a%offset(i)%off)
+       enddo
+       deallocate(a%offset)
     endif
 
     call a%set_null()

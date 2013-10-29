@@ -44,7 +44,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   type(psb_d_coo_sparse_mat) :: tmp
   integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd,bi
   integer(psb_ipk_),allocatable  :: d(:,:),pres(:,:) 
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd,h
+  integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd,h,hack,nblocks
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
 
@@ -65,21 +65,23 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   mj = maxval(tmp%ja)
 
   a%nblocks = ceiling(nr/real(a%hack))
+  nblocks= a%nblocks
+  hack = a%hack
 
-  ndiag = a%hack+nc-1
-  allocate(d(a%nblocks,ndiag),pres(a%nblocks,ndiag), a%hdia(a%nblocks))
+  ndiag = hack+nc-1
+  allocate(d(nblocks,ndiag),pres(nblocks,ndiag), a%hdia(nblocks),a%offset(nblocks))
 
   d=0
   pres=0
 
   do i=1,nza
-     k = a%hack + tmp%ja(i)
-     if(mod(tmp%ia(i),a%hack)==0) then
-        k = k - a%hack
+     k = hack + tmp%ja(i)
+     if(mod(tmp%ia(i),hack)==0) then
+        k = k - hack
      else
         k = k - 1
      endif
-     d(ceiling(tmp%ia(i)/real(a%hack)),k) = d(ceiling(tmp%ia(i)/real(a%hack)),k) + 1
+     d(ceiling(tmp%ia(i)/real(hack)),k) = d(ceiling(tmp%ia(i)/real(hack)),k) + 1
  enddo
 
   dm = nr
@@ -88,7 +90,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
 
   a%nzeros = nza
 
-  do i=1,a%nblocks
+  do i=1,nblocks
     nzd = max(nzd,maxval(d(i,:)))
     nd = 0
     do j=1,ndiag
@@ -98,25 +100,27 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
         endif
     enddo
 
-    call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+    !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+    allocate(a%hdia(i)%data(hack,nd))
     if (info /= 0) goto 9999
     a%hdia(i)%data = dzero
    
-    call psb_realloc(nd,a%hdia(i)%offset,info)
+    !call psb_realloc(nd,a%offset(i)%off,info)
+    allocate(a%offset(i)%off(nd))
     if (info /= 0) goto 9999
-    a%hdia(i)%offset = dzero
+    a%offset(i)%off = dzero
     
     k=1
     
     do h=1,ndiag
        if(d(i,h)/=0) then
-          a%hdia(i)%offset(k)=h-a%hack
+          a%offset(i)%off(k)=h-hack
           k=k+1
        endif
     enddo
     
     do h=1,nd
-       a%hdia(i)%offset(h) = a%hdia(i)%offset(h) - (i-1)*a%hack
+       a%offset(i)%off(h) = a%offset(i)%off(h) - (i-1)*hack
     enddo
 
     nzd = 0
@@ -124,37 +128,37 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
  enddo
 
  do h=1,size(tmp%ia)
-   bi = ceiling(tmp%ia(h)/real(a%hack))
+   bi = ceiling(tmp%ia(h)/real(hack))
    if(tmp%ia(h)>tmp%ja(h)) then
       nc = tmp%ja(h) - tmp%ia(h)
-      do k=1,size(a%hdia(bi)%offset)
-         if (a%hdia(bi)%offset(k)==nc) then
+      do k=1,size(a%offset(bi)%off)
+         if (a%offset(bi)%off(k)==nc) then
             nc = k
             exit
          endif
       enddo
-      nr = mod(tmp%ia(h),a%hack)
-      if (nr==0) nr = a%hack
+      nr = mod(tmp%ia(h),hack)
+      if (nr==0) nr = hack
    elseif(tmp%ia(h)<tmp%ja(h)) then
       nc = tmp%ja(h)-tmp%ia(h)
-      do k=1,size(a%hdia(bi)%offset)
-         if(a%hdia(bi)%offset(k)==nc) then
+      do k=1,size(a%offset(bi)%off)
+         if(a%offset(bi)%off(k)==nc) then
             nc = k!h
             exit
          endif
       enddo
-      nr = mod(tmp%ia(h),a%hack)
-      if (nr==0) nr = a%hack
+      nr = mod(tmp%ia(h),hack)
+      if (nr==0) nr = hack
    else
       nc = 0
-      do k=1,size(a%hdia(bi)%offset)
-         if(a%hdia(bi)%offset(k)==nc) then
+      do k=1,size(a%offset(bi)%off)
+         if(a%offset(bi)%off(k)==nc) then
             nc = k
             exit
          endif
       enddo
-      nr = mod(tmp%ia(h),a%hack);
-      if (nr==0) nr = a%hack
+      nr = mod(tmp%ia(h),hack);
+      if (nr==0) nr = hack
    endif
    a%hdia(bi)%data(nr,nc) = tmp%val(h)
   enddo

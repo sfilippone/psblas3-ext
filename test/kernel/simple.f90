@@ -226,7 +226,7 @@ program pdgenmv
   ! eps = psb_geamax(bv,desc_a,info)
 
   ! call psb_amx(ictxt,t2)
-  ! nr       = desc_a%get_local_rows() 
+  nr       = desc_a%get_local_rows() 
   ! eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   ! call psb_amx(ictxt,eps)
   ! if (iam==0) write(*,*) 'Max diff on GPU',eps
