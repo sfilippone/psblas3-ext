@@ -30,21 +30,36 @@
 !!$ 
   
 
-module psb_ext_mod
-  use psb_const_mod
-
-  use psb_d_ell_mat_mod
-  use psb_s_ell_mat_mod
-  use psb_z_ell_mat_mod
-  use psb_c_ell_mat_mod
-
-  use psb_s_hll_mat_mod
-  use psb_d_hll_mat_mod
-  use psb_c_hll_mat_mod
-  use psb_z_hll_mat_mod
+subroutine psb_d_hdia_mold(a,b,info) 
   
-  use psb_d_dia_mat_mod
-  use psb_d_hdia_mat_mod
+  use psb_base_mod
+  use psb_d_hdia_mat_mod, psb_protect_name => psb_d_hdia_mold
+  implicit none 
+  class(psb_d_hdia_sparse_mat), intent(in)                  :: a
+  class(psb_d_base_sparse_mat), intent(inout), allocatable :: b
+  integer(psb_ipk_), intent(out)                    :: info
+  Integer(Psb_ipk_)  :: err_act
+  character(len=20)  :: name='hdia_mold'
+  logical, parameter :: debug=.false.
 
-end module psb_ext_mod
+  call psb_get_erraction(err_act)
+  info = 0 
+  if (allocated(b)) then 
+    call b%free()
+    deallocate(b,stat=info)
+  end if
+  if (info == 0) allocate(psb_d_hdia_sparse_mat :: b, stat=info)
 
+  if (info /= psb_success_) then 
+    info = psb_err_alloc_dealloc_ 
+    call psb_errpush(info, name)
+    goto 9999
+  end if
+  return
+9999 continue
+  if (err_act /= psb_act_ret_) then
+    call psb_error()
+  end if
+  return
+
+end subroutine psb_d_hdia_mold

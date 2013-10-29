@@ -273,7 +273,15 @@ psb_d_cp_dia_to_coo.o \
 psb_d_dia_mold.o \
 psb_d_dia_print.o \
 psb_d_dia_allocate_mnnz.o \
-psb_d_dia_csmv.o
+psb_d_dia_csmv.o \
+psb_d_cp_hdia_from_coo.o \
+psb_d_cp_hdia_to_coo.o \
+psb_d_mv_hdia_from_coo.o \
+psb_d_mv_hdia_to_coo.o \
+psb_d_hdia_mold.o \
+psb_d_hdia_print.o \
+psb_d_hdia_allocate_mnnz.o \
+psb_d_hdia_csmv.o
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

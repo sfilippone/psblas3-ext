@@ -67,6 +67,7 @@ program pdgenmv
   real(psb_dpk_)   :: err, eps
   integer, parameter :: ntests=200, ngpu=50 
   type(psb_d_csr_sparse_mat), target   :: acsr
+  type(psb_d_hdia_sparse_mat), target   :: ahdia
   type(psb_d_dia_sparse_mat), target   :: adia
   type(psb_d_ell_sparse_mat), target   :: aell
   !type(psb_d_elg_sparse_mat), target   :: aelg
@@ -141,6 +142,8 @@ program pdgenmv
     acmold => acsr
   case('DIA')
     acmold => adia
+  case('HDIA')
+    acmold => ahdia
   case default
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
@@ -153,6 +156,8 @@ program pdgenmv
   end if
 
   call xv%set(done)
+
+  write(*,*) 'Prima di spmm'
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()
