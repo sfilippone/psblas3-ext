@@ -42,13 +42,13 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
   !character, optional, intent(in)    :: trans
 
   character :: trans_
-  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc
+  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc,nr,nc
   real(psb_dpk_)    :: acc
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_hdia_csmv'
   logical, parameter :: debug=.false.
-
+  real :: start, finish
   call psb_erractionsave(err_act)
   info = psb_success_
 
@@ -104,28 +104,42 @@ contains
 
   subroutine psb_d_hdia_csmv_inner(m,n,alpha,nr,nc,data,off,&
        &x,beta,y,bl) 
-    integer(psb_ipk_), intent(in)   :: m,n,nr,nc,off(*),bl
-    real(psb_dpk_), intent(in)     :: alpha, beta, x(*),data(a%hack,*)
-    real(psb_dpk_), intent(inout)  :: y(*)
+    integer(psb_ipk_), intent(in)   :: m,n,nr,nc,off(:),bl
+    real(psb_dpk_), intent(in)     :: alpha, beta, x(:),data(:,:)
+    real(psb_dpk_), intent(inout)  :: y(:)
 
-    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
+    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2,jump
     real(psb_dpk_)   :: acc(4) 
     
-    ir2 = a%hack*(bl-1)
+    jump = a%hack*(bl-1)
 
     do j=1,nc
-       ! if (off(j) > 0) then 
-       !   ir1 = 1
-       !   ir2 = nr - off(j)
-       ! else
-       !   ir1 = 1 - off(j)
-       !   ir2 = nr
-       ! end if
-       do i=1,nr
-          if (data(i,j)/=0) then
-             y(i+ir2) = y(i+ir2) + alpha*data(i,j)*x((i+ir2)+off(j))
+       if (off(j) > 0) then 
+
+          ir1 = 1
+          ir2 = n - off(j) - jump
+
+          if(ir2 > a%hack) then
+             ir2 = a%hack
           endif
+       else
+          ir1 = 1 - off(j) - jump
+          ir2 = a%hack
+                
+          if(ir2+jump>m) then
+             ir2 = m - jump
+          endif
+          
+          if(ir1<=0)then
+             ir1=1
+          endif
+
+       end if
+
+       do i=ir1,ir2
+             y(i+jump) = y(i+jump) + alpha*data(i,j)*x((i+jump)+off(j))
        enddo
+
     enddo
     
   end subroutine psb_d_hdia_csmv_inner
