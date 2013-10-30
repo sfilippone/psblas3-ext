@@ -78,7 +78,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
      if(mod(tmp%ia(i),hack)==0) then
         k = k - hack
      else
-        k = k - 1
+        k = k - mod(tmp%ia(i),hack)
      endif
      d(ceiling(tmp%ia(i)/real(hack)),k) = d(ceiling(tmp%ia(i)/real(hack)),k) + 1
  enddo
