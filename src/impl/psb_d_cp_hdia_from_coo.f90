@@ -42,8 +42,8 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
 
   !locals
   type(psb_d_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd,bi
-  integer(psb_ipk_),allocatable  :: d(:,:)
+  integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd,bi,w
+  integer(psb_ipk_),allocatable  :: d(:)
   integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd,h,hack,nblocks
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
@@ -65,66 +65,109 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   mj = maxval(tmp%ja)
 
   a%nblocks = ceiling(nr/real(a%hack))
-  nblocks= a%nblocks
+  nblocks = a%nblocks
   hack = a%hack
 
   ndiag = hack+nc-1
-  allocate(d(nblocks,ndiag), a%hdia(nblocks),a%offset(nblocks))
+  allocate(d(ndiag), a%hdia(nblocks),a%offset(nblocks))
 
   d=0
+  nzd=0
+  ! dm represents the block number
+  dm = ceiling(tmp%ia(1)/real(hack))
 
   do i=1,nza
      k = hack + tmp%ja(i)
      if(mod(tmp%ia(i),hack)==0) then
         k = k - hack
      else
+        !k = k - 1
         k = k - mod(tmp%ia(i),hack)
      endif
-     d(ceiling(tmp%ia(i)/real(hack)),k) = d(ceiling(tmp%ia(i)/real(hack)),k) + 1
+
+     if(dm/=ceiling(tmp%ia(i)/real(hack))) then
+        ! Manage old d, build the structs and set to 0 the new d
+        nzd = max(nzd,maxval(d(:)))
+        nd = 0
+        do j=1,ndiag
+           if (d(j)>0) then
+              nd = nd + 1
+           endif
+        enddo
+        
+        !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+        allocate(a%hdia(dm)%data(hack,nd))
+        if (info /= 0) goto 9999
+        a%hdia(dm)%data = dzero
+        
+        !call psb_realloc(nd,a%offset(i)%off,info)
+        allocate(a%offset(dm)%off(nd))
+        if (info /= 0) goto 9999
+        a%offset(dm)%off = dzero
+        
+        w=1
+        
+        do h=1,ndiag
+           if(d(h)/=0) then
+              a%offset(dm)%off(w)=h-hack
+              w=w+1
+           endif
+        enddo
+        
+        do h=1,nd
+           a%offset(dm)%off(h) = a%offset(dm)%off(h) - (dm-1)*hack
+        enddo
+        
+        nzd = 0
+        dm = ceiling(tmp%ia(i)/real(hack))
+        d=0
+     endif
+
+     d(k) = d(k) + 1
+
  enddo
 
-  dm = nr
-  nd=0
-  nzd = 0
-
-  a%nzeros = nza
-
-  do i=1,nblocks
-    nzd = max(nzd,maxval(d(i,:)))
-    nd = 0
-    do j=1,ndiag
-        if (d(i,j)>0) then
-            nd = nd + 1
-        endif
-    enddo
-
-    !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
-    allocate(a%hdia(i)%data(hack,nd))
-    if (info /= 0) goto 9999
-    a%hdia(i)%data = dzero
-   
-    !call psb_realloc(nd,a%offset(i)%off,info)
-    allocate(a%offset(i)%off(nd))
-    if (info /= 0) goto 9999
-    a%offset(i)%off = dzero
-    
-    k=1
-    
-    do h=1,ndiag
-       if(d(i,h)/=0) then
-          a%offset(i)%off(k)=h-hack
-          k=k+1
-       endif
-    enddo
-    
-    do h=1,nd
-       a%offset(i)%off(h) = a%offset(i)%off(h) - (i-1)*hack
-    enddo
-
-    nzd = 0
-    
+ nzd = max(nzd,maxval(d(:)))
+ nd = 0
+ do j=1,ndiag
+    if (d(j)>0) then
+       nd = nd + 1
+    endif
  enddo
-
+ 
+ !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+ allocate(a%hdia(dm)%data(hack,nd))
+ if (info /= 0) goto 9999
+ a%hdia(dm)%data = dzero
+ 
+ !call psb_realloc(nd,a%offset(i)%off,info)
+ allocate(a%offset(dm)%off(nd))
+ if (info /= 0) goto 9999
+ a%offset(dm)%off = dzero
+ 
+ w=1
+ 
+ do h=1,ndiag
+    if(d(h)/=0) then
+       a%offset(dm)%off(w)=h-hack
+       w=w+1
+    endif
+ enddo
+ 
+ do h=1,nd
+    a%offset(dm)%off(h) = a%offset(dm)%off(h) - (dm-1)*hack
+ enddo
+ 
+ nzd = 0
+ dm = ceiling(tmp%ia(i)/real(hack))
+ d=0
+ 
+ dm = nr
+ nd=0
+ nzd = 0
+ 
+ a%nzeros = nza
+ 
  do h=1,size(tmp%ia)
    bi = ceiling(tmp%ia(h)/real(hack))
    if(tmp%ia(h)>tmp%ja(h)) then
