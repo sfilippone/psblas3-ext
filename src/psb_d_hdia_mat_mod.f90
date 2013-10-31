@@ -49,7 +49,7 @@ module psb_d_hdia_mat_mod
     type(pm), allocatable :: hdia(:)
     type(po), allocatable :: offset(:)
     integer(psb_ipk_) :: nblocks, nzeros
-    integer(psb_ipk_) :: hack = 2
+    integer(psb_ipk_) :: hack = 64
     integer(psb_long_int_k_) :: dim=0
 
   contains
