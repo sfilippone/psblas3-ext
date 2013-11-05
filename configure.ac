@@ -55,7 +55,7 @@ AC_MSG_NOTICE([
  	This  creates Make.inc, but if you read carefully the
 	docum entation, you can make your own by hand for your needs.
 
-        ./configure  --with-psblas=/path/to/psblas --with-spgpu=/path/to/spgpu
+        ./configure  --with-psblas=/path/to/psblas --with-librsb=/path/to/librsb
 	See ./configure --help=short fore more info.
 --------------------------------------------------------------------------------
 		])
@@ -81,6 +81,26 @@ pac_cv_status_file="$PSBLAS_DIR/Make.inc"
 if test ! -f "$pac_cv_status_file" ; then 
    AC_MSG_ERROR([Could not find an installation  in $PSBLAS_DIR.])		
 fi
+
+PAC_ARG_WITH_LIBRSB
+LIBRSB_DIR="$pac_cv_librsb_dir";
+AC_MSG_CHECKING([for LIBRSB install dir])
+case $LIBRSB_DIR in 
+     /*) ;; 
+     *) dnl AC_MSG_ERROR([The LIBRSB installation dir must be an absolute pathname
+ dnl specified with --with-librsb=/path/to/librsb])
+esac
+dnl if test ! -d "$LIBRSB_DIR" ; then 
+dnl    AC_MSG_ERROR([Could not find LIBRSB build dir $LIBRSB_DIR!])	
+dnl fi
+pac_cv_status_file="$LIBRSB_DIR/librsb.a"
+if test ! -f "$pac_cv_status_file" ; then 
+  AC_MSG_RESULT([no])
+  #AC_MSG_ERROR([Could not find an installation  in $LIBRSB_DIR.])
+else
+  AC_MSG_RESULT([$LIBRSB_DIR])
+fi
+
 dnl. $pac_cv_status_file
 dnl AC_MSG_NOTICE([Loaded $pac_cv_status_file $FC $MPIFC $BLACS_LIBS])
 dnl AM_INIT_AUTOMAKE
@@ -269,16 +289,17 @@ FIFLAG=-I
 #		The same for pg (Portland Group compilers).
 ###############################################################################
 
-PAC_FORTRAN_HAVE_PSBLAS([AC_MSG_RESULT([yes.])],[AC_MSG_ERROR([no.
-  Could not find working version of PSBLAS.])])
-
-
+dnl PAC_FORTRAN_HAVE_PSBLAS([AC_MSG_RESULT([yes.])],[AC_MSG_ERROR([no.
+dnl   Could not find working version of PSBLAS.])])
 
 
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
-
+AC_SUBST(LIBRSB_LIBS)
+AC_SUBST(LIBRSB_INCLUDES)
+AC_SUBST(LIBRSB_INCDIR)
+AC_SUBST(LIBRSB_DIR)
 AC_SUBST(PSBLAS_DIR)
 AC_SUBST(INSTALL)
 AC_SUBST(INSTALL_DATA)

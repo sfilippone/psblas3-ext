@@ -298,6 +298,33 @@ AC_HELP_STRING([--with-psblas], [The directory for PSBLAS, for example,
 ]
 )
 
+dnl @synopsis PAC_ARG_WITH_LIBRSB
+dnl
+dnl Test for --with-librsb="pathname".
+dnl 
+dnl Defines the path to LIBRSB build dir.
+dnl
+dnl note: Renamed after PAC_ARG_WITH_LIBS as in the Trilinos package.
+dnl
+dnl Example use:
+dnl
+dnl PAC_ARG_WITH_LIBRSB
+dnl 
+dnl tests for --with-librsb and pre-pends to LIBRSB_PATH
+dnl
+dnl @author Salvatore Filippone <salvatore.filippone@uniroma2.it>
+dnl
+
+# AC_DEFUN([PAC_ARG_WITH_LIBRSB],
+# [
+# AC_ARG_WITH(librsb,
+# AC_HELP_STRING([--with-librsb], [The directory for LIBRSB, for example,
+#  --with-librsb=/opt/packages/librsb]),
+# [pac_cv_librsb_dir=$withval],
+# [pac_cv_librsb_dir=''])
+# ]
+# )
+
 
 dnl @synopsis PAC_FORTRAN_HAVE_PSB_LONG_INT( [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 dnl
@@ -312,7 +339,7 @@ dnl
 AC_DEFUN(PAC_FORTRAN_HAVE_PSB_LONG_INT,
 ac_objext='.o'
 ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib  conftest.$ac_ext  1>&5'
+ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
 dnl Warning : square brackets are EVIL!
 [AC_MSG_CHECKING([for version of PSBLAS supporting psb_long_int_k_])
 cat > conftest.$ac_ext <<EOF
@@ -381,7 +408,7 @@ dnl
 AC_DEFUN(PAC_FORTRAN_HAVE_PSBLAS,
 ac_objext='.o'
 ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
+ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib $FMFLAG$LIBRSB_DIR conftest.$ac_ext  1>&5'
 dnl Warning : square brackets are EVIL!
 [AC_MSG_CHECKING([for working source dir of PSBLAS])
 cat > conftest.$ac_ext <<EOF
@@ -1628,3 +1655,53 @@ fi
 LIBS="$SAVE_LIBS"
 CPPFLAGS="$SAVE_CPPFLAGS"
 ])dnl 
+
+AC_DEFUN(PAC_ARG_WITH_LIBRSB,
+	 [SAVE_LIBS="$LIBS"
+	  SAVE_CPPFLAGS="$CPPFLAGS"
+
+	  AC_ARG_WITH(librsb,
+	  AC_HELP_STRING([--with-librsb], [The directory for LIBRSB, for example,
+ 	  --with-librsb=/opt/packages/librsb]),
+	  [pac_cv_librsb_dir=$withval],
+	  [pac_cv_librsb_dir=''])
+	  
+	  if test "x$pac_cv_librsb_dir" != "x"; then 
+	  LIBS="-L$pac_cv_librsb_dir $LIBS"
+	  RSB_INCLUDES="-I$pac_cv_librsb_dir"
+	  # CPPFLAGS="$GPU_INCLUDES $CUDA_INCLUDES $CPPFLAGS"
+	  RSB_LIBDIR="-L$pac_cv_librsb_dir"
+	  fi
+	  #AC_MSG_CHECKING([librsb dir $pac_cv_librsb_dir])
+	  AC_CHECK_HEADER([$pac_cv_librsb_dir/rsb.h],
+			  [pac_rsb_header_ok=yes],
+			  [pac_rsb_header_ok=no; RSB_INCLUDES=""])
+	  
+	  if test "x$pac_rsb_header_ok" == "xyes" ; then 
+	  RSB_LIBS="-lrsb $RSB_LIBDIR"
+	  # LIBS="$GPU_LIBS $CUDA_LIBS -lm $LIBS";
+	  # AC_MSG_CHECKING([for spgpuCreate in $GPU_LIBS])
+	  # AC_TRY_LINK_FUNC(spgpuCreate, 
+	  # 		   [psb_cv_have_spgpu=yes;pac_gpu_lib_ok=yes; ],
+	  # 		   [psb_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""])
+	  # AC_MSG_RESULT($pac_gpu_lib_ok)
+	  # if test "x$psb_cv_have_spgpu" == "xyes" ; then 
+	  # AC_MSG_NOTICE([Have found SPGPU])
+	  RSBLIBNAME="librsb.a";
+	  LIBRSB_DIR="$pac_cv_librsb_dir";
+	  # SPGPU_DEFINES="-DHAVE_SPGPU";
+	  LIBRSB_INCDIR="$LIBRSB_DIR";
+	  LIBRSB_INCLUDES="-I$LIBRSB_INCDIR";
+	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
+	  # CUDA_DIR="$psb_cv_cuda_dir";
+	  # CUDA_DEFINES="-DHAVE_CUDA";
+	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
+	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+	  FDEFINES="$psblas_cv_define_prepend $FDEFINES";
+	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
+	  fi
+#  fi
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+])
+dnl
