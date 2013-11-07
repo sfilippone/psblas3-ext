@@ -281,7 +281,9 @@ psb_d_mv_hdia_to_coo.o \
 psb_d_hdia_mold.o \
 psb_d_hdia_print.o \
 psb_d_hdia_allocate_mnnz.o \
-psb_d_hdia_csmv.o
+psb_d_hdia_csmv.o \
+psb_d_cp_rsb_from_coo.o \
+psb_d_mv_rsb_from_coo.o
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

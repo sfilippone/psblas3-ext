@@ -39,13 +39,15 @@ PATH: /usr/local/openmpi-1.6.1/bin
 PATH: /usr/local/openmpi-1.6.1/include
 PATH: /usr/local/cuda/bin
 PATH: /home/alex/ddt/bin
+PATH: /home/alex/Scrivania/PSBLAS/TAU/pdtoolkit-3.19p1/x86_64/bin
+PATH: /home/alex/Scrivania/PSBLAS/TAU/tau-2.22.2/x86_64/bin
 
 
 ## ----------- ##
 ## Core tests. ##
 ## ----------- ##
 
-configure:2358:
+configure:2359:
  --------------------------------------------------------------------------------
      	Welcome to the PSBLAS_EXT 1.0 configure Script.
 
@@ -56,20 +58,20 @@ configure:2358:
 	See ./configure --help=short fore more info.
 --------------------------------------------------------------------------------
 		
-configure:2387: checking for PSBLAS install dir
-configure:2397: result: /usr/local/psblas-3.0
-configure:2452: checking for gcc
-configure:2468: found /usr/bin/gcc
-configure:2479: result: gcc
-configure:2708: checking for C compiler version
-configure:2717: gcc --version >&5
+configure:2388: checking for PSBLAS install dir
+configure:2398: result: /usr/local/psblas-3.0
+configure:2453: checking for gcc
+configure:2469: found /usr/bin/gcc
+configure:2480: result: gcc
+configure:2709: checking for C compiler version
+configure:2718: gcc --version >&5
 gcc (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 4.7.3
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-configure:2728: $? = 0
-configure:2717: gcc -v >&5
+configure:2729: $? = 0
+configure:2718: gcc -v >&5
 Using built-in specs.
 COLLECT_GCC=gcc
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
@@ -77,56 +79,56 @@ Target: x86_64-linux-gnu
 Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.7.3-2ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.7/README.Bugs --enable-languages=c,c++,go,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.7 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.7 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --with-system-zlib --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
 gcc version 4.7.3 (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 
-configure:2728: $? = 0
-configure:2717: gcc -V >&5
+configure:2729: $? = 0
+configure:2718: gcc -V >&5
 gcc: error: unrecognized command line option '-V'
 gcc: fatal error: no input files
 compilation terminated.
-configure:2728: $? = 4
-configure:2717: gcc -qversion >&5
+configure:2729: $? = 4
+configure:2718: gcc -qversion >&5
 gcc: error: unrecognized command line option '-qversion'
 gcc: fatal error: no input files
 compilation terminated.
-configure:2728: $? = 4
-configure:2748: checking whether the C compiler works
-configure:2770: gcc    conftest.c  >&5
-configure:2774: $? = 0
-configure:2822: result: yes
-configure:2825: checking for C compiler default output file name
-configure:2827: result: a.out
-configure:2833: checking for suffix of executables
-configure:2840: gcc -o conftest    conftest.c  >&5
-configure:2844: $? = 0
-configure:2866: result: 
-configure:2888: checking whether we are cross compiling
-configure:2896: gcc -o conftest    conftest.c  >&5
-configure:2900: $? = 0
-configure:2907: ./conftest
-configure:2911: $? = 0
-configure:2926: result: no
-configure:2931: checking for suffix of object files
-configure:2953: gcc -c   conftest.c >&5
-configure:2957: $? = 0
-configure:2978: result: o
-configure:2982: checking whether we are using the GNU C compiler
-configure:3001: gcc -c   conftest.c >&5
-configure:3001: $? = 0
-configure:3010: result: yes
-configure:3019: checking whether gcc accepts -g
-configure:3039: gcc -c -g  conftest.c >&5
-configure:3039: $? = 0
-configure:3080: result: yes
-configure:3097: checking for gcc option to accept ISO C89
-configure:3161: gcc  -c -g -O2  conftest.c >&5
-configure:3161: $? = 0
-configure:3174: result: none needed
-configure:3200: checking how to run the C preprocessor
-configure:3231: gcc -E  conftest.c
-configure:3231: $? = 0
-configure:3245: gcc -E  conftest.c
+configure:2729: $? = 4
+configure:2749: checking whether the C compiler works
+configure:2771: gcc    conftest.c  >&5
+configure:2775: $? = 0
+configure:2823: result: yes
+configure:2826: checking for C compiler default output file name
+configure:2828: result: a.out
+configure:2834: checking for suffix of executables
+configure:2841: gcc -o conftest    conftest.c  >&5
+configure:2845: $? = 0
+configure:2867: result: 
+configure:2889: checking whether we are cross compiling
+configure:2897: gcc -o conftest    conftest.c  >&5
+configure:2901: $? = 0
+configure:2908: ./conftest
+configure:2912: $? = 0
+configure:2927: result: no
+configure:2932: checking for suffix of object files
+configure:2954: gcc -c   conftest.c >&5
+configure:2958: $? = 0
+configure:2979: result: o
+configure:2983: checking whether we are using the GNU C compiler
+configure:3002: gcc -c   conftest.c >&5
+configure:3002: $? = 0
+configure:3011: result: yes
+configure:3020: checking whether gcc accepts -g
+configure:3040: gcc -c -g  conftest.c >&5
+configure:3040: $? = 0
+configure:3081: result: yes
+configure:3098: checking for gcc option to accept ISO C89
+configure:3162: gcc  -c -g -O2  conftest.c >&5
+configure:3162: $? = 0
+configure:3175: result: none needed
+configure:3201: checking how to run the C preprocessor
+configure:3232: gcc -E  conftest.c
+configure:3232: $? = 0
+configure:3246: gcc -E  conftest.c
 conftest.c:9:28: fatal error: ac_nonexistent.h: No such file or directory
 compilation terminated.
-configure:3245: $? = 1
+configure:3246: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "PSBLAS_EXT"
@@ -137,13 +139,13 @@ configure: failed program was:
 | #define PACKAGE_URL ""
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
-configure:3270: result: gcc -E
-configure:3290: gcc -E  conftest.c
-configure:3290: $? = 0
-configure:3304: gcc -E  conftest.c
+configure:3271: result: gcc -E
+configure:3291: gcc -E  conftest.c
+configure:3291: $? = 0
+configure:3305: gcc -E  conftest.c
 conftest.c:9:28: fatal error: ac_nonexistent.h: No such file or directory
 compilation terminated.
-configure:3304: $? = 1
+configure:3305: $? = 1
 configure: failed program was:
 | /* confdefs.h */
 | #define PACKAGE_NAME "PSBLAS_EXT"
@@ -154,95 +156,95 @@ configure: failed program was:
 | #define PACKAGE_URL ""
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
-configure:3333: checking for grep that handles long lines and -e
-configure:3391: result: /bin/grep
-configure:3396: checking for egrep
-configure:3458: result: /bin/grep -E
-configure:3463: checking for ANSI C header files
-configure:3483: gcc -c -g -O2  conftest.c >&5
-configure:3483: $? = 0
-configure:3556: gcc -o conftest -g -O2   conftest.c  >&5
-configure:3556: $? = 0
-configure:3556: ./conftest
-configure:3556: $? = 0
-configure:3567: result: yes
-configure:3580: checking for sys/types.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for sys/stat.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for stdlib.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for string.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for memory.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for strings.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for inttypes.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for stdint.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3580: checking for unistd.h
-configure:3580: gcc -c -g -O2  conftest.c >&5
-configure:3580: $? = 0
-configure:3580: result: yes
-configure:3612: checking /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h usability
-configure:3612: gcc -c -g -O2  conftest.c >&5
-configure:3612: $? = 0
-configure:3612: result: yes
-configure:3612: checking /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h presence
-configure:3612: gcc -E  conftest.c
-configure:3612: $? = 0
-configure:3612: result: yes
-configure:3612: checking for /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h
-configure:3612: result: yes
-configure:3649: checking for LIBRSB install dir
-configure:3660: result: /home/alex/Scrivania/PSBLAS/svn_librsb
-configure:3712: checking for a BSD-compatible install
-configure:3780: result: /usr/bin/install -c
-configure:3792: checking where to install
-configure:3810: result: /usr/local/psblasgpu /usr/local/psblasgpu/include /usr/local/psblasgpu/lib /usr/local/psblasgpu/docs
-configure:3870: checking for ftn
-configure:3900: result: no
-configure:3870: checking for xlf2003
-configure:3900: result: no
-configure:3870: checking for xlf95
-configure:3900: result: no
-configure:3870: checking for xlf90
-configure:3900: result: no
-configure:3870: checking for xlf
-configure:3900: result: no
-configure:3870: checking for pgf95
-configure:3900: result: no
-configure:3870: checking for pgf90
-configure:3900: result: no
-configure:3870: checking for ifort
-configure:3900: result: no
-configure:3870: checking for ifc
-configure:3900: result: no
-configure:3870: checking for nagfor
-configure:3900: result: no
-configure:3870: checking for gfortran
-configure:3886: found /usr/bin/gfortran
-configure:3897: result: gfortran
-configure:3923: checking for Fortran compiler version
-configure:3932: gfortran --version >&5
+configure:3334: checking for grep that handles long lines and -e
+configure:3392: result: /bin/grep
+configure:3397: checking for egrep
+configure:3459: result: /bin/grep -E
+configure:3464: checking for ANSI C header files
+configure:3484: gcc -c -g -O2  conftest.c >&5
+configure:3484: $? = 0
+configure:3557: gcc -o conftest -g -O2   conftest.c  >&5
+configure:3557: $? = 0
+configure:3557: ./conftest
+configure:3557: $? = 0
+configure:3568: result: yes
+configure:3581: checking for sys/types.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for sys/stat.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for stdlib.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for string.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for memory.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for strings.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for inttypes.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for stdint.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3581: checking for unistd.h
+configure:3581: gcc -c -g -O2  conftest.c >&5
+configure:3581: $? = 0
+configure:3581: result: yes
+configure:3613: checking /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h usability
+configure:3613: gcc -c -g -O2  conftest.c >&5
+configure:3613: $? = 0
+configure:3613: result: yes
+configure:3613: checking /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h presence
+configure:3613: gcc -E  conftest.c
+configure:3613: $? = 0
+configure:3613: result: yes
+configure:3613: checking for /home/alex/Scrivania/PSBLAS/svn_librsb/rsb.h
+configure:3613: result: yes
+configure:3650: checking for LIBRSB install dir
+configure:3661: result: /home/alex/Scrivania/PSBLAS/svn_librsb
+configure:3713: checking for a BSD-compatible install
+configure:3781: result: /usr/bin/install -c
+configure:3793: checking where to install
+configure:3811: result: /usr/local/psblasgpu /usr/local/psblasgpu/include /usr/local/psblasgpu/lib /usr/local/psblasgpu/docs
+configure:3871: checking for ftn
+configure:3901: result: no
+configure:3871: checking for xlf2003
+configure:3901: result: no
+configure:3871: checking for xlf95
+configure:3901: result: no
+configure:3871: checking for xlf90
+configure:3901: result: no
+configure:3871: checking for xlf
+configure:3901: result: no
+configure:3871: checking for pgf95
+configure:3901: result: no
+configure:3871: checking for pgf90
+configure:3901: result: no
+configure:3871: checking for ifort
+configure:3901: result: no
+configure:3871: checking for ifc
+configure:3901: result: no
+configure:3871: checking for nagfor
+configure:3901: result: no
+configure:3871: checking for gfortran
+configure:3887: found /usr/bin/gfortran
+configure:3898: result: gfortran
+configure:3924: checking for Fortran compiler version
+configure:3933: gfortran --version >&5
 GNU Fortran (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 4.7.3
 Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -251,8 +253,8 @@ You may redistribute copies of GNU Fortran
 under the terms of the GNU General Public License.
 For more information about these matters, see the file named COPYING
 
-configure:3943: $? = 0
-configure:3932: gfortran -v >&5
+configure:3944: $? = 0
+configure:3933: gfortran -v >&5
 Using built-in specs.
 COLLECT_GCC=gfortran
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
@@ -260,34 +262,34 @@ Target: x86_64-linux-gnu
 Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.7.3-2ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.7/README.Bugs --enable-languages=c,c++,go,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.7 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.7 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --with-system-zlib --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
 gcc version 4.7.3 (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 
-configure:3943: $? = 0
-configure:3932: gfortran -V >&5
+configure:3944: $? = 0
+configure:3933: gfortran -V >&5
 gfortran: error: unrecognized command line option '-V'
 gfortran: fatal error: no input files
 compilation terminated.
-configure:3943: $? = 4
-configure:3932: gfortran -qversion >&5
+configure:3944: $? = 4
+configure:3933: gfortran -qversion >&5
 gfortran: error: unrecognized command line option '-qversion'
 gfortran: fatal error: no input files
 compilation terminated.
-configure:3943: $? = 4
-configure:3952: checking whether we are using the GNU Fortran compiler
-configure:3965: gfortran -c   conftest.F >&5
-configure:3965: $? = 0
-configure:3974: result: yes
-configure:3980: checking whether gfortran accepts -g
-configure:3991: gfortran -c -g  conftest.f >&5
-configure:3991: $? = 0
-configure:3999: result: yes
-configure:4135: checking for C compiler version
-configure:4144: gcc --version >&5
+configure:3944: $? = 4
+configure:3953: checking whether we are using the GNU Fortran compiler
+configure:3966: gfortran -c   conftest.F >&5
+configure:3966: $? = 0
+configure:3975: result: yes
+configure:3981: checking whether gfortran accepts -g
+configure:3992: gfortran -c -g  conftest.f >&5
+configure:3992: $? = 0
+configure:4000: result: yes
+configure:4136: checking for C compiler version
+configure:4145: gcc --version >&5
 gcc (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 4.7.3
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-configure:4155: $? = 0
-configure:4144: gcc -v >&5
+configure:4156: $? = 0
+configure:4145: gcc -v >&5
 Using built-in specs.
 COLLECT_GCC=gcc
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
@@ -295,84 +297,84 @@ Target: x86_64-linux-gnu
 Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.7.3-2ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.7/README.Bugs --enable-languages=c,c++,go,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.7 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.7 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --with-system-zlib --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
 gcc version 4.7.3 (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 
-configure:4155: $? = 0
-configure:4144: gcc -V >&5
+configure:4156: $? = 0
+configure:4145: gcc -V >&5
 gcc: error: unrecognized command line option '-V'
 gcc: fatal error: no input files
 compilation terminated.
-configure:4155: $? = 4
-configure:4144: gcc -qversion >&5
+configure:4156: $? = 4
+configure:4145: gcc -qversion >&5
 gcc: error: unrecognized command line option '-qversion'
 gcc: fatal error: no input files
 compilation terminated.
-configure:4155: $? = 4
-configure:4159: checking whether we are using the GNU C compiler
-configure:4187: result: yes
-configure:4196: checking whether gcc accepts -g
-configure:4257: result: yes
-configure:4274: checking for gcc option to accept ISO C89
-configure:4351: result: none needed
-configure:4388: checking whether additional libraries are needed
-configure:4399: result: no
-configure:4416: checking whether we want serial (fake) mpi
-configure:4431: result: no.
-configure:4450: checking for mpxlc
-configure:4480: result: no
-configure:4450: checking for mpcc
-configure:4480: result: no
-configure:4450: checking for mpicc
-configure:4466: found /usr/local/openmpi-1.6.1/bin/mpicc
-configure:4477: result: mpicc
-configure:4498: checking for mpicc
-configure:4525: result: mpicc
-configure:4543: checking for MPI_Init
-configure:4543: mpicc -o conftest -g -O2   conftest.c  >&5
-configure:4543: $? = 0
-configure:4543: result: yes
-configure:4636: checking for mpi.h
-configure:4649: mpicc -c -g -O2  conftest.c >&5
-configure:4649: $? = 0
-configure:4650: result: yes
-configure:4686: checking for mpxlf
-configure:4716: result: no
-configure:4686: checking for mpf77
-configure:4716: result: no
-configure:4686: checking for mpif77
-configure:4702: found /usr/local/openmpi-1.6.1/bin/mpif77
-configure:4713: result: mpif77
-configure:4778: checking for g77
-configure:4808: result: no
-configure:4778: checking for xlf
-configure:4808: result: no
-configure:4778: checking for f77
-configure:4808: result: no
-configure:4778: checking for frt
-configure:4808: result: no
-configure:4778: checking for pgf77
-configure:4808: result: no
-configure:4778: checking for cf77
-configure:4808: result: no
-configure:4778: checking for fort77
-configure:4808: result: no
-configure:4778: checking for fl32
-configure:4808: result: no
-configure:4778: checking for af77
-configure:4808: result: no
-configure:4778: checking for xlf90
-configure:4808: result: no
-configure:4778: checking for f90
-configure:4808: result: no
-configure:4778: checking for pgf90
-configure:4808: result: no
-configure:4778: checking for pghpf
-configure:4808: result: no
-configure:4778: checking for epcf90
-configure:4808: result: no
-configure:4778: checking for gfortran
-configure:4794: found /usr/bin/gfortran
-configure:4805: result: gfortran
-configure:4831: checking for Fortran 77 compiler version
-configure:4840: gfortran --version >&5
+configure:4156: $? = 4
+configure:4160: checking whether we are using the GNU C compiler
+configure:4188: result: yes
+configure:4197: checking whether gcc accepts -g
+configure:4258: result: yes
+configure:4275: checking for gcc option to accept ISO C89
+configure:4352: result: none needed
+configure:4389: checking whether additional libraries are needed
+configure:4400: result: no
+configure:4417: checking whether we want serial (fake) mpi
+configure:4432: result: no.
+configure:4451: checking for mpxlc
+configure:4481: result: no
+configure:4451: checking for mpcc
+configure:4481: result: no
+configure:4451: checking for mpicc
+configure:4467: found /usr/local/openmpi-1.6.1/bin/mpicc
+configure:4478: result: mpicc
+configure:4499: checking for mpicc
+configure:4526: result: mpicc
+configure:4544: checking for MPI_Init
+configure:4544: mpicc -o conftest -g -O2   conftest.c  >&5
+configure:4544: $? = 0
+configure:4544: result: yes
+configure:4637: checking for mpi.h
+configure:4650: mpicc -c -g -O2  conftest.c >&5
+configure:4650: $? = 0
+configure:4651: result: yes
+configure:4687: checking for mpxlf
+configure:4717: result: no
+configure:4687: checking for mpf77
+configure:4717: result: no
+configure:4687: checking for mpif77
+configure:4703: found /usr/local/openmpi-1.6.1/bin/mpif77
+configure:4714: result: mpif77
+configure:4779: checking for g77
+configure:4809: result: no
+configure:4779: checking for xlf
+configure:4809: result: no
+configure:4779: checking for f77
+configure:4809: result: no
+configure:4779: checking for frt
+configure:4809: result: no
+configure:4779: checking for pgf77
+configure:4809: result: no
+configure:4779: checking for cf77
+configure:4809: result: no
+configure:4779: checking for fort77
+configure:4809: result: no
+configure:4779: checking for fl32
+configure:4809: result: no
+configure:4779: checking for af77
+configure:4809: result: no
+configure:4779: checking for xlf90
+configure:4809: result: no
+configure:4779: checking for f90
+configure:4809: result: no
+configure:4779: checking for pgf90
+configure:4809: result: no
+configure:4779: checking for pghpf
+configure:4809: result: no
+configure:4779: checking for epcf90
+configure:4809: result: no
+configure:4779: checking for gfortran
+configure:4795: found /usr/bin/gfortran
+configure:4806: result: gfortran
+configure:4832: checking for Fortran 77 compiler version
+configure:4841: gfortran --version >&5
 GNU Fortran (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 4.7.3
 Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -381,8 +383,8 @@ You may redistribute copies of GNU Fortran
 under the terms of the GNU General Public License.
 For more information about these matters, see the file named COPYING
 
-configure:4851: $? = 0
-configure:4840: gfortran -v >&5
+configure:4852: $? = 0
+configure:4841: gfortran -v >&5
 Using built-in specs.
 COLLECT_GCC=gfortran
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/4.7/lto-wrapper
@@ -390,64 +392,121 @@ Target: x86_64-linux-gnu
 Configured with: ../src/configure -v --with-pkgversion='Ubuntu/Linaro 4.7.3-2ubuntu1~12.04' --with-bugurl=file:///usr/share/doc/gcc-4.7/README.Bugs --enable-languages=c,c++,go,fortran,objc,obj-c++ --prefix=/usr --program-suffix=-4.7 --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --with-gxx-include-dir=/usr/include/c++/4.7 --libdir=/usr/lib --enable-nls --with-sysroot=/ --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --enable-gnu-unique-object --enable-plugin --with-system-zlib --enable-objc-gc --enable-multiarch --disable-werror --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64 --with-tune=generic --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu
 Thread model: posix
 gcc version 4.7.3 (Ubuntu/Linaro 4.7.3-2ubuntu1~12.04) 
-configure:4851: $? = 0
-configure:4840: gfortran -V >&5
+configure:4852: $? = 0
+configure:4841: gfortran -V >&5
 gfortran: error: unrecognized command line option '-V'
 gfortran: fatal error: no input files
 compilation terminated.
-configure:4851: $? = 4
-configure:4840: gfortran -qversion >&5
+configure:4852: $? = 4
+configure:4841: gfortran -qversion >&5
 gfortran: error: unrecognized command line option '-qversion'
 gfortran: fatal error: no input files
 compilation terminated.
-configure:4851: $? = 4
-configure:4860: checking whether we are using the GNU Fortran 77 compiler
-configure:4873: gfortran -c  conftest.F >&5
-configure:4873: $? = 0
-configure:4882: result: yes
-configure:4888: checking whether gfortran accepts -g
-configure:4899: gfortran -c -g conftest.f >&5
-configure:4899: $? = 0
-configure:4907: result: yes
-configure:4945: checking for mpif77
-configure:4972: result: mpif77
-configure:5128: checking for mpif.h
-configure:5135: mpif77 -c -g -O2 conftest.f >&5
-configure:5135: $? = 0
-configure:5136: result: yes
-configure:5174: checking for mpxlf2003_r
-configure:5204: result: no
-configure:5174: checking for mpxlf2003
-configure:5204: result: no
-configure:5174: checking for mpxlf95_r
-configure:5204: result: no
-configure:5174: checking for mpxlf90
-configure:5204: result: no
-configure:5174: checking for mpf95
-configure:5204: result: no
-configure:5174: checking for mpf90
-configure:5204: result: no
-configure:5174: checking for mpif95
-configure:5204: result: no
-configure:5174: checking for mpif90
-configure:5190: found /usr/local/openmpi-1.6.1/bin/mpif90
-configure:5201: result: mpif90
-configure:5224: checking for mpif90
-configure:5251: result: mpif90
-configure:5407: checking for mpif.h
-configure:5414: mpif90 -c -g -O2  conftest.f >&5
-configure:5414: $? = 0
-configure:5415: result: yes
-configure:5500: checking for mpif77
-configure:5527: result: mpif77
-configure:5683: checking for mpif.h
-configure:5690: mpif77 -c -g -O2 conftest.f >&5
-configure:5690: $? = 0
-configure:5691: result: yes
-configure:5788: checking for ranlib
-configure:5804: found /usr/bin/ranlib
-configure:5815: result: ranlib
-configure:5840: checking whether build environment is sane
+configure:4852: $? = 4
+configure:4861: checking whether we are using the GNU Fortran 77 compiler
+configure:4874: gfortran -c  conftest.F >&5
+configure:4874: $? = 0
+configure:4883: result: yes
+configure:4889: checking whether gfortran accepts -g
+configure:4900: gfortran -c -g conftest.f >&5
+configure:4900: $? = 0
+configure:4908: result: yes
+configure:4946: checking for mpif77
+configure:4973: result: mpif77
+configure:5129: checking for mpif.h
+configure:5136: mpif77 -c -g -O2 conftest.f >&5
+configure:5136: $? = 0
+configure:5137: result: yes
+configure:5175: checking for mpxlf2003_r
+configure:5205: result: no
+configure:5175: checking for mpxlf2003
+configure:5205: result: no
+configure:5175: checking for mpxlf95_r
+configure:5205: result: no
+configure:5175: checking for mpxlf90
+configure:5205: result: no
+configure:5175: checking for mpf95
+configure:5205: result: no
+configure:5175: checking for mpf90
+configure:5205: result: no
+configure:5175: checking for mpif95
+configure:5205: result: no
+configure:5175: checking for mpif90
+configure:5191: found /usr/local/openmpi-1.6.1/bin/mpif90
+configure:5202: result: mpif90
+configure:5225: checking for mpif90
+configure:5252: result: mpif90
+configure:5408: checking for mpif.h
+configure:5415: mpif90 -c -g -O2  conftest.f >&5
+configure:5415: $? = 0
+configure:5416: result: yes
+configure:5501: checking for mpif77
+configure:5528: result: mpif77
+configure:5684: checking for mpif.h
+configure:5691: mpif77 -c -g -O2 conftest.f >&5
+configure:5691: $? = 0
+configure:5692: result: yes
+configure:5789: checking for ranlib
+configure:5805: found /usr/bin/ranlib
+configure:5816: result: ranlib
+configure:5841: checking whether build environment is sane
+configure:5891: result: yes
+configure:6032: checking for a thread-safe mkdir -p
+configure:6071: result: /bin/mkdir -p
+configure:6084: checking for gawk
+configure:6114: result: no
+configure:6084: checking for mawk
+configure:6100: found /usr/bin/mawk
+configure:6111: result: mawk
+configure:6122: checking whether make sets $(MAKE)
+configure:6144: result: yes
+configure:6174: checking for style of include used by make
+configure:6202: result: GNU
+configure:6288: checking dependency style of mpicc
+configure:6399: result: none
+configure:6438: mpif90 -o conftest -g -O2  conftest.F  1>&5
+configure:6441: $? = 0
+configure:6455: checking GNU Fortran version at least 4.6
+configure:6467: mpif90 -o conftest -g -O2  conftest.F  1>&5
+configure:6470: $? = 0
+configure:6472: result:  yes.
+configure:6505: checking fortran 90 modules extension
+configure:6531: mpif90 -c -g -O2  conftest.f >&5
+configure:6531: $? = 0
+configure:6554: result: mod
+configure:6557: checking fortran 90 modules inclusion flag
+configure:6583: mpif90 -c -g -O2  conftest.f >&5
+configure:6583: $? = 0
+configure:6601: mpif90 -c -g -O2 -I tmpdir_0  conftest.f >&5
+configure:6601: $? = 0
+configure:6620: result: -I 
+configure:6835: creating ./config.status
+
+## ---------------------- ##
+## Running config.status. ##
+## ---------------------- ##
+
+This file was extended by PSBLAS_EXT config.status 1.0, which was
+generated by GNU Autoconf 2.68.  Invocation command line was
+
+  CONFIG_FILES    = 
+  CONFIG_HEADERS  = 
+  CONFIG_LINKS    = 
+  CONFIG_COMMANDS = 
+  $ ./config.status 
+
+on hercules
+
+config.status:809: creating Make.inc
+config.status:981: executing depfiles commands
+configure:7988:
+	PSBLAS_EXT 1.0 has been configured as follows:
+	CUDA_LIBS  : 
+
+
+	If you are satisfied, run 'make' to build PSBLAS_EXT and its documentation; otherwise
+	type  ./configure --help=short for a complete list of configure options specific to PSBLAS_EXT.
+
 
 ## ---------------- ##
 ## Cache variables. ##
@@ -504,6 +563,8 @@ ac_cv_objext=o
 ac_cv_path_EGREP='/bin/grep -E'
 ac_cv_path_GREP=/bin/grep
 ac_cv_path_install='/usr/bin/install -c'
+ac_cv_path_mkdir=/bin/mkdir
+ac_cv_prog_AWK=mawk
 ac_cv_prog_CPP='gcc -E'
 ac_cv_prog_MPICC=mpicc
 ac_cv_prog_MPIF77=mpif77
@@ -516,34 +577,39 @@ ac_cv_prog_cc_c89=
 ac_cv_prog_cc_g=yes
 ac_cv_prog_f77_g=yes
 ac_cv_prog_fc_g=yes
+ac_cv_prog_make_make_set=yes
+am_cv_CC_dependencies_compiler_type=none
+ax_cv_f90_modext=mod
+ax_cv_f90_modflag='-I '
 pac_cv_librsb_dir=/home/alex/Scrivania/PSBLAS/svn_librsb
 pac_cv_psblas_dir=/usr/local/psblas-3.0
 pac_cv_serial_mpi=no
 pac_cv_status_file=/home/alex/Scrivania/PSBLAS/svn_librsb/librsb.a
+psblas_cv_fc=gcc
 psblas_ext_cv_version=1.0
 
 ## ----------------- ##
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL=''
-AMDEPBACKSLASH=''
-AMDEP_FALSE=''
+ACLOCAL='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/missing --run aclocal-1.11'
+AMDEPBACKSLASH='\'
+AMDEP_FALSE='#'
 AMDEP_TRUE=''
-AMTAR=''
-AUTOCONF=''
-AUTOHEADER=''
-AUTOMAKE=''
-AWK=''
+AMTAR='$${TAR-tar}'
+AUTOCONF='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/missing --run automake-1.11'
+AWK='mawk'
 CC='mpicc'
-CCDEPMODE=''
-CDEFINES='-DHAVE_SPGPU -DHAVE_CUDA '
+CCDEPMODE='depmode=none'
+CDEFINES='-DHAVE_RSB '
 CFLAGS='-g -O2'
 CPP='gcc -E'
 CPPFLAGS=''
-CYGPATH_W=''
-DEFS=''
-DEPDIR=''
+CYGPATH_W='echo'
+DEFS='-DPACKAGE_NAME=\"PSBLAS_EXT\" -DPACKAGE_TARNAME=\"psblas_ext\" -DPACKAGE_VERSION=\"1.0\" -DPACKAGE_STRING=\"PSBLAS_EXT\ 1.0\" -DPACKAGE_BUGREPORT=\"salvatore.filippone@uniroma2.it\" -DPACKAGE_URL=\"\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_MPI=1 -DHAVE_MPI=1 -DHAVE_MPI=1 -DHAVE_MPI=1 -DPACKAGE=\"psblas_ext\" -DVERSION=\"1.0\"'
+DEPDIR='.deps'
 ECHO_C=''
 ECHO_N='-n'
 ECHO_T=''
@@ -552,7 +618,7 @@ EXEEXT=''
 F77='mpif77'
 FC='mpif90'
 FCFLAGS='-g -O2'
-FDEFINES=' '
+FDEFINES='-DHAVE_RSB  '
 FFLAGS='-g -O2'
 GREP='/bin/grep'
 INSTALL='/usr/bin/install -c'
@@ -563,23 +629,24 @@ INSTALL_INCLUDEDIR='/usr/local/psblasgpu/include'
 INSTALL_LIBDIR='/usr/local/psblasgpu/lib'
 INSTALL_PROGRAM='${INSTALL}'
 INSTALL_SCRIPT='${INSTALL}'
-INSTALL_STRIP_PROGRAM=''
+INSTALL_STRIP_PROGRAM='$(install_sh) -c -s'
 LDFLAGS=''
 LIBOBJS=''
+LIBRSB_DEFINES='-DHAVE_RSB'
 LIBRSB_DIR='/home/alex/Scrivania/PSBLAS/svn_librsb'
 LIBRSB_INCDIR='/home/alex/Scrivania/PSBLAS/svn_librsb'
 LIBRSB_INCLUDES='-I/home/alex/Scrivania/PSBLAS/svn_librsb'
 LIBRSB_LIBS='-lrsb -L/home/alex/Scrivania/PSBLAS/svn_librsb'
 LIBS=''
 LTLIBOBJS=''
-MAKEINFO=''
-MKDIR_P=''
+MAKEINFO='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/missing --run makeinfo'
+MKDIR_P='/bin/mkdir -p'
 MPICC='mpicc'
 MPIF77='mpif77'
 MPIFC='mpif90'
 MPILIBS=' '
 OBJEXT='o'
-PACKAGE=''
+PACKAGE='psblas_ext'
 PACKAGE_BUGREPORT='salvatore.filippone@uniroma2.it'
 PACKAGE_NAME='PSBLAS_EXT'
 PACKAGE_STRING='PSBLAS_EXT 1.0'
@@ -592,42 +659,42 @@ RANLIB='ranlib'
 SET_MAKE=''
 SHELL='/bin/bash'
 STRIP=''
-VERSION=''
+VERSION='1.0'
 ac_ct_CC='gcc'
 ac_ct_F77='gfortran'
 ac_ct_FC='gfortran'
 am__EXEEXT_FALSE=''
-am__EXEEXT_TRUE=''
+am__EXEEXT_TRUE='#'
 am__fastdepCC_FALSE=''
-am__fastdepCC_TRUE=''
-am__include=''
+am__fastdepCC_TRUE='#'
+am__include='include'
 am__isrc=''
-am__leading_dot=''
-am__nodep=''
+am__leading_dot='.'
+am__nodep='_no'
 am__quote=''
-am__tar=''
-am__untar=''
+am__tar='$${TAR-tar} chof - "$$tardir"'
+am__untar='$${TAR-tar} xf -'
 bindir='${exec_prefix}/bin'
 build_alias=''
 datadir='${datarootdir}'
 datarootdir='${prefix}/share'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
 dvidir='${docdir}'
-exec_prefix='NONE'
+exec_prefix='${prefix}'
 host_alias=''
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh=''
+install_sh='${SHELL} /home/alex/Scrivania/PSBLAS/psblas-ext_rsb/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'
 localstatedir='${prefix}/var'
 mandir='${datarootdir}/man'
-mkdir_p=''
+mkdir_p='/bin/mkdir -p'
 oldincludedir='/usr/include'
 pdfdir='${docdir}'
-prefix='NONE'
+prefix='/usr/local'
 program_transform_name='s,x,x,'
 psdir='${docdir}'
 sbindir='${exec_prefix}/sbin'
@@ -660,6 +727,7 @@ target_alias=''
 #define HAVE_MPI 1
 #define HAVE_MPI 1
 #define HAVE_MPI 1
+#define PACKAGE "psblas_ext"
+#define VERSION "1.0"
 
-configure: caught signal 2
-configure: exit 1
+configure: exit 0

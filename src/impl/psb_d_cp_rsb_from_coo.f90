@@ -30,23 +30,46 @@
 !!$ 
   
 
-module psb_ext_mod
-  use psb_const_mod
-
-  use psb_d_ell_mat_mod
-  use psb_s_ell_mat_mod
-  use psb_z_ell_mat_mod
-  use psb_c_ell_mat_mod
-
-  use psb_s_hll_mat_mod
-  use psb_d_hll_mat_mod
-  use psb_c_hll_mat_mod
-  use psb_z_hll_mat_mod
+subroutine psb_d_cp_rsb_from_coo(a,b,info) 
   
-  use psb_d_dia_mat_mod
-  use psb_d_hdia_mat_mod
+  use psb_base_mod
+  use psb_d_rsb_mat_mod, psb_protect_name => psb_d_cp_rsb_from_coo
+  implicit none 
 
-  use psb_d_rsb_mat_mod
+  class(psb_d_rsb_sparse_mat), intent(inout) :: a
+  class(psb_d_coo_sparse_mat), intent(in)    :: b
+  integer(psb_ipk_), intent(out)             :: info
 
-end module psb_ext_mod
+  !locals
+  type(psb_d_coo_sparse_mat) :: tmp
+  Integer(Psb_ipk_)            :: nza, nr, i,j,irw, idl,err_act, nc
+  integer(psb_ipk_)            :: nzm, ir, ic, k ,bs
+  integer(psb_ipk_)            :: debug_level, debug_unit
+  character(len=20)            :: name
 
+  info = psb_success_
+  ! This is to have fix_coo called behind the scenes
+  call b%cp_to_coo(tmp,info)
+
+  call tmp%fix(info)
+  if (info /= psb_success_) return
+
+  nr  = tmp%get_nrows()
+  nc  = tmp%get_ncols()
+  nza = tmp%get_nzeros()
+  ! If it is sorted then we can lessen memory impact 
+  a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
+
+  bs = 1!RSB_DEFAULT_BLOCKING
+
+  info = Rsb_from_coo(a%rsbMat,b%val,b%ia,b%ja,nza,nr,nc,bs,bs)
+
+  call tmp%free()
+
+  return
+
+9999 continue
+  info = psb_err_alloc_dealloc_
+  return
+
+end subroutine psb_d_cp_rsb_from_coo

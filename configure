@@ -614,6 +614,7 @@ INSTALL_LIBDIR
 INSTALL_DIR
 INSTALL
 PSBLAS_DIR
+LIBRSB_DEFINES
 LIBRSB_DIR
 LIBRSB_INCDIR
 LIBRSB_INCLUDES
@@ -3635,11 +3636,11 @@ fi
 	  LIBRSB_INCLUDES="-I$LIBRSB_INCDIR";
 	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
 	  # CUDA_DIR="$psb_cv_cuda_dir";
-	  # CUDA_DEFINES="-DHAVE_CUDA";
+	  LIBRSB_DEFINES="-DHAVE_RSB";
 	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
 	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
-	  FDEFINES="$psblas_cv_define_prepend $FDEFINES";
-	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
+	  FDEFINES="$LIBRSB_DEFINES $psblas_cv_define_prepend $FDEFINES";
+	  CDEFINES="$LIBRSB_DEFINES $CDEFINES";#CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES";
 	  fi
 #  fi
 LIBS="$SAVE_LIBS"
@@ -6642,6 +6643,7 @@ FIFLAG=-I
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
+
 
 
 

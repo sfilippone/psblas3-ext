@@ -1694,11 +1694,11 @@ AC_DEFUN(PAC_ARG_WITH_LIBRSB,
 	  LIBRSB_INCLUDES="-I$LIBRSB_INCDIR";
 	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
 	  # CUDA_DIR="$psb_cv_cuda_dir";
-	  # CUDA_DEFINES="-DHAVE_CUDA";
+	  LIBRSB_DEFINES="-DHAVE_RSB";
 	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
 	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
-	  FDEFINES="$psblas_cv_define_prepend $FDEFINES";
-	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
+	  FDEFINES="$LIBRSB_DEFINES $psblas_cv_define_prepend $FDEFINES";
+	  CDEFINES="$LIBRSB_DEFINES $CDEFINES";#CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES";
 	  fi
 #  fi
 LIBS="$SAVE_LIBS"

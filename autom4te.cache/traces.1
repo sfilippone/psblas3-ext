@@ -1928,11 +1928,11 @@ m4trace:config/pac.m4:1659: -1- AC_DEFUN([PAC_ARG_WITH_LIBRSB], [SAVE_LIBS="$LIB
 	  LIBRSB_INCLUDES="-I$LIBRSB_INCDIR";
 	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
 	  # CUDA_DIR="$psb_cv_cuda_dir";
-	  # CUDA_DEFINES="-DHAVE_CUDA";
+	  LIBRSB_DEFINES="-DHAVE_RSB";
 	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
 	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
-	  FDEFINES="$psblas_cv_define_prepend $FDEFINES";
-	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
+	  FDEFINES="$LIBRSB_DEFINES $psblas_cv_define_prepend $FDEFINES";
+	  CDEFINES="$LIBRSB_DEFINES $CDEFINES";#CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES";
 	  fi
 #  fi
 LIBS="$SAVE_LIBS"
@@ -2198,20 +2198,21 @@ m4trace:configure.ac:299: -1- m4_pattern_allow([^LIBRSB_LIBS$])
 m4trace:configure.ac:300: -1- m4_pattern_allow([^LIBRSB_INCLUDES$])
 m4trace:configure.ac:301: -1- m4_pattern_allow([^LIBRSB_INCDIR$])
 m4trace:configure.ac:302: -1- m4_pattern_allow([^LIBRSB_DIR$])
-m4trace:configure.ac:303: -1- m4_pattern_allow([^PSBLAS_DIR$])
-m4trace:configure.ac:304: -1- m4_pattern_allow([^INSTALL$])
-m4trace:configure.ac:305: -1- m4_pattern_allow([^INSTALL_DATA$])
-m4trace:configure.ac:306: -1- m4_pattern_allow([^INSTALL_DIR$])
-m4trace:configure.ac:307: -1- m4_pattern_allow([^INSTALL_LIBDIR$])
-m4trace:configure.ac:308: -1- m4_pattern_allow([^INSTALL_INCLUDEDIR$])
-m4trace:configure.ac:309: -1- m4_pattern_allow([^INSTALL_DOCSDIR$])
-m4trace:configure.ac:310: -1- m4_pattern_allow([^FDEFINES$])
-m4trace:configure.ac:311: -1- m4_pattern_allow([^CDEFINES$])
-m4trace:configure.ac:320: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.ac:320: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.ac:320: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.ac:320: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.ac:320: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.ac:320: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.ac:320: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.ac:320: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:303: -1- m4_pattern_allow([^LIBRSB_DEFINES$])
+m4trace:configure.ac:304: -1- m4_pattern_allow([^PSBLAS_DIR$])
+m4trace:configure.ac:305: -1- m4_pattern_allow([^INSTALL$])
+m4trace:configure.ac:306: -1- m4_pattern_allow([^INSTALL_DATA$])
+m4trace:configure.ac:307: -1- m4_pattern_allow([^INSTALL_DIR$])
+m4trace:configure.ac:308: -1- m4_pattern_allow([^INSTALL_LIBDIR$])
+m4trace:configure.ac:309: -1- m4_pattern_allow([^INSTALL_INCLUDEDIR$])
+m4trace:configure.ac:310: -1- m4_pattern_allow([^INSTALL_DOCSDIR$])
+m4trace:configure.ac:311: -1- m4_pattern_allow([^FDEFINES$])
+m4trace:configure.ac:312: -1- m4_pattern_allow([^CDEFINES$])
+m4trace:configure.ac:321: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:321: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:321: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.ac:321: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.ac:321: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.ac:321: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.ac:321: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.ac:321: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
