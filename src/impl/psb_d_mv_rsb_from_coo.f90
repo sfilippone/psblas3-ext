@@ -51,57 +51,57 @@ subroutine psb_d_mv_rsb_from_coo(a,b,info)
   nr  = b%get_nrows()
   nc  = b%get_ncols()
   nza = b%get_nzeros()
-  if (b%is_sorted()) then 
-    ! If it is sorted then we can lessen memory impact 
-    a%psb_d_base_sparse_mat = b%psb_d_base_sparse_mat
+  ! if (b%is_sorted()) then 
+  !   ! If it is sorted then we can lessen memory impact 
+  !   a%psb_d_base_sparse_mat = b%psb_d_base_sparse_mat
 
-    ! First compute the number of nonzeros in each row.
-    call psb_realloc(nr,a%irn,info) 
-    if (info /= 0) goto 9999
-    a%irn = 0
-    do i=1, nza
-      a%irn(b%ia(i)) = a%irn(b%ia(i)) + 1
-    end do
-    nzm = 0 
-    do i=1, nr
-      nzm = max(nzm,a%irn(i))
-      a%irn(i) = 0
-    end do
-    ! Second: copy the column indices.
-    call psb_realloc(nr,a%idiag,info) 
-    if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
-    if (info /= 0) goto 9999
-    do i=1, nza
-      ir = b%ia(i)
-      ic = b%ja(i)
-      j  = a%irn(ir) + 1 
-      a%ja(ir,j) = ic
-      a%irn(ir)  = j
-    end do
-    ! Third copy the other stuff
-    deallocate(b%ia,b%ja,stat=info) 
-    if (info == 0) call psb_realloc(nr,a%idiag,info)
-    if (info == 0) call psb_realloc(nr,nzm,a%val,info)
-    if (info /= 0) goto 9999
-    k = 0 
-    do i=1, nr
-      a%idiag(i) = 0 
-      do j=1, a%irn(i)
-        k = k + 1 
-        a%val(i,j) = b%val(k)
-        if (i==a%ja(i,j)) a%idiag(i)=j
-      end do
-      do j=a%irn(i)+1, nzm
-        a%ja(i,j) = i
-        a%val(i,j) = dzero
-      end do
-    end do
+  !   ! First compute the number of nonzeros in each row.
+  !   call psb_realloc(nr,a%irn,info) 
+  !   if (info /= 0) goto 9999
+  !   a%irn = 0
+  !   do i=1, nza
+  !     a%irn(b%ia(i)) = a%irn(b%ia(i)) + 1
+  !   end do
+  !   nzm = 0 
+  !   do i=1, nr
+  !     nzm = max(nzm,a%irn(i))
+  !     a%irn(i) = 0
+  !   end do
+  !   ! Second: copy the column indices.
+  !   call psb_realloc(nr,a%idiag,info) 
+  !   if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
+  !   if (info /= 0) goto 9999
+  !   do i=1, nza
+  !     ir = b%ia(i)
+  !     ic = b%ja(i)
+  !     j  = a%irn(ir) + 1 
+  !     a%ja(ir,j) = ic
+  !     a%irn(ir)  = j
+  !   end do
+  !   ! Third copy the other stuff
+  !   deallocate(b%ia,b%ja,stat=info) 
+  !   if (info == 0) call psb_realloc(nr,a%idiag,info)
+  !   if (info == 0) call psb_realloc(nr,nzm,a%val,info)
+  !   if (info /= 0) goto 9999
+  !   k = 0 
+  !   do i=1, nr
+  !     a%idiag(i) = 0 
+  !     do j=1, a%irn(i)
+  !       k = k + 1 
+  !       a%val(i,j) = b%val(k)
+  !       if (i==a%ja(i,j)) a%idiag(i)=j
+  !     end do
+  !     do j=a%irn(i)+1, nzm
+  !       a%ja(i,j) = i
+  !       a%val(i,j) = dzero
+  !     end do
+  !   end do
 
-  else 
+  ! else 
     ! If b is not sorted, the only way is to copy. 
     call a%cp_from_coo(b,info)
     if (info /= 0) goto 9999
-  end if
+  ! end if
 
   call b%free()
 

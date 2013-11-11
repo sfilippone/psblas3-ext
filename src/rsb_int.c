@@ -30,9 +30,10 @@
  
 #include <sys/time.h>
 #include "rsb.h"
+#include "rsb_int.h"
 #if defined(HAVE_RSB)
 
-int Rsb_double_from_coo(void **rsbMat,int *va, int *ia,int *ja,int nnz,int nr,
+int Rsb_double_from_coo(void **rsbMat, double *va, int *ia,int *ja,int nnz,int nr,
 			int nc, int br, int bc)
 {
   rsb_err_t errval = RSB_ERR_NO_ERROR;

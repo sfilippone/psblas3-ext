@@ -51,8 +51,8 @@ module rsb_mod
       use iso_c_binding
       integer(c_int) :: res
       type(c_ptr) :: rsbMat
-      real(c_double) :: va
-      integer(c_int) :: ia,ja
+      real(c_double) :: va(*)
+      integer(c_int) :: ia(*),ja(*)
       integer(c_int),value :: nnz,nr,nc,br,bc
     end function Rsb_double_from_coo
  end interface Rsb_from_coo
@@ -230,7 +230,7 @@ module rsb_mod
   !   end function spmvEllDeviceDoubleComplex
   ! end interface spmvEllDevice
     
-#endif  
+#endif
 
 
 end module rsb_mod
