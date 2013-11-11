@@ -469,7 +469,8 @@ contains
 
     class(psb_d_rsb_sparse_mat), intent(inout) :: a
 
-
+    call freeRsbMat(a%rsbMat)
+    
     call a%set_null()
     call a%set_nrows(0)
     call a%set_ncols(0)

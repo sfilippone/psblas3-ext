@@ -33,6 +33,32 @@
 #include "rsb_int.h"
 #if defined(HAVE_RSB)
 
+int rsbInit()
+{
+  rsb_err_t errval = RSB_ERR_NO_ERROR;
+
+  if((errval = rsb_lib_init(RSB_NULL_INIT_OPTIONS))!=RSB_ERR_NO_ERROR)
+    {
+      printf("Error initializing the library!\n");
+      return 1;
+    }
+  
+  return 0;
+}
+
+int rsbExit()
+{
+  rsb_err_t errval = RSB_ERR_NO_ERROR;
+
+  if((errval = rsb_lib_exit(RSB_NULL_INIT_OPTIONS))!=RSB_ERR_NO_ERROR)
+    {
+      printf("Error finalizing the library!\n");
+      return 1;
+    }
+  
+  return 0;
+}
+
 int Rsb_double_from_coo(void **rsbMat, double *va, int *ia,int *ja,int nnz,int nr,
 			int nc, int br, int bc)
 {
@@ -47,6 +73,30 @@ int Rsb_double_from_coo(void **rsbMat, double *va, int *ia,int *ja,int nnz,int n
       return 1;
     }
   return 0;
+}
+
+//X is the input and y is the output
+int Rsb_double_spmv(void *rsbMat, double *x, double alfa, double *y, double beta,char trans)
+{
+  rsb_err_t errval = RSB_ERR_NO_ERROR;
+
+  if(trans=='N')
+    errval = rsb_spmv(RSB_TRANSPOSITION_N,&alfa,(struct rsb_mtx_t *)rsbMat,x,1,&beta,y,1);
+  else
+    errval = rsb_spmv(RSB_TRANSPOSITION_T,&alfa,(struct rsb_mtx_t *)rsbMat,x,1,&beta,y,1);
+
+  if(errval != RSB_ERR_NO_ERROR)
+    {
+      printf("Error performing a multiplication!\n");
+      return 1;
+    }
+  
+  return 0;
+}
+
+void freeRsbMat(void *rsbMat)
+{
+  rsb_mtx_free(rsbMat);
 }
 
 /* EllDeviceParams getEllDeviceParams(unsigned int rows, unsigned int maxRowSize, unsigned int columns, unsigned int elementType, unsigned int firstIndex) */

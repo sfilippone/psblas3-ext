@@ -47,6 +47,7 @@ module psb_ext_mod
   use psb_d_hdia_mat_mod
 
   use psb_d_rsb_mat_mod
+  use psb_rsb_penv_mod
 
 end module psb_ext_mod
 

@@ -32,16 +32,6 @@
 
 module rsb_mod
   use iso_c_binding 
-!  use core_mod 
-
- !  type, bind(c) :: rsb_type
- !    integer(c_int) :: element_type
- !    integer(c_int) :: pitch
- !    integer(c_int) :: rows
- !    integer(c_int) :: columns
- !    integer(c_int) :: maxRowSize
- !    integer(c_int) :: firstIndex
- ! end type rsb_type
 
 #ifdef HAVE_RSB
 
@@ -56,19 +46,26 @@ module rsb_mod
       integer(c_int),value :: nnz,nr,nc,br,bc
     end function Rsb_double_from_coo
  end interface Rsb_from_coo
-  
 
-  ! interface 
-  !   function FallocEllDevice(deviceMat,rows,maxRowSize,columns,&
-  !        & elementType,firstIndex) &
-  !        & result(res) bind(c,name='FallocEllDevice')
-  !     use iso_c_binding
-  !     integer(c_int)        :: res
-  !     integer(c_int), value :: rows,maxRowSize,columns,elementType,firstIndex
-  !     type(c_ptr)           :: deviceMat
-  !   end function FallocEllDevice
-  ! end interface
+ interface Rsb_spmv
+    function Rsb_double_spmv(rsbMat,x,alfa,y,beta,trans) &
+         & result(res) bind(c,name='Rsb_double_spmv')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr),value :: rsbMat
+      real(c_double) :: x(*),y(*)
+      real(c_double),value :: alfa,beta
+      character(c_char),value :: trans
+    end function Rsb_double_spmv
+ end interface Rsb_spmv
 
+  interface 
+    subroutine  freeRsbMat(rsbMat) &
+         & bind(c,name='freeRsbMat')
+      use iso_c_binding
+      type(c_ptr), value  :: rsbMat
+    end subroutine freeRsbMat
+  end interface
 
   ! interface writeEllDevice
  
@@ -157,14 +154,6 @@ module rsb_mod
   !   end function readEllDeviceDoubleComplex
 
   ! end interface readEllDevice
-
-  ! interface 
-  !   subroutine  freeEllDevice(deviceMat) &
-  !        & bind(c,name='freeEllDevice')
-  !     use iso_c_binding
-  !     type(c_ptr), value  :: deviceMat
-  !   end subroutine freeEllDevice
-  ! end interface
 
   ! interface 
   !   subroutine resetEllTimer() bind(c,name='resetEllTimer')

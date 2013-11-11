@@ -41,12 +41,19 @@ module psb_rsb_penv_mod
 !  end interface
 #if defined(HAVE_RSB)
   interface 
-    function psb_C_rsb_init(dev) &
-         & result(res) bind(c,name='gpuInit')
-      use iso_c_binding   
-      integer(c_int),value	:: dev
+    function psb_C_rsb_init() &
+         & result(res) bind(c,name='rsbInit')
+      use iso_c_binding
       integer(c_int)		:: res
     end function psb_C_rsb_init
+ end interface
+ 
+  interface 
+     function psb_C_rsb_exit() &
+         & result(res) bind(c,name='rsbExit')
+       use iso_c_binding
+       integer(c_int)		:: res
+     end function psb_C_rsb_exit
   end interface
 
 #endif
@@ -59,35 +66,34 @@ contains
   ! !!!!!!!!!!!!!!!!!!!!!!
 
 
-  subroutine psb_rsb_init(ictxt,dev)
+  subroutine psb_rsb_init()
     use psb_penv_mod
     use psb_const_mod
     use psb_error_mod
-    integer, intent(in) :: ictxt
-    integer, intent(in), optional :: dev
+    ! integer, intent(in) :: ictxt
+    ! integer, intent(in), optional :: dev
 
     integer :: info
 
 #if defined (HAVE_RSB)
-    info = rsb_init()
-    if (info
+    info = psb_C_rsb_init()
+    if (info/=0) write(*,*) 'error during rsb_init'
 #endif
   end subroutine psb_rsb_init
 
+  subroutine psb_rsb_exit()
+    use psb_penv_mod
+    use psb_const_mod
+    use psb_error_mod
+    ! integer, intent(in) :: ictxt
+    ! integer, intent(in), optional :: dev
 
-  subroutine psb_rsb_DeviceSync()
-#if defined(HAVE_CUDA)
-    call psb_cudaSync()
-#endif
-  end subroutine psb_rsb_DeviceSync
+    integer :: info
 
-  function psb_rsb_getDeviceCount() result(res)
-    integer :: res
-#if defined(HAVE_CUDA)
-    res = psb_cuda_getDeviceCount()
-#else 
-    res = 0
+#if defined (HAVE_RSB)
+    info = psb_C_rsb_exit()
+    if (info/=0) write(*,*) 'error during rsb_exit'
 #endif
-  end function psb_rsb_getDeviceCount
+  end subroutine psb_rsb_exit
 
 end module psb_rsb_penv_mod
