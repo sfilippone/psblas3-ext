@@ -411,6 +411,8 @@ contains
     class(psb_d_rsb_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
 
+    
+
       
   end function d_rsb_sizeof
 
@@ -431,6 +433,8 @@ contains
     implicit none 
     class(psb_d_rsb_sparse_mat), intent(in) :: a
     integer(psb_ipk_) :: res
+
+    
 
     
 

@@ -62,11 +62,17 @@ int rsbExit()
 int Rsb_double_from_coo(void **rsbMat, double *va, int *ia,int *ja,int nnz,int nr,
 			int nc, int br, int bc)
 {
+  int i=0;
   rsb_err_t errval = RSB_ERR_NO_ERROR;
-  *rsbMat = rsb_mtx_alloc_from_coo_const(va,ia,ja,nnz,'D',nr,nc,br,bc,
-		RSB_FLAG_NOFLAGS/* default format will be chosen */
-		|RSB_FLAG_DUPLICATES_SUM/* duplicates will be summed */
-			,&errval);
+  
+  for (i=0;i<nnz;i++)
+    {
+      ia[i] -= 1;
+      ja[i] -= 1;
+    }
+
+  *rsbMat = rsb_mtx_alloc_from_coo_const(va,ia,ja,nnz,RSB_NUMERICAL_TYPE_DOUBLE,nr,nc,br,bc,RSB_FLAG_NOFLAGS,&errval);
+
   if((!*rsbMat) || (errval != RSB_ERR_NO_ERROR))
     {
       printf("Error while allocating the matrix!\n");
@@ -84,7 +90,7 @@ int Rsb_double_spmv(void *rsbMat, double *x, double alfa, double *y, double beta
     errval = rsb_spmv(RSB_TRANSPOSITION_N,&alfa,(struct rsb_mtx_t *)rsbMat,x,1,&beta,y,1);
   else
     errval = rsb_spmv(RSB_TRANSPOSITION_T,&alfa,(struct rsb_mtx_t *)rsbMat,x,1,&beta,y,1);
-
+  
   if(errval != RSB_ERR_NO_ERROR)
     {
       printf("Error performing a multiplication!\n");
