@@ -39,43 +39,43 @@ module psb_d_rsb_mat_mod
      type(c_ptr) :: rsbMat = c_null_ptr
 
   contains
-    procedure, pass(a) :: get_size     => d_rsb_get_size
+ !   procedure, pass(a) :: get_size     => d_rsb_get_size
     procedure, pass(a) :: get_nzeros   => d_rsb_get_nzeros
     procedure, nopass  :: get_fmt      => d_rsb_get_fmt
     procedure, pass(a) :: sizeof       => d_rsb_sizeof
-    procedure, pass(a) :: csmm         => psb_d_rsb_csmm
+ !   procedure, pass(a) :: csmm         => psb_d_rsb_csmm
     procedure, pass(a) :: csmv         => psb_d_rsb_csmv
-    procedure, pass(a) :: inner_cssm   => psb_d_rsb_cssm
-    procedure, pass(a) :: inner_cssv   => psb_d_rsb_cssv
-    procedure, pass(a) :: scals        => psb_d_rsb_scals
-    procedure, pass(a) :: scalv        => psb_d_rsb_scal
-    procedure, pass(a) :: maxval       => psb_d_rsb_maxval
-    procedure, pass(a) :: csnmi        => psb_d_rsb_csnmi
-    procedure, pass(a) :: csnm1        => psb_d_rsb_csnm1
-    procedure, pass(a) :: rowsum       => psb_d_rsb_rowsum
-    procedure, pass(a) :: arwsum       => psb_d_rsb_arwsum
-    procedure, pass(a) :: colsum       => psb_d_rsb_colsum
-    procedure, pass(a) :: aclsum       => psb_d_rsb_aclsum
-    procedure, pass(a) :: reallocate_nz => psb_d_rsb_reallocate_nz
-    procedure, pass(a) :: allocate_mnnz => psb_d_rsb_allocate_mnnz
-    procedure, pass(a) :: cp_to_coo    => psb_d_cp_rsb_to_coo
+    ! procedure, pass(a) :: inner_cssm   => psb_d_rsb_cssm
+    ! procedure, pass(a) :: inner_cssv   => psb_d_rsb_cssv
+    ! procedure, pass(a) :: scals        => psb_d_rsb_scals
+    ! procedure, pass(a) :: scalv        => psb_d_rsb_scal
+    ! procedure, pass(a) :: maxval       => psb_d_rsb_maxval
+    ! procedure, pass(a) :: csnmi        => psb_d_rsb_csnmi
+    ! procedure, pass(a) :: csnm1        => psb_d_rsb_csnm1
+    ! procedure, pass(a) :: rowsum       => psb_d_rsb_rowsum
+    ! procedure, pass(a) :: arwsum       => psb_d_rsb_arwsum
+    ! procedure, pass(a) :: colsum       => psb_d_rsb_colsum
+    ! procedure, pass(a) :: aclsum       => psb_d_rsb_aclsum
+    ! procedure, pass(a) :: reallocate_nz => psb_d_rsb_reallocate_nz
+    ! procedure, pass(a) :: allocate_mnnz => psb_d_rsb_allocate_mnnz
+!    procedure, pass(a) :: cp_to_coo    => psb_d_cp_rsb_to_coo
     procedure, pass(a) :: cp_from_coo  => psb_d_cp_rsb_from_coo
-    procedure, pass(a) :: cp_to_fmt    => psb_d_cp_rsb_to_fmt
-    procedure, pass(a) :: cp_from_fmt  => psb_d_cp_rsb_from_fmt
-    procedure, pass(a) :: mv_to_coo    => psb_d_mv_rsb_to_coo
+    ! procedure, pass(a) :: cp_to_fmt    => psb_d_cp_rsb_to_fmt
+    ! procedure, pass(a) :: cp_from_fmt  => psb_d_cp_rsb_from_fmt
+!    procedure, pass(a) :: mv_to_coo    => psb_d_mv_rsb_to_coo
     procedure, pass(a) :: mv_from_coo  => psb_d_mv_rsb_from_coo
-    procedure, pass(a) :: mv_to_fmt    => psb_d_mv_rsb_to_fmt
-    procedure, pass(a) :: mv_from_fmt  => psb_d_mv_rsb_from_fmt
-    procedure, pass(a) :: csput        => psb_d_rsb_csput
-    procedure, pass(a) :: get_diag     => psb_d_rsb_get_diag
-    procedure, pass(a) :: csgetptn     => psb_d_rsb_csgetptn
-    procedure, pass(a) :: csgetrow     => psb_d_rsb_csgetrow
-    procedure, pass(a) :: get_nz_row   => d_rsb_get_nz_row
-    procedure, pass(a) :: reinit       => psb_d_rsb_reinit
-    procedure, pass(a) :: trim         => psb_d_rsb_trim
-    procedure, pass(a) :: print        => psb_d_rsb_print
+    ! procedure, pass(a) :: mv_to_fmt    => psb_d_mv_rsb_to_fmt
+    ! procedure, pass(a) :: mv_from_fmt  => psb_d_mv_rsb_from_fmt
+    ! procedure, pass(a) :: csput        => psb_d_rsb_csput
+    ! procedure, pass(a) :: get_diag     => psb_d_rsb_get_diag
+    ! procedure, pass(a) :: csgetptn     => psb_d_rsb_csgetptn
+    ! procedure, pass(a) :: csgetrow     => psb_d_rsb_csgetrow
+    ! procedure, pass(a) :: get_nz_row   => d_rsb_get_nz_row
+    ! procedure, pass(a) :: reinit       => psb_d_rsb_reinit
+    ! procedure, pass(a) :: trim         => psb_d_rsb_trim
+    ! procedure, pass(a) :: print        => psb_d_rsb_print
     procedure, pass(a) :: free         => d_rsb_free
-    procedure, pass(a) :: mold         => psb_d_rsb_mold
+    ! procedure, pass(a) :: mold         => psb_d_rsb_mold
 
   end type psb_d_rsb_sparse_mat
 
@@ -464,7 +464,8 @@ contains
   !
   ! == ===================================  
 
-  subroutine  d_rsb_free(a) 
+  subroutine  d_rsb_free(a)
+    use rsb_mod
     implicit none 
 
     class(psb_d_rsb_sparse_mat), intent(inout) :: a

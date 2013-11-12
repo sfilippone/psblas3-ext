@@ -24,7 +24,7 @@ EXEDIR=./runs
 all: dpdegenmv spdegenmv d_file_spmv  s_file_spmv z_file_spmv c_file_spmv simple
 
 simple: $(SIMPLEOBJS)
-	$(F90LINK) $(LOPT) $(SIMPLEOBJS) -g -pg -o simple $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS)
+	$(F90LINK) $(LOPT) $(SIMPLEOBJS) -g -pg -fopenmp -o simple $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) $(LIBRSB_LIBS)
 	/bin/mv simple $(EXEDIR)
 dpdegenmv: $(DPGOBJS)
 	$(F90LINK) $(LOPT) $(DPGOBJS) -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 

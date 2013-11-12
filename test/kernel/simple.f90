@@ -70,6 +70,7 @@ program pdgenmv
   type(psb_d_hdia_sparse_mat), target   :: ahdia
   type(psb_d_dia_sparse_mat), target   :: adia
   type(psb_d_ell_sparse_mat), target   :: aell
+  type(psb_d_rsb_sparse_mat), target   :: arsb
   !type(psb_d_elg_sparse_mat), target   :: aelg
   !type(psb_d_csrg_sparse_mat), target  :: acsrg
   !type(psb_d_hybg_sparse_mat), target  :: ahybg
@@ -88,7 +89,7 @@ program pdgenmv
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
 
-  !call psb_gpu_init(ictxt)
+  call psb_rsb_init()
 
   if (iam < 0) then 
     ! This should not happen, but just in case
@@ -144,6 +145,8 @@ program pdgenmv
     acmold => adia
   case('HDIA')
     acmold => ahdia
+  case('RSB')
+    acmold => arsb
   case default
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
@@ -169,6 +172,8 @@ program pdgenmv
   call psb_amx(ictxt,t2)
 
   call psb_barrier(ictxt)
+  
+  call psb_rsb_exit()
 
   ! ! FIXME: cache flush needed here
   ! call psb_barrier(ictxt)
