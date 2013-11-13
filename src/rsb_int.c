@@ -64,14 +64,8 @@ int Rsb_double_from_coo(void **rsbMat, double *va, int *ia,int *ja,int nnz,int n
 {
   int i=0;
   rsb_err_t errval = RSB_ERR_NO_ERROR;
-  
-  for (i=0;i<nnz;i++)
-    {
-      ia[i] -= 1;
-      ja[i] -= 1;
-    }
 
-  *rsbMat = rsb_mtx_alloc_from_coo_const(va,ia,ja,nnz,RSB_NUMERICAL_TYPE_DOUBLE,nr,nc,br,bc,RSB_FLAG_NOFLAGS,&errval);
+  *rsbMat = rsb_mtx_alloc_from_coo_const(va,ia,ja,nnz,RSB_NUMERICAL_TYPE_DOUBLE,nr,nc,br,bc,RSB_FLAG_FORTRAN_INDICES_INTERFACE,&errval);
 
   if((!*rsbMat) || (errval != RSB_ERR_NO_ERROR))
     {
@@ -98,6 +92,14 @@ int Rsb_double_spmv(void *rsbMat, double *x, double alfa, double *y, double beta
     }
   
   return 0;
+}
+
+//Should it return a long instead of integer?
+int Rsb_getNZeros(void *rsbMat)
+{
+  int res = 0;
+  rsb_mtx_get_info((struct rsb_mtx_t *)rsbMat,RSB_MIF_MATRIX_NNZ__TO__RSB_NNZ_INDEX_T,(void *)&res);
+  return res;
 }
 
 void freeRsbMat(void *rsbMat)

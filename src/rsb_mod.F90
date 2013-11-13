@@ -47,6 +47,15 @@ module rsb_mod
     end function Rsb_double_from_coo
  end interface Rsb_from_coo
 
+ interface
+    function Rsb_get_nzeros(rsbMat) &
+         & result(res) bind(c,name='Rsb_getNZeros')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr),value :: rsbMat
+    end function Rsb_get_nzeros
+ end interface
+
  interface Rsb_spmv
     function Rsb_double_spmv(rsbMat,x,alfa,y,beta,trans) &
          & result(res) bind(c,name='Rsb_double_spmv')

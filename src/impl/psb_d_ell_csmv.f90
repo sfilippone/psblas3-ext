@@ -93,7 +93,7 @@ subroutine psb_d_ell_csmv(alpha,a,x,beta,y,info,trans)
        & a%is_triangle(),a%is_unit(),&
        & x,beta,y,tra,ctra) 
 
-  write(*,*) y
+!  write(*,*) y
 
   call psb_erractionrestore(err_act)
   return

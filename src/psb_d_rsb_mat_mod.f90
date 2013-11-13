@@ -423,9 +423,12 @@ contains
   end function d_rsb_get_fmt
   
   function d_rsb_get_nzeros(a) result(res)
-    implicit none 
+    use rsb_mod
+    implicit none
     class(psb_d_rsb_sparse_mat), intent(in) :: a
     integer(psb_ipk_) :: res
+
+    res = Rsb_get_nzeros(a%rsbMat)
     
   end function d_rsb_get_nzeros
 
@@ -433,10 +436,6 @@ contains
     implicit none 
     class(psb_d_rsb_sparse_mat), intent(in) :: a
     integer(psb_ipk_) :: res
-
-    
-
-    
 
   end function d_rsb_get_size
 
