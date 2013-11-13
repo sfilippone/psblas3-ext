@@ -129,10 +129,10 @@ program pdgenmv
   if (iam == psb_root_) write(psb_out_unit,'("Overall matrix creation time : ",es12.5)')t2
   if (iam == psb_root_) write(psb_out_unit,'(" ")')
 
-  if (dump) then 
-    write(fname,'(a,i3.3,a)') 'pde',idim,'.mtx'
-    call a%print(fname,head='PDEGEN test matrix')
-  end if
+  ! if (dump) then 
+  !   write(fname,'(a,i3.3,a)') 'pde',idim,'.mtx'
+  !   call a%print(fname,head='PDEGEN test matrix')
+  ! end if
 
   select case(psb_toupper(acfmt))
   case('ELL')
