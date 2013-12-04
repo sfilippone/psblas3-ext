@@ -33,12 +33,8 @@
 subroutine psb_d_rsb_csmv(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
-#ifdef HAVE_RSB
   use rsb_mod
   use psb_d_rsb_mat_mod, psb_protect_name => psb_d_rsb_csmv
-! #else 
-!   use psb_d_rsb_mat_mod
-#endif
   implicit none 
   class(psb_d_rsb_sparse_mat), intent(in) :: a
   real(psb_dpk_), intent(in)          :: alpha, beta, x(:)
@@ -57,7 +53,7 @@ subroutine psb_d_rsb_csmv(alpha,a,x,beta,y,info,trans)
 
   call psb_erractionsave(err_act)
   info = psb_success_
-
+#ifdef HAVE_RSB
   if (present(trans)) then
     trans_ = trans
   else
@@ -93,7 +89,6 @@ subroutine psb_d_rsb_csmv(alpha,a,x,beta,y,info,trans)
     goto 9999
   end if
 
-#ifdef HAVE_RSB
   ! if (tra) then 
   !   call a%psb_d_hll_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
   ! else

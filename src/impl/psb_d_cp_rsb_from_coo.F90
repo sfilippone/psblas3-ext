@@ -49,6 +49,7 @@ subroutine psb_d_cp_rsb_from_coo(a,b,info)
   character(len=20)            :: name
 
   info = psb_success_
+#ifdef HAVE_RSB
   ! This is to have fix_coo called behind the scenes
   call b%cp_to_coo(tmp,info)
 
@@ -66,6 +67,7 @@ subroutine psb_d_cp_rsb_from_coo(a,b,info)
   info = Rsb_from_coo(a%rsbMat,b%val,b%ia,b%ja,nza,nr,nc,bs,bs)
 
   call tmp%free()
+#endif
 
   return
 

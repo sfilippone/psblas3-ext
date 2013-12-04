@@ -1,7 +1,7 @@
 # This is Make.inc file generated automatically by the PSBLAS configure script.
 # It should be ready to use, included by Makefile.
 # If it gives problems, consider editing it.
-PSBLASDIR=/usr/local/psblas-3.0
+PSBLASDIR=/server/fanfarillo/psblas
 include $(PSBLASDIR)/Make.inc
 
 
@@ -14,10 +14,10 @@ INSTALL_LIBDIR=/usr/local/psblasgpu/lib
 INSTALL_INCLUDEDIR=/usr/local/psblasgpu/include
 INSTALL_DOCSDIR=/usr/local/psblasgpu/docs
 
-LIBRSB_LIBS=-lrsb -L/home/alex/Scrivania/PSBLAS/svn_librsb
-LIBRSB_INCDIR=/home/alex/Scrivania/PSBLAS/svn_librsb
-LIBRSB_INCLUDES=-I/home/alex/Scrivania/PSBLAS/svn_librsb
-LIBRSB_DEFINES=-DHAVE_RSB
+LIBRSB_LIBS=
+LIBRSB_INCDIR=
+LIBRSB_INCLUDES=
+LIBRSB_DEFINES=
 
-CDEFINES=-DHAVE_RSB  $(PSBCDEFINES) $(LIBRSB_INCLUDES)
-FDEFINES=-DHAVE_RSB   $(LIBRSB_INCLUDES) $(LIBRSB_LIB) $(PSBFDEFINES)
+CDEFINES= $(PSBCDEFINES) $(LIBRSB_INCLUDES)
+FDEFINES= $(LIBRSB_INCLUDES) $(LIBRSB_LIB) $(PSBFDEFINES)

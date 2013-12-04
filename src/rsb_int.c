@@ -29,9 +29,9 @@
   /* POSSIBILITY OF SUCH DAMAGE. */
  
 #include <sys/time.h>
+#if defined(HAVE_RSB)
 #include "rsb.h"
 #include "rsb_int.h"
-#if defined(HAVE_RSB)
 
 int rsbInit()
 {
