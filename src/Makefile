@@ -5,6 +5,7 @@ include ../Make.inc
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 LIBDIR=../lib
+INCDIR=../include
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -35,7 +36,7 @@ cmp: $(OBJS)
 	ar cur $(LIBNAME) $(OBJS)
 
 copy: cmp ilib
-	/bin/cp -p $(LIBNAME) *$(.mod) $(LIBDIR)
+	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
 
 psb_ext_mod.o: psb_d_dia_mat_mod.o  \
         psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o  \
