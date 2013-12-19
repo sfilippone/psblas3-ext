@@ -2,6 +2,7 @@ include ../../Make.inc
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 LIBDIR=../../lib
+INCDIR=../../include
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -9,9 +10,8 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(PSBINCDIR) $(LIBRSB_INCLUDES) $(FIFLAG).. $(LIBRSB_DEFINES)
-CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
-LIBNAME=libpsbgpu.a
+FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(PSBINCDIR) $(FMFLAG)$(INCDIR) $(FIFLAG).. 
+LIBNAME=libpsb_ext.a
 
 OBJS= \
 psb_d_cp_ell_from_coo.o \
@@ -281,10 +281,7 @@ psb_d_mv_hdia_to_coo.o \
 psb_d_hdia_mold.o \
 psb_d_hdia_print.o \
 psb_d_hdia_allocate_mnnz.o \
-psb_d_hdia_csmv.o \
-psb_d_cp_rsb_from_coo.o \
-psb_d_mv_rsb_from_coo.o \
-psb_d_rsb_csmv.o
+psb_d_hdia_csmv.o 
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

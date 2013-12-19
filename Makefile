@@ -10,7 +10,7 @@ libd:
 	(if test ! -d lib ; then mkdir lib; fi)
 	(if test ! -d include ; then mkdir include; fi)
 extd:
-	cd extc && $(MAKE) lib LIBNAME=$(PSB_EXTLIBNAME)
+	cd ext && $(MAKE) lib LIBNAME=$(PSB_EXTLIBNAME)
 gpud:
 	cd gpu && $(MAKE) lib LIBNAME=$(PSB_GPULIBNAME)
 rsbd:

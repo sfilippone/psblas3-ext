@@ -600,7 +600,7 @@ PACKAGE_VERSION='1.0'
 PACKAGE_STRING='PSBLAS_EXT 1.0'
 PACKAGE_BUGREPORT='salvatore.filippone@uniroma2.it'
 
-ac_unique_file="src/psb_d_ell_mat_mod.f90"
+ac_unique_file="ext/psb_d_ell_mat_mod.f90"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

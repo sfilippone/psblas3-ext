@@ -45,7 +45,7 @@ psblas_ext_cv_version="1.0"
 dnl AC_CONFIG_AUX_DIR(config)
 
 # A sample source file
-AC_CONFIG_SRCDIR([src/psb_d_ell_mat_mod.f90])
+AC_CONFIG_SRCDIR([ext/psb_d_ell_mat_mod.f90])
 # Our custom M4 macros are in  the 'config' directory
 AC_CONFIG_MACRO_DIR([config]) 
 AC_MSG_NOTICE([                                             
