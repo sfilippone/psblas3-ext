@@ -36,7 +36,7 @@ subroutine psb_z_csrg_csmv(alpha,a,x,beta,y,info,trans)
 #ifdef HAVE_SPGPU
   use cusparse_mod
   use elldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_z_csrg_mat_mod, psb_protect_name => psb_z_csrg_csmv
 #else 
   use psb_z_csrg_mat_mod

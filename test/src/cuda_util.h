@@ -42,9 +42,11 @@
 #include "cuComplex.h"
 
 int allocRemoteBuffer(void** buffer, int count);
+int registerMappedMemory(void *buffer, void **dp, int size);
+int unregisterMappedMemory(void *buffer);
 int writeRemoteBuffer(void* hostSrc, void* buffer, int count);
 int readRemoteBuffer(void* hostDest, void* buffer, int count);
-void freeRemoteBuffer(void* buffer);
+int freeRemoteBuffer(void* buffer);
 int gpuInit(int dev);
 int getDeviceCount();
 void cudaSync();

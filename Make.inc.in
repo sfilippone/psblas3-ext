@@ -6,6 +6,8 @@ include $(PSBLASDIR)/include/Make.inc.psblas
 
 
 PSB_EXTLIBNAME=libpsb_ext.a
+PSB_RSBLIBNAME=libpsb_rsb.a
+PSB_GPULIBNAME=libpsb_gpu.a
 
 TARGETS=extd @GPUTARGET@ @RSBTARGET@
 

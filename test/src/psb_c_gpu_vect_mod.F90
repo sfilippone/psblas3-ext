@@ -33,9 +33,12 @@
 module psb_c_gpu_vect_mod
   use iso_c_binding
   use psb_const_mod
+  use psb_error_mod
   use psb_c_vect_mod
+  use psb_i_vect_mod
 #ifdef HAVE_SPGPU
-  use vectordev_mod
+  use psb_i_gpu_vect_mod
+  use psb_c_vectordev_mod
 #endif
 
   integer(psb_ipk_), parameter, private :: is_host = -1
@@ -46,8 +49,11 @@ module psb_c_gpu_vect_mod
 #ifdef HAVE_SPGPU
     integer     :: state      = is_host
     type(c_ptr) :: deviceVect = c_null_ptr
+    complex(c_float_complex), allocatable :: buffer(:)
+    type(c_ptr) :: d_val = c_null_ptr
   contains
     procedure, pass(x) :: get_nrows => c_gpu_get_nrows
+    procedure, nopass  :: get_fmt   => c_gpu_get_fmt
     procedure, pass(x) :: dot_v    => c_gpu_dot_v
     procedure, pass(x) :: dot_a    => c_gpu_dot_a
     procedure, pass(y) :: axpby_v  => c_gpu_axpby_v
@@ -77,8 +83,9 @@ module psb_c_gpu_vect_mod
     procedure, pass(x) :: set_sync => c_gpu_set_sync
     procedure, pass(x) :: set_scal => c_gpu_set_scal
     procedure, pass(x) :: set_vect => c_gpu_set_vect
-    procedure, pass(x) :: gthzv    => c_gpu_gthzv
+    procedure, pass(x) :: gthzv_x  => c_gpu_gthzv_x
     procedure, pass(y) :: sctb     => c_gpu_sctb
+    procedure, pass(y) :: sctb_x   => c_gpu_sctb_x
 #ifdef HAVE_FINAL
     final              :: c_gpu_vect_finalize
 #endif
@@ -104,48 +111,43 @@ contains
   end function constructor
     
 #ifdef HAVE_SPGPU
-#if 0
 
-  !
-  ! Scatter: 
-  ! Y(IDX(:)) = beta*Y(IDX(:)) + X(:)
-  ! 
+  subroutine c_gpu_gthzv_x(i,n,idx,x,y)
+    use psi_serial_mod
+    integer(psb_ipk_) :: i,n
+    class(psb_i_base_vect_type) :: idx
+    complex(psb_spk_) ::  y(:)
+    class(psb_c_vect_gpu) :: x
 
-  subroutine c_gpu_sctb(n,idx,x,beta,y)
-    implicit none
-    !use psb_const_mod
-    integer(psb_ipk_)     :: n, idx(:)
-    complex(psb_spk_)        :: beta, x(:)
-    class(psb_c_vect_gpu) :: y
-    integer(psb_ipk_) :: info
+    select type(ii=> idx) 
+    class is (psb_i_vect_gpu) 
+      if (ii%is_host()) call ii%sync()
+      if (x%is_host())  call x%sync()
 
-    !write(*,*) 'Nuovo metodo c_gpu_sctb in gpu n: ',n
-    if (n == 0) return
-    call y%psb_c_base_vect_type%sctb(n,idx,x,beta)
-    call y%set_host()
+      if (allocated(x%buffer)) then 
+        if (size(x%buffer) < n) then 
+          call inner_unregister(x%buffer)
+          deallocate(x%buffer, stat=info)
+        end if
+      end if
+      
+      if (.not.allocated(x%buffer)) then
+        allocate(x%buffer(n),stat=info)
+        if (info == 0) info = inner_register(x%buffer,x%d_val)        
+      endif
+      info = igathMultiVecDeviceFloatComplex(x%deviceVect,&
+           & 0, i, n, ii%deviceVect, x%d_val, 1)
+      call psb_cudaSync()
+      y(1:n) = x%buffer(1:n)
+      
+    class default
+      call x%gth(n,ii%v(i:),y)
+    end select
 
-  end subroutine c_gpu_sctb
 
-#else    
+  end subroutine c_gpu_gthzv_x
 
-  subroutine c_gpu_gthzv(n,idx,x,y)
-  implicit none
-  integer(psb_ipk_)     :: n, idx(:)
-  complex(psb_spk_)        :: y(:)
-  class(psb_c_vect_gpu) :: x
-  integer(psb_ipk_) :: i, info
 
-  if (n == 0) return
-  if (x%is_host()) call x%sync()
-  !info = readMultiVecDeviceGather(x%deviceVect, yy, idx, n)
-  info = igathMultiVecDeviceFloatComplex(x%deviceVect, 0, n, idx, y, 1)
-
-  end subroutine c_gpu_gthzv
-
-  !
-  ! Scatter: 
-  ! Y(IDX(:)) = beta*Y(IDX(:)) + X(:)
-  ! 
 
   subroutine c_gpu_sctb(n,idx,x,beta,y)
     implicit none
@@ -156,14 +158,49 @@ contains
     integer(psb_ipk_)     :: info
 
     if (n == 0) return
-    !write(*,*) 'Nuovo metodo c_gpu_sctb in gpu n: ',n
-    if (y%is_host()) call y%sync()
-
-    info = iscatMultiVecDeviceFloatComplex(y%deviceVect, 0, n, idx, x, 1, beta)
-    call y%set_dev()
+    
+    if (y%is_dev())  call y%sync()
+          
+    call y%psb_c_base_vect_type%sctb(n,idx,x,beta)
+    call y%set_host()
 
   end subroutine c_gpu_sctb
-#endif     
+
+  subroutine c_gpu_sctb_x(i,n,idx,x,beta,y)
+    use psi_serial_mod
+    integer(psb_ipk_) :: i, n
+    class(psb_i_base_vect_type) :: idx
+    complex(psb_spk_) :: beta, x(:)
+    class(psb_c_vect_gpu) :: y
+
+    select type(ii=> idx) 
+    class is (psb_i_vect_gpu) 
+      if (ii%is_host()) call ii%sync()
+      if (y%is_host())  call y%sync()
+
+      if (allocated(y%buffer)) then 
+        if (size(y%buffer) < n) then 
+          call inner_unregister(y%buffer)
+          deallocate(y%buffer, stat=info)
+        end if
+      end if
+      
+      if (.not.allocated(y%buffer)) then
+        allocate(y%buffer(n),stat=info)
+        if (info == 0) info = inner_register(y%buffer,y%d_val)        
+      endif
+      y%buffer(1:n) = x(1:n) 
+      info = iscatMultiVecDeviceFloatComplex(y%deviceVect,&
+           & 0, i, n, ii%deviceVect, y%d_val, 1,beta)
+
+      call y%set_dev()
+      call psb_cudaSync()   
+      
+    class default
+      call y%sct(n,ii%v(i:),x,beta)
+    end select
+
+  end subroutine c_gpu_sctb_x
 
 
   subroutine c_gpu_bld_x(x,this)
@@ -173,7 +210,11 @@ contains
     integer(psb_ipk_) :: info
 
     call psb_realloc(size(this),x%v,info)
-    if (info /= 0) write(0,*) 'Realloc prolem in bld_x ',info
+    if (info /= 0) then 
+      info=psb_err_alloc_request_
+      call psb_errpush(info,'c_gpu_bld_x',&
+           & i_err=(/size(this),izero,izero,izero,izero/))
+    end if
     x%v(:)  = this(:) 
     call x%set_host()
     call x%sync()
@@ -186,6 +227,9 @@ contains
     integer(psb_ipk_) :: info
 
     call x%all(n,info)
+    if (info /= 0) then 
+      call psb_errpush(info,'c_gpu_bld_n',i_err=(/n,n,n,n,n/))
+    end if
     
   end subroutine c_gpu_bld_n
 
@@ -245,6 +289,12 @@ contains
     if (allocated(x%v)) res = size(x%v)
   end function c_gpu_get_nrows
 
+  function c_gpu_get_fmt() result(res)
+    implicit none 
+    character(len=5) :: res
+    res = 'cGPU'
+  end function c_gpu_get_fmt
+
   function c_gpu_dot_v(n,x,y) result(res)
     implicit none 
     class(psb_c_vect_gpu), intent(inout)       :: x
@@ -268,7 +318,10 @@ contains
       if (x%is_host()) call x%sync()
       if (yy%is_host()) call yy%sync()
       info = dotMultiVecDevice(res,n,x%deviceVect,yy%deviceVect)
-      
+      if (info /= 0) then 
+        info = psb_err_internal_error_
+        call psb_errpush(info,'c_gpu_dot_v')
+      end if
 
     class default
       ! y%sync is done in dot_a
@@ -300,6 +353,9 @@ contains
     complex(psb_spk_), intent (in)                :: alpha, beta
     integer(psb_ipk_), intent(out)             :: info
     integer(psb_ipk_) :: nx, ny
+
+    info = psb_success_
+
     select type(xx => x)
     type is (psb_c_base_vect_type)
       if ((beta /= czero).and.(y%is_dev()))&
@@ -313,10 +369,10 @@ contains
       if (xx%is_host()) call xx%sync()
       nx = getMultiVecDeviceSize(xx%deviceVect)
       ny = getMultiVecDeviceSize(y%deviceVect)
-      if ((nx<m).or.(ny<m).or.(nx/=ny)) then
-        write(0,*) 'Trouble in axpby: ',m,nx,ny
+      if ((nx<m).or.(ny<m)) then
+        info = psb_err_internal_error_
       else
-        info = axpbyMultiVecDevice(alpha,xx%deviceVect,beta,y%deviceVect)
+        info = axpbyMultiVecDevice(m,alpha,xx%deviceVect,beta,y%deviceVect)
       end if
       call y%set_dev()
     class default
@@ -350,10 +406,10 @@ contains
     integer(psb_ipk_) :: i, n
     
     info = 0    
+    n = min(x%get_nrows(),y%get_nrows())
     select type(xx => x)
     type is (psb_c_base_vect_type)
       if (y%is_dev()) call y%sync()
-      n = min(size(y%v),size(xx%v))
       do i=1, n
         y%v(i) = y%v(i) * xx%v(i)
       end do
@@ -362,7 +418,7 @@ contains
       ! Do something different here 
       if (y%is_host())  call y%sync()
       if (xx%is_host()) call xx%sync()
-      info = axyMultiVecDevice(done,xx%deviceVect,y%deviceVect)
+      info = axyMultiVecDevice(n,cone,xx%deviceVect,y%deviceVect)
       call y%set_dev()
     class default
       call xx%sync()
@@ -397,7 +453,7 @@ contains
     integer(psb_ipk_) :: i, n
     
     info = 0    
-    call z%sync()
+    if (z%is_dev()) call z%sync()
     call z%psb_c_base_vect_type%mlt(alpha,x,y,beta,info)
     call z%set_host()
   end subroutine c_gpu_mlt_a_2
@@ -424,6 +480,7 @@ contains
       if (present(conjgy)) conjgy_ = (psb_toupper(conjgy)=='C')
     end if
     
+    n = min(x%get_nrows(),y%get_nrows(),z%get_nrows())
     
     !
     ! Need to reconsider BETA in the GPU side
@@ -437,7 +494,7 @@ contains
         if (xx%is_host()) call xx%sync()
         if (yy%is_host()) call yy%sync()
         ! Z state is irrelevant: it will be done on the GPU. 
-        info = axybzMultiVecDevice(alpha,xx%deviceVect,&
+        info = axybzMultiVecDevice(n,alpha,xx%deviceVect,&
              & yy%deviceVect,beta,z%deviceVect)
         call z%set_dev()
       class default
@@ -461,7 +518,8 @@ contains
     complex(psb_spk_), intent(in)           :: val
         
     integer(psb_ipk_) :: info
-    call x%sync()
+
+    if (x%is_dev()) call x%sync()
     call x%psb_c_base_vect_type%set_scal(val)
     call x%set_host()
   end subroutine c_gpu_set_scal
@@ -472,7 +530,7 @@ contains
     integer(psb_ipk_) :: nr
     integer(psb_ipk_) :: info
 
-    call x%sync()
+    if (x%is_dev()) call x%sync()
     call x%psb_c_base_vect_type%set_vect(val)
     call x%set_host()
 
@@ -485,7 +543,7 @@ contains
     class(psb_c_vect_gpu), intent(inout) :: x
     complex(psb_spk_), intent (in)          :: alpha
     
-    call x%sync()
+    if (x%is_dev()) call x%sync()
     call x%psb_c_base_vect_type%scal(alpha)
     call x%set_host()
   end subroutine c_gpu_scal
@@ -534,10 +592,13 @@ contains
     integer(psb_ipk_), intent(out)     :: info
     
     call psb_realloc(n,x%v,info)
-    if (info /= 0 ) write(0,*) 'Error on GPU_ALL ',info
-    call x%set_host()
-    call x%sync_space(info)
-    if (info /= 0 ) write(0,*) 'Error on GPU_ALL ',info
+    if (info == 0) call x%set_host()
+    if (info == 0) call x%sync_space(info)
+    if (info /= 0) then 
+      info=psb_err_alloc_request_
+      call psb_errpush(info,'c_gpu_all',&
+           & i_err=(/n,n,n,n,n/))
+    end if
   end subroutine c_gpu_all
 
   subroutine c_gpu_zero(x)
@@ -565,6 +626,9 @@ contains
         x%deviceVect=c_null_ptr
       end if
       call x%sync()
+    else
+      info=psb_err_internal_error_
+      call psb_errpush(info,'c_gpu_asb')
     end if
   end subroutine c_gpu_asb
 
@@ -580,7 +644,10 @@ contains
         n    = size(x%v)
         info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_complex_float)
         if  (info /= 0) then 
-          write(0,*) 'Error from FallocMultiVecDevice',info,n
+!!$          write(0,*) 'Error from FallocMultiVecDevice',info,n
+          if (info == spgpu_outofmem) then 
+            info = psb_err_alloc_request_
+          end if
         end if
       end if
     else if (x%is_dev()) then 
@@ -595,7 +662,6 @@ contains
     class(psb_c_vect_gpu), intent(inout) :: x
     integer(psb_ipk_) :: n,info
     
-    !write(*,*) 'Sync in c_gpu_sync'
     info = 0
     if (x%is_host()) then 
       if (.not.c_associated(x%deviceVect)) then 
@@ -608,6 +674,10 @@ contains
       info = readMultiVecDevice(x%deviceVect,x%v)
     end if
     if (info == 0)  call x%set_sync()
+    if (info /= 0) then
+      info=psb_err_internal_error_
+      call psb_errpush(info,'c_gpu_sync')
+    end if
     
   end subroutine c_gpu_sync
 
@@ -623,6 +693,11 @@ contains
       call freeMultiVecDevice(x%deviceVect)
       x%deviceVect=c_null_ptr
     end if
+    if (allocated(x%buffer)) then 
+      call inner_unregister(x%buffer)
+      deallocate(x%buffer, stat=info)
+    end if
+
     if (allocated(x%v)) deallocate(x%v, stat=info)
     call x%set_sync()
   end subroutine c_gpu_free
@@ -640,6 +715,11 @@ contains
       call freeMultiVecDevice(x%deviceVect)
       x%deviceVect=c_null_ptr
     end if
+    if (allocated(x%buffer)) then 
+      call inner_unregister(x%buffer)
+      deallocate(x%buffer, stat=info)
+    end if
+
     if (allocated(x%v)) deallocate(x%v, stat=info)
     call x%set_sync()
   end subroutine c_gpu_vect_finalize
@@ -657,6 +737,7 @@ contains
     integer(psb_ipk_) :: i
 
     info = 0
+    if (x%is_dev()) call x%sync()
     call x%psb_c_base_vect_type%ins(n,irl,val,dupl,info)
     call x%set_host()
 

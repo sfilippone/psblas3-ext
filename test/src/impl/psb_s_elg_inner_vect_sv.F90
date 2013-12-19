@@ -35,7 +35,7 @@ subroutine psb_s_elg_inner_vect_sv(alpha,a,x,beta,y,info,trans)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use elldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_s_elg_mat_mod, psb_protect_name => psb_s_elg_inner_vect_sv
 #else 
   use psb_s_elg_mat_mod

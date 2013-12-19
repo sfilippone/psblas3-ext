@@ -35,7 +35,7 @@ subroutine psb_d_cp_hlg_from_fmt(a,b,info)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hlldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_d_hlg_mat_mod, psb_protect_name => psb_d_cp_hlg_from_fmt
 #else 
   use psb_d_hlg_mat_mod

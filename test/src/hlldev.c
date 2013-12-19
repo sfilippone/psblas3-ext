@@ -50,6 +50,7 @@ HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsig
 int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
 {
   struct HllDevice *tmp = (struct HllDevice *)malloc(sizeof(struct HllDevice));
+  int ret=SPGPU_SUCCESS;
   *remoteMatrix = (void *)tmp;
 
   tmp->hackSize = params->hackSize;
@@ -62,37 +63,45 @@ int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
 
   //printf("hackOffsLength %d\n",tmp->hackOffsLength);
  
-  allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
+  
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->rS), tmp->rows*sizeof(int));
 
-  allocRemoteBuffer((void **)&(tmp->rS), tmp->rows*sizeof(int));
-
-  allocRemoteBuffer((void **)&(tmp->hackOffs), (tmp->hackOffsLength*sizeof(int)));
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->hackOffs), (tmp->hackOffsLength*sizeof(int)));
   
   tmp->baseIndex = params->firstIndex;
 
   if (params->elementType == SPGPU_TYPE_INT)
     {
-      allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(int));
+      if (ret == SPGPU_SUCCESS)
+	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(int));
     }
   else if (params->elementType == SPGPU_TYPE_FLOAT)
     {
-      allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(float));
+      if (ret == SPGPU_SUCCESS)
+	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(float));
     }    
   else if (params->elementType == SPGPU_TYPE_DOUBLE)
     {
-      allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(double));
+      if (ret == SPGPU_SUCCESS)
+	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(double));
     }
   else if (params->elementType == SPGPU_TYPE_COMPLEX_FLOAT)
     {
-      allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(cuFloatComplex));
+      if (ret == SPGPU_SUCCESS)
+	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(cuFloatComplex));
     }
   else if (params->elementType == SPGPU_TYPE_COMPLEX_DOUBLE)
     {
-      allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(cuDoubleComplex));
+      if (ret == SPGPU_SUCCESS)
+	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(cuDoubleComplex));
     }
   else
     return SPGPU_UNSUPPORTED; // Unsupported params
-  return SPGPU_SUCCESS;
+  return ret;
 }
 
 void freeHllDevice(void* remoteMatrix)
@@ -222,7 +231,7 @@ int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   spgpuDhellspmv (handle, (double *)y->v_, (double *)y->v_, alpha, (double*)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
 		  devMat->rows, (double *)x->v_, beta, devMat->baseIndex);
-
+  cudaSync();
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;

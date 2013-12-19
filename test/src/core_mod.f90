@@ -43,4 +43,11 @@ module core_mod
   integer(c_int), parameter :: spgpu_unspecified = 2
   integer(c_int), parameter :: spgpu_outofmem    = 3
 
+  interface 
+    subroutine psb_cudaSync() &
+         & bind(c,name='cudaSync')
+      use iso_c_binding   
+    end subroutine psb_cudaSync
+  end interface
+
 end module core_mod

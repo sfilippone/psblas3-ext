@@ -15,15 +15,10 @@ LDLIBS=$(PSBLDLIBS)
 #CCOPT= -g
 FINCLUDES=$(FMFLAG).   $(FMFLAG)$(PSBINCDIR) $(FIFLAG) . $(LIBRSB_INCLUDES) $(LIBRSB_DEFINES)
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
-LIBNAME=libpsb_ext.a
+LIBNAME=libpsb_rsb.a
 
 
-FOBJS=  psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o \
-	psb_s_hll_mat_mod.o psb_s_ell_mat_mod.o \
-	psb_c_hll_mat_mod.o psb_c_ell_mat_mod.o \
-	psb_z_hll_mat_mod.o psb_z_ell_mat_mod.o \
-	psb_d_dia_mat_mod.o psb_d_hdia_mat_mod.o \
-	rsb_mod.o psb_d_rsb_mat_mod.o \
+FOBJS=  rsb_mod.o psb_d_rsb_mat_mod.o \
 	psb_rsb_penv_mod.o psb_ext_mod.o
 
 COBJS= rsb_int.o
@@ -38,13 +33,6 @@ cmp: $(OBJS)
 copy: cmp ilib
 	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
 
-psb_ext_mod.o: psb_d_dia_mat_mod.o  \
-        psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o  \
-	psb_s_hll_mat_mod.o psb_s_ell_mat_mod.o \
-	psb_c_hll_mat_mod.o psb_c_ell_mat_mod.o \
-	psb_z_hll_mat_mod.o psb_z_ell_mat_mod.o \
-	psb_d_rsb_mat_mod.o psb_d_hdia_mat_mod.o \
-	rsb_mod.o psb_rsb_penv_mod.o
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)

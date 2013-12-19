@@ -99,6 +99,7 @@ if test ! -f "$pac_cv_status_file" ; then
   #AC_MSG_ERROR([Could not find an installation  in $LIBRSB_DIR.])
 else
   AC_MSG_RESULT([$LIBRSB_DIR])
+  RSBTARGET=rsbd;
 fi
 
 dnl. $pac_cv_status_file

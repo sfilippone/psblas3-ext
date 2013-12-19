@@ -69,6 +69,15 @@ typedef struct MultiVectorDeviceParams
 } MultiVectorDeviceParams;
 
 
+
+int allocateIdx(void **, int);
+int writeIdx(void *, int *, int);
+int readIdx(void *, int *, int);
+void freeIdx(void *);
+
+int registerMappedDouble(void *, void **, int, double);
+int unregisterMapped(void *);
+
 int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, unsigned int size, unsigned int elementType);
 void freeMultiVecDevice(void* deviceVec);
 int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
@@ -100,26 +109,48 @@ int dotMultiVecDeviceDouble(double* y_res, int n, void* devVecA, void* devVecB);
 int dotMultiVecDeviceFloatComplex(float complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
 int dotMultiVecDeviceDoubleComplex(double complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
 
-int axpbyMultiVecDeviceFloat(float alpha, void* devVecX, float beta, void* devVecY);
-int axpbyMultiVecDeviceDouble(double alpha, void* devVecX, double beta, void* devVecY);
-int axpbyMultiVecDeviceFloatComplex(float complex alpha, void* devMultiVecX, 
+int axpbyMultiVecDeviceFloat(int n, float alpha, void* devVecX, float beta, void* devVecY);
+int axpbyMultiVecDeviceDouble(int n, double alpha, void* devVecX, double beta, void* devVecY);
+int axpbyMultiVecDeviceFloatComplex(int n, float complex alpha, void* devMultiVecX, 
 				    float complex beta, void* devMultiVecY);
-int axpbyMultiVecDeviceDoubleComplex(double complex alpha, void* devMultiVecX, 
+int axpbyMultiVecDeviceDoubleComplex(int n, double complex alpha, void* devMultiVecX, 
 				     double complex beta, void* devMultiVecY);
 
-int axyMultiVecDeviceFloat(float alpha, void *deviceVecA, void *deviceVecB);
-int axyMultiVecDeviceDouble(double alpha, void *deviceVecA, void *deviceVecB);
-int axyMultiVecDeviceFloatComplex(float complex alpha, void *deviceVecA, void *deviceVecB);
-int axyMultiVecDeviceDoubleComplex(double complex alpha, void *deviceVecA, void *deviceVecB);
+int axyMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, void *deviceVecB);
+int axyMultiVecDeviceDouble(int n, double alpha, void *deviceVecA, void *deviceVecB);
+int axyMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA, void *deviceVecB);
+int axyMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA, void *deviceVecB);
 
-int axybzMultiVecDeviceFloat(float alpha, void *deviceVecA, 
+int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, 
 			     void *deviceVecB, float beta, void *deviceVecZ);
-int axybzMultiVecDeviceDouble(double alpha, void *deviceVecA,
+int axybzMultiVecDeviceDouble(int n, double alpha, void *deviceVecA,
 			      void *deviceVecB, double beta, void *deviceVecZ);
-int axybzMultiVecDeviceFloatComplex(float complex alpha, void *deviceVecA,
+int axybzMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA,
 				    void *deviceVecB, float complex beta, 
 				    void *deviceVecZ);
-int axybzMultiVecDeviceDoubleComplex(double complex alpha, void *deviceVecA,
+int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA,
 				     void *deviceVecB, double complex beta, 
 				     void *deviceVecZ);
+
+
+
+int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int first,
+			     int n, void* indexes, void* host_values, int indexBase);
+int igathMultiVecDeviceDouble(void* deviceVec, int vectorId, int first,
+			      int n, void* indexes, void* host_values, int indexBase);
+int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first,
+				    int n, void* indexes, void* host_values, int indexBase);
+int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first,
+				     int n, void* indexes, void* host_values, int indexBase);
+
+int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int first, int n, void *indexes,
+			     void* host_values, int indexBase, float beta);
+int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int first, int n, void *indexes,
+			      void* host_values, int indexBase, double beta);
+int iscatMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				    void* host_values, int indexBase, float complex beta);
+
+int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				     void* host_values, int indexBase, double complex beta);
+
 #endif

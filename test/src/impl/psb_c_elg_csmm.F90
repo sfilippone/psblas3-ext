@@ -35,7 +35,7 @@ subroutine psb_c_elg_csmm(alpha,a,x,beta,y,info,trans)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use elldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_c_elg_mat_mod, psb_protect_name => psb_c_elg_csmm
 #else 
   use psb_c_elg_mat_mod

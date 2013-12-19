@@ -25,11 +25,11 @@ install: all
 	   $(INSTALL_DATA) include/*$(.mod) $(INSTALL_INCLUDEDIR))
 
 clean: 
-	cd src &&  $(MAKE) clean
-
-cclean: 
-	cd src &&  $(MAKE) cclean
+	cd ext &&  $(MAKE) clean
+	cd rsb &&  $(MAKE) clean
+#	cd gpu &&  $(MAKE) clean
 
 cleanlib:
 	(cd lib; /bin/rm -f *.a *$(.mod) *$(.fh))
+	(cd include; /bin/rm -f *.a *$(.mod) *$(.fh))
 veryclean: cleanlib clean

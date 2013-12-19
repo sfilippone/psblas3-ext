@@ -57,6 +57,7 @@ module psb_gpu_penv_mod
     end function psb_cuda_getDeviceCount
   end interface
 
+
   interface 
     subroutine psb_cudaSync() &
          & bind(c,name='cudaSync')

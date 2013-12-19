@@ -35,7 +35,7 @@ subroutine psb_s_hlg_csmm(alpha,a,x,beta,y,info,trans)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hlldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_s_hlg_mat_mod, psb_protect_name => psb_s_hlg_csmm
 #else 
   use psb_s_hlg_mat_mod

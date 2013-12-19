@@ -35,7 +35,7 @@ subroutine psb_s_hybg_vect_mv(alpha,a,x,beta,y,info,trans)
 #ifdef HAVE_SPGPU
   use cusparse_mod
   use elldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_s_hybg_mat_mod, psb_protect_name => psb_s_hybg_vect_mv
 #else 
   use psb_s_hybg_mat_mod

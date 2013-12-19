@@ -35,7 +35,7 @@ subroutine psb_d_hlg_vect_mv(alpha,a,x,beta,y,info,trans)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hlldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_d_hlg_mat_mod, psb_protect_name => psb_d_hlg_vect_mv
 #else 
   use psb_d_hlg_mat_mod
@@ -74,7 +74,7 @@ subroutine psb_d_hlg_vect_mv(alpha,a,x,beta,y,info,trans)
 #ifdef HAVE_SPGPU
   if (tra) then 
     if (.not.x%is_host()) call x%sync()
-    if (beta /= szero) then 
+    if (beta /= dzero) then 
       if (.not.y%is_host()) call y%sync()
     end if
     call a%psb_d_hll_sparse_mat%spmm(alpha,x,beta,y,info,trans) 

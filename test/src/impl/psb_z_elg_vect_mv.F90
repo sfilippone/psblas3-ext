@@ -35,7 +35,7 @@ subroutine psb_z_elg_vect_mv(alpha,a,x,beta,y,info,trans)
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use elldev_mod
-  use vectordev_mod
+  use psb_vectordev_mod
   use psb_z_elg_mat_mod, psb_protect_name => psb_z_elg_vect_mv
 #else 
   use psb_z_elg_mat_mod

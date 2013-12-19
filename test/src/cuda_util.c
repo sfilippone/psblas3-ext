@@ -36,59 +36,211 @@
 int allocRemoteBuffer(void** buffer, int count)
 {
   cudaError_t err = cudaMalloc(buffer, count);
-  if (err == cudaErrorMemoryAllocation)
-    return SPGPU_OUTOFMEMORY;
+  if (err == cudaSuccess)
+    {
+      return SPGPU_SUCCESS;
+    }
   else
-    return SPGPU_SUCCESS;
+    { 
+      fprintf(stderr,"CUDA allocRemoteBuffer Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
+}
+
+int hostRegisterMapped(void *pointer, long size) 
+{
+  cudaError_t err = cudaHostRegister(pointer, size, cudaHostRegisterMapped);
+
+ if (err == cudaSuccess)
+    {
+      return SPGPU_SUCCESS;
+    }
+  else
+    { 
+      fprintf(stderr,"CUDA hostRegisterMapped Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
+}
+
+int getDevicePointer(void **d_p, void * h_p)
+{
+  cudaError_t err = cudaHostGetDevicePointer(d_p,h_p,0);
+
+ if (err == cudaSuccess)
+    {
+      return SPGPU_SUCCESS;
+    }
+  else
+    { 
+      fprintf(stderr,"CUDA getDevicePointer Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
+}
+
+int registerMappedMemory(void *buffer, void **dp, int size)
+{
+  //cudaError_t err = cudaHostAlloc(buffer,size,cudaHostAllocMapped);
+  cudaError_t err = cudaHostRegister(buffer, size, cudaHostRegisterMapped);
+  if (err == cudaSuccess) err = cudaHostGetDevicePointer(dp,buffer,0);
+
+  if (err == cudaSuccess)
+    {
+      err = cudaHostGetDevicePointer(dp,buffer,0);
+      if (err == cudaSuccess)
+	{
+	  return SPGPU_SUCCESS;
+	}
+      else
+	{
+	  fprintf(stderr,"CUDA registerMappedMemory Error: %s\n", cudaGetErrorString(err));
+	  return SPGPU_UNSPECIFIED;
+	}
+    }
+  else
+    { 
+      fprintf(stderr,"CUDA registerMappedMemory Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
+}
+
+int allocMappedMemory(void **buffer, void **dp, int size)
+{
+  cudaError_t err = cudaHostAlloc(buffer,size,cudaHostAllocMapped);
+  if (err == 0) err = cudaHostGetDevicePointer(dp,buffer,0);
+
+  if (err == cudaSuccess)
+    {
+      return SPGPU_SUCCESS;
+    }
+  else
+    { 
+      fprintf(stderr,"CUDA allocMappedMemory Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
+}
+
+int unregisterMappedMemory(void *buffer)
+{
+  //cudaError_t err = cudaHostAlloc(buffer,size,cudaHostAllocMapped);
+  cudaError_t err = cudaHostUnregister(buffer);
+
+  if (err == cudaSuccess)
+    {
+      return SPGPU_SUCCESS;
+    }
+  else
+    { 
+      fprintf(stderr,"CUDA unregisterMappedMemory Error: %s\n", cudaGetErrorString(err));
+      if(err == cudaErrorMemoryAllocation)
+	return SPGPU_OUTOFMEMORY;
+      else
+	return SPGPU_UNSPECIFIED;
+    }
 }
 
 int writeRemoteBuffer(void* hostSrc, void* buffer, int count)
 {
-  cudaError_t ret = cudaMemcpy(buffer, hostSrc, count, cudaMemcpyHostToDevice);
+  cudaError_t err = cudaMemcpy(buffer, hostSrc, count, cudaMemcpyHostToDevice);
 
-  if (ret == cudaSuccess)
+  if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
-  else 
+  else {
+    fprintf(stderr,"CUDA Error writeRemoteBuffer: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
+  }
 }
 
 int readRemoteBuffer(void* hostDest, void* buffer, int count)
 {
-  cudaError_t ret = cudaMemcpy(hostDest, buffer, count, cudaMemcpyDeviceToHost);
-	
-  if (ret == cudaSuccess)
-    return SPGPU_SUCCESS;
-  else 
+  cudaError_t err = cudaMemcpy(hostDest, buffer, count, cudaMemcpyDeviceToHost);
+
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error readRemoteBuffer: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
+  }
 }
 
-void freeRemoteBuffer(void* buffer)
+int freeRemoteBuffer(void* buffer)
 {
-  cudaFree(buffer);
+  cudaError_t err = cudaFree(buffer);
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error freeRemoteBuffer: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
 }
 
 int gpuInit(int dev)
 {
 
-        int count;
+  int count,err;
+  
+  if ((err=cudaSetDeviceFlags(cudaDeviceMapHost))!=cudaSuccess) 
+    fprintf(stderr,"Error On SetDeviceFlags: %d '%s'\n",err,cudaGetErrorString(err));
+  err = cudaGetDeviceCount(&count);
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
+  
+  if ((0<=dev)&&(dev<count))
+    err = cudaSetDevice(dev);
+  else
+    err = cudaSetDevice(0);
 
-        cudaGetDeviceCount(&count);
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error gpuInit: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
 
-        if ((0<=dev)&&(dev<count))
-	  return cudaSetDevice(dev);
-	else
-	  return cudaSetDevice(0);
-
+  return err;
+  
 }
 
 int getDeviceCount()
 { int count;
-  cudaGetDeviceCount(&count);
+  cudaError_t err;
+  err = cudaGetDeviceCount(&count);
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error getDeviceCount: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
   return(count);
 }
 
 void cudaSync()
 {
-  cudaDeviceSynchronize();
+  cudaError_t err;
+  err = cudaDeviceSynchronize();
+  if (err == cudaSuccess)
+    return SPGPU_SUCCESS;	
+  else {
+    fprintf(stderr,"CUDA Error cudaSync: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
 }
 #endif
