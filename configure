@@ -656,6 +656,16 @@ LIBRSB_DIR
 LIBRSB_INCDIR
 LIBRSB_INCLUDES
 LIBRSB_LIBS
+CUDA_LIBS
+CUDA_INCLUDES
+CUDA_DEFINES
+CUDA_DIR
+SPGPU_INCDIR
+SPGPU_INCLUDES
+SPGPU_DEFINES
+SPGPU_DIR
+SPGPU_LIBS
+SPGPU_FLAGS
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -754,6 +764,8 @@ with_librsb
 with_libs
 enable_serial
 enable_dependency_tracking
+with_cuda
+with_spgpu
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1412,6 +1424,9 @@ Optional Packages:
   --with-libs             List additional link flags here. For example,
                           --with-libs=-lspecial_system_lib or
                           --with-libs=-L/path/to/libs
+  --with-cuda=DIR         Specify the directory for CUDA library and includes.
+  --with-spgpu=DIR        Specify the directory for SPGPU library and
+                          includes.
 
 Some influential environment variables:
   CC          C compiler command
@@ -1896,6 +1911,7 @@ psblas_ext_cv_version="1.0"
 	docum entation, you can make your own by hand for your needs.
 
         ./configure  --with-psblas=/path/to/psblas --with-librsb=/path/to/librsb
+	 --with-spgpu=/path/to/spgpu
 	See ./configure --help=short fore more info.
 --------------------------------------------------------------------------------
 		" >&5
@@ -1907,6 +1923,7 @@ $as_echo "$as_me:
 	docum entation, you can make your own by hand for your needs.
 
         ./configure  --with-psblas=/path/to/psblas --with-librsb=/path/to/librsb
+	 --with-spgpu=/path/to/spgpu
 	See ./configure --help=short fore more info.
 --------------------------------------------------------------------------------
 		" >&6;}
@@ -3851,7 +3868,7 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 $as_echo_n "checking where to install... " >&6; }
 case $prefix in
    \/* )   eval "INSTALL_DIR=$prefix";;
-   * ) eval "INSTALL_DIR=/usr/local/psblasgpu";;
+   * ) eval "INSTALL_DIR=/usr/local/psblas-ext";;
 esac
 case $libdir in
    \/* )   eval "INSTALL_LIBDIR=$libdir";;
@@ -7642,13 +7659,6 @@ FMFLAG="${ax_cv_f90_modflag%% *}"
 FIFLAG=-I
 
 ###############################################################################
-#Adjust Fortran includes
-#PAC_FORTRAN_HAVE_PSBLAS(
-#	[FINCLUDES="$FMFLAG$PSBLAS_DIR/include $FINCLUDES";
-#	 LIBS="-L$PSBLAS_DIR/lib $LIBS"]
-#)
-
-###############################################################################
 # NOTE :
 # Missing stuff :
 # 		In the case the detected fortran compiler is ifort, icc or gcc
@@ -7656,11 +7666,538 @@ FIFLAG=-I
 #		The same for pg (Portland Group compilers).
 ###############################################################################
 
+ac_objext='.o'
+ac_ext='f90'
+ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
+{ $as_echo "$as_me:$LINENO: checking for working source dir of PSBLAS" >&5
+$as_echo_n "checking for working source dir of PSBLAS... " >&6; }
+cat > conftest.$ac_ext <<EOF
+           program test
+	       use psb_base_mod
+           end program test
+EOF
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && test -s conftest${ac_objext}; then
+  rm -rf conftest*
+  { $as_echo "$as_me:$LINENO: result: yes." >&5
+$as_echo "yes." >&6; }
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  { { $as_echo "$as_me:$LINENO: error: no.
+  Could not find working version of PSBLAS." >&5
+$as_echo "$as_me: error: no.
+  Could not find working version of PSBLAS." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+rm -f conftest*
+
+
+SAVE_LIBS="$LIBS"
+	  SAVE_CPPFLAGS="$CPPFLAGS"
+
+# Check whether --with-cuda was given.
+if test "${with_cuda+set}" = set; then
+  withval=$with_cuda; psb_cv_cuda_dir=$withval
+else
+  psb_cv_cuda_dir=''
+fi
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+SAVE_LIBS="$LIBS"
+SAVE_CPPFLAGS="$CPPFLAGS"
+if test "x$psb_cv_cuda_dir" != "x"; then
+   CUDA_DIR="$psb_cv_cuda_dir"
+   LIBS="-L$psb_cv_cuda_dir/lib $LIBS"
+   CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
+   CUDA_DEFINES="-DHAVE_CUDA"
+   CPPFLAGS="$CUDA_INCLUDES $CPPFLAGS"
+   CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+fi
+{ $as_echo "$as_me:$LINENO: checking cuda dir $psb_cv_cuda_dir" >&5
+$as_echo_n "checking cuda dir $psb_cv_cuda_dir... " >&6; }
+if test "${ac_cv_header_cuda_runtime_h+set}" = set; then
+  { $as_echo "$as_me:$LINENO: checking for cuda_runtime.h" >&5
+$as_echo_n "checking for cuda_runtime.h... " >&6; }
+if test "${ac_cv_header_cuda_runtime_h+set}" = set; then
+  $as_echo_n "(cached) " >&6
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_cuda_runtime_h" >&5
+$as_echo "$ac_cv_header_cuda_runtime_h" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:$LINENO: checking cuda_runtime.h usability" >&5
+$as_echo_n "checking cuda_runtime.h usability... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <cuda_runtime.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:$LINENO: checking cuda_runtime.h presence" >&5
+$as_echo_n "checking cuda_runtime.h presence... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <cuda_runtime.h>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: proceeding with the preprocessor's result" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: proceeding with the preprocessor's result" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: cuda_runtime.h: in the future, the compiler will take precedence" >&5
+$as_echo "$as_me: WARNING: cuda_runtime.h: in the future, the compiler will take precedence" >&2;}
+    ( cat <<\_ASBOX
+## ---------------------------------------------- ##
+## Report this to salvatore.filippone@uniroma2.it ##
+## ---------------------------------------------- ##
+_ASBOX
+     ) | sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+{ $as_echo "$as_me:$LINENO: checking for cuda_runtime.h" >&5
+$as_echo_n "checking for cuda_runtime.h... " >&6; }
+if test "${ac_cv_header_cuda_runtime_h+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_header_cuda_runtime_h=$ac_header_preproc
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_cuda_runtime_h" >&5
+$as_echo "$ac_cv_header_cuda_runtime_h" >&6; }
+
+fi
+if test "x$ac_cv_header_cuda_runtime_h" = x""yes; then
+  pac_cuda_header_ok=yes
+else
+  pac_cuda_header_ok=no; CUDA_INCLUDES=""
+fi
+
+
+
+if test "x$pac_cuda_header_ok" == "xyes" ; then
+ CUDA_LIBS="-lcusparse -lcublas -lcudart $CUDA_LIBDIR"
+ LIBS="$CUDA_LIBS -lm $LIBS";
+ { $as_echo "$as_me:$LINENO: checking for cudaMemcpy in $CUDA_LIBS" >&5
+$as_echo_n "checking for cudaMemcpy in $CUDA_LIBS... " >&6; }
+ cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cudaMemcpy ();
+int
+main ()
+{
+return cudaMemcpy ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_have_cuda=yes;pac_cuda_lib_ok=yes;
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_have_cuda=no;pac_cuda_lib_ok=no; CUDA_LIBS=""
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+ { $as_echo "$as_me:$LINENO: result: $pac_cuda_lib_ok" >&5
+$as_echo "$pac_cuda_lib_ok" >&6; }
+fi
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+
+	  { $as_echo "$as_me:$LINENO: From CUDA: $pac_cv_have_cuda " >&5
+$as_echo "$as_me: From CUDA: $pac_cv_have_cuda " >&6;}
+	  if test "x$pac_cv_have_cuda" == "xyes"; then
+
+# Check whether --with-spgpu was given.
+if test "${with_spgpu+set}" = set; then
+  withval=$with_spgpu; psb_cv_spgpudir=$withval
+else
+  psb_cv_spgpudir=''
+fi
+
+
+	  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	  if test "x$psb_cv_spgpudir" != "x"; then
+	  LIBS="-L$psb_cv_spgpudir/lib $LIBS"
+	  GPU_INCLUDES="-I$psb_cv_spgpudir/include"
+	  CPPFLAGS="$GPU_INCLUDES $CUDA_INCLUDES $CPPFLAGS"
+	  GPU_LIBDIR="-L$psb_cv_spgpudir/lib"
+	  fi
+	  { $as_echo "$as_me:$LINENO: checking spgpu dir $psb_cv_spgpudir" >&5
+$as_echo_n "checking spgpu dir $psb_cv_spgpudir... " >&6; }
+	  if test "${ac_cv_header_core_h+set}" = set; then
+  { $as_echo "$as_me:$LINENO: checking for core.h" >&5
+$as_echo_n "checking for core.h... " >&6; }
+if test "${ac_cv_header_core_h+set}" = set; then
+  $as_echo_n "(cached) " >&6
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_core_h" >&5
+$as_echo "$ac_cv_header_core_h" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:$LINENO: checking core.h usability" >&5
+$as_echo_n "checking core.h usability... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <core.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+  ac_header_compiler=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	ac_header_compiler=no
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:$LINENO: checking core.h presence" >&5
+$as_echo_n "checking core.h presence... " >&6; }
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <core.h>
+_ACEOF
+if { (ac_try="$ac_cpp conftest.$ac_ext"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null && {
+	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       }; then
+  ac_header_preproc=yes
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+
+rm -f conftest.err conftest.$ac_ext
+{ $as_echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: core.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: core.h: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: core.h: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: core.h:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: core.h: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: core.h:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: proceeding with the preprocessor's result" >&5
+$as_echo "$as_me: WARNING: core.h: proceeding with the preprocessor's result" >&2;}
+    { $as_echo "$as_me:$LINENO: WARNING: core.h: in the future, the compiler will take precedence" >&5
+$as_echo "$as_me: WARNING: core.h: in the future, the compiler will take precedence" >&2;}
+    ( cat <<\_ASBOX
+## ---------------------------------------------- ##
+## Report this to salvatore.filippone@uniroma2.it ##
+## ---------------------------------------------- ##
+_ASBOX
+     ) | sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+{ $as_echo "$as_me:$LINENO: checking for core.h" >&5
+$as_echo_n "checking for core.h... " >&6; }
+if test "${ac_cv_header_core_h+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  ac_cv_header_core_h=$ac_header_preproc
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_core_h" >&5
+$as_echo "$ac_cv_header_core_h" >&6; }
+
+fi
+if test "x$ac_cv_header_core_h" = x""yes; then
+  pac_gpu_header_ok=yes
+else
+  pac_gpu_header_ok=no; GPU_INCLUDES=""
+fi
+
+
+
+	  if test "x$pac_gpu_header_ok" == "xyes" ; then
+	  GPU_LIBS="-lspgpu $GPU_LIBDIR"
+	  LIBS="$GPU_LIBS $CUDA_LIBS -lm $LIBS";
+	  { $as_echo "$as_me:$LINENO: checking for spgpuCreate in $GPU_LIBS" >&5
+$as_echo_n "checking for spgpuCreate in $GPU_LIBS... " >&6; }
+	  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char spgpuCreate ();
+int
+main ()
+{
+return spgpuCreate ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  psb_cv_have_spgpu=yes;pac_gpu_lib_ok=yes;
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	psb_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+	  { $as_echo "$as_me:$LINENO: result: $pac_gpu_lib_ok" >&5
+$as_echo "$pac_gpu_lib_ok" >&6; }
+	  if test "x$psb_cv_have_spgpu" == "xyes" ; then
+	  { $as_echo "$as_me:$LINENO: Have found SPGPU" >&5
+$as_echo "$as_me: Have found SPGPU" >&6;}
+	  SPGPULIBNAME="libpsbgpu.a";
+	  SPGPU_DIR="$psb_cv_spgpudir";
+	  SPGPU_DEFINES="-DHAVE_SPGPU";
+	  SPGPU_INCDIR="$SPGPU_DIR/include";
+	  SPGPU_INCLUDES="-I$SPGPU_INCDIR";
+	  SPGPU_LIBS="-lspgpu -L$SPGPU_DIR/lib";
+	  CUDA_DIR="$psb_cv_cuda_dir";
+	  CUDA_DEFINES="-DHAVE_CUDA";
+	  CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
+	  CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+	  FDEFINES="$psblas_cv_define_prepend-DHAVE_SPGPU $psblas_cv_define_prepend-DHAVE_CUDA $FDEFINES";
+	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
+	  fi
+  fi
+fi
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+
+if test "x$psb_cv_have_spgpu" == "xyes" ; then
+   GPUTARGET=gpud;
+fi
 
 
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -56,6 +56,7 @@ AC_MSG_NOTICE([
 	docum entation, you can make your own by hand for your needs.
 
         ./configure  --with-psblas=/path/to/psblas --with-librsb=/path/to/librsb
+	 --with-spgpu=/path/to/spgpu
 	See ./configure --help=short fore more info.
 --------------------------------------------------------------------------------
 		])
@@ -116,7 +117,7 @@ AC_PROG_INSTALL
 AC_MSG_CHECKING([where to install])
 case $prefix in  
    \/* )   eval "INSTALL_DIR=$prefix";;
-   * ) eval "INSTALL_DIR=/usr/local/psblasgpu";;
+   * ) eval "INSTALL_DIR=/usr/local/psblas-ext";;
 esac
 case $libdir in 
    \/* )   eval "INSTALL_LIBDIR=$libdir";;
@@ -276,13 +277,6 @@ FMFLAG="${ax_cv_f90_modflag%%[ ]*}"
 FIFLAG=-I
 
 ###############################################################################
-#Adjust Fortran includes 
-#PAC_FORTRAN_HAVE_PSBLAS(
-#	[FINCLUDES="$FMFLAG$PSBLAS_DIR/include $FINCLUDES"; 
-#	 LIBS="-L$PSBLAS_DIR/lib $LIBS"]
-#)
-
-###############################################################################
 # NOTE :
 # Missing stuff : 
 # 		In the case the detected fortran compiler is ifort, icc or gcc
@@ -290,13 +284,30 @@ FIFLAG=-I
 #		The same for pg (Portland Group compilers).
 ###############################################################################
 
-dnl PAC_FORTRAN_HAVE_PSBLAS([AC_MSG_RESULT([yes.])],[AC_MSG_ERROR([no.
-dnl   Could not find working version of PSBLAS.])])
+PAC_FORTRAN_HAVE_PSBLAS([AC_MSG_RESULT([yes.])],[AC_MSG_ERROR([no.
+  Could not find working version of PSBLAS.])])
+
+
+PAC_CHECK_SPGPU
+if test "x$psb_cv_have_spgpu" == "xyes" ; then 
+   GPUTARGET=gpud;
+fi
 
 
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
+
+AC_SUBST(SPGPU_FLAGS)
+AC_SUBST(SPGPU_LIBS)
+AC_SUBST(SPGPU_DIR)
+AC_SUBST(SPGPU_DEFINES)
+AC_SUBST(SPGPU_INCLUDES)
+AC_SUBST(SPGPU_INCDIR)
+AC_SUBST(CUDA_DIR)
+AC_SUBST(CUDA_DEFINES)
+AC_SUBST(CUDA_INCLUDES)
+AC_SUBST(CUDA_LIBS)
 AC_SUBST(LIBRSB_LIBS)
 AC_SUBST(LIBRSB_INCLUDES)
 AC_SUBST(LIBRSB_INCDIR)

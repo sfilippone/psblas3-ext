@@ -261,7 +261,3 @@ lib: $(OBJS)
 
 clean:
 	/bin/rm -f $(OBJS)
-.F90.o:
-	svn mv	$< ../../../gpu/impl
-.f90.o: 
-	echo $<
