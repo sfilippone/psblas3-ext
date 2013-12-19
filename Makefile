@@ -18,7 +18,7 @@ install: all
 	(./mkdir.sh  $(INSTALL_LIBDIR) &&\
 	   $(INSTALL_DATA) lib/*.a  $(INSTALL_LIBDIR))
 	(./mkdir.sh  $(INSTALL_INCLUDEDIR) && \
-	   $(INSTALL_DATA) lib/*$(.mod) $(INSTALL_INCLUDEDIR))
+	   $(INSTALL_DATA) include/*$(.mod) $(INSTALL_INCLUDEDIR))
 
 clean: 
 	cd src &&  $(MAKE) clean
