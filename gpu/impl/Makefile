@@ -1,7 +1,8 @@
-include ../../../Make.inc
+include ../../Make.inc
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 LIBDIR=../../lib
+INCDIR=../../include
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -9,9 +10,9 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(PSBINCDIR) $(FIFLAG)..
+FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(INCDIR)  $(FMFLAG)$(PSBINCDIR) $(FIFLAG)..
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
-LIBNAME=libpsbgpu.a
+LIBNAME=libpsb_gpu.a
 
 OBJS= \
 psb_d_cp_csrg_from_coo.o \

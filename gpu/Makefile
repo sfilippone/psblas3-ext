@@ -13,20 +13,33 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG).   $(FMFLAG)$(PSBINCDIR) $(FIFLAG) . $(LIBRSB_INCLUDES) $(LIBRSB_DEFINES)
+FINCLUDES=$(FMFLAG).   $(FMFLAG)$(INCDIR)  $(FMFLAG)$(PSBINCDIR) $(FIFLAG).
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
-LIBNAME=libpsb_ext.a
+LIBNAME=libpsb_gpu.a
 
 
-FOBJS=  psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o \
-	psb_s_hll_mat_mod.o psb_s_ell_mat_mod.o \
-	psb_c_hll_mat_mod.o psb_c_ell_mat_mod.o \
-	psb_z_hll_mat_mod.o psb_z_ell_mat_mod.o \
-	psb_d_dia_mat_mod.o psb_d_hdia_mat_mod.o \
-	rsb_mod.o psb_d_rsb_mat_mod.o \
-	psb_rsb_penv_mod.o psb_ext_mod.o
+FOBJS=cusparse_mod.o base_cusparse_mod.o \
+ s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o \
+	psb_vectordev_mod.o core_mod.o \
+	psb_s_vectordev_mod.o psb_d_vectordev_mod.o \
+	psb_c_vectordev_mod.o psb_z_vectordev_mod.o psb_base_vectordev_mod.o \
+        elldev_mod.o hlldev_mod.o diagdev_mod.o hdiagdev_mod.o \
+	psb_i_gpu_vect_mod.o \
+	psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\
+	psb_z_gpu_vect_mod.o  psb_c_gpu_vect_mod.o\
+        psb_d_elg_mat_mod.o   psb_d_hlg_mat_mod.o \
+	psb_d_hybg_mat_mod.o  psb_d_csrg_mat_mod.o\
+        psb_s_elg_mat_mod.o   psb_s_hlg_mat_mod.o \
+	psb_s_hybg_mat_mod.o  psb_s_csrg_mat_mod.o\
+        psb_c_elg_mat_mod.o   psb_c_hlg_mat_mod.o \
+	psb_c_hybg_mat_mod.o  psb_c_csrg_mat_mod.o\
+        psb_z_elg_mat_mod.o   psb_z_hlg_mat_mod.o \
+	psb_z_hybg_mat_mod.o  psb_z_csrg_mat_mod.o\
+	psb_gpu_penv_mod.o psb_gpu_mod.o \
+	psb_d_diag_mat_mod.o\
+	psb_d_hdiag_mat_mod.o
 
-COBJS= rsb_int.o
+COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o cuda_util.o fcusparse.o 
 
 OBJS=$(COBJS) $(FOBJS)
 
@@ -36,15 +49,46 @@ cmp: $(OBJS)
 	ar cur $(LIBNAME) $(OBJS)
 
 copy: cmp ilib
-	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
+	/bin/cp -p $(LIBNAME) *$(.mod) $(LIBDIR)
 
-psb_ext_mod.o: psb_d_dia_mat_mod.o  \
-        psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o  \
-	psb_s_hll_mat_mod.o psb_s_ell_mat_mod.o \
-	psb_c_hll_mat_mod.o psb_c_ell_mat_mod.o \
-	psb_z_hll_mat_mod.o psb_z_ell_mat_mod.o \
-	psb_d_rsb_mat_mod.o psb_d_hdia_mat_mod.o \
-	rsb_mod.o psb_rsb_penv_mod.o
+hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
+psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o
+psb_i_gpu_vect_mod.o : psb_vectordev_mod.o
+cusparse_mod.o:  s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o 
+s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o : base_cusparse_mod.o  
+psb_d_hlg_mat_mod.o: hlldev_mod.o psb_d_gpu_vect_mod.o 
+psb_d_elg_mat_mod.o: elldev_mod.o psb_d_gpu_vect_mod.o
+psb_d_diag_mat_mod.o: diagdev_mod.o psb_d_gpu_vect_mod.o
+psb_d_hdiag_mat_mod.o: hdiagdev_mod.o psb_d_gpu_vect_mod.o 
+psb_s_hlg_mat_mod.o: hlldev_mod.o psb_s_gpu_vect_mod.o 
+psb_s_elg_mat_mod.o: elldev_mod.o psb_s_gpu_vect_mod.o 
+psb_s_csrg_mat_mod.o psb_s_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
+psb_d_csrg_mat_mod.o psb_d_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
+psb_z_hlg_mat_mod.o: hlldev_mod.o psb_z_gpu_vect_mod.o 
+psb_z_elg_mat_mod.o: elldev_mod.o psb_z_gpu_vect_mod.o 
+psb_c_hlg_mat_mod.o: hlldev_mod.o psb_c_gpu_vect_mod.o 
+psb_c_elg_mat_mod.o: elldev_mod.o psb_c_gpu_vect_mod.o 
+psb_c_csrg_mat_mod.o psb_c_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
+psb_z_csrg_mat_mod.o psb_z_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
+psb_vectordev_mod.o: psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev_mod.o psb_z_vectordev_mod.o
+psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev_mod.o psb_z_vectordev_mod.o: psb_base_vectordev_mod.o
+vectordev.o: cuda_util.o  
+elldev.o: elldev.c
+fcusparse.h elldev.c: elldev.h vectordev.h
+fcusparse.o: fcusparse.h
+
+psb_gpu_mod.o:  psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\
+	psb_z_gpu_vect_mod.o  psb_c_gpu_vect_mod.o\
+        psb_d_elg_mat_mod.o   psb_d_hlg_mat_mod.o \
+	psb_d_hybg_mat_mod.o  psb_d_csrg_mat_mod.o\
+        psb_s_elg_mat_mod.o   psb_s_hlg_mat_mod.o \
+	psb_s_hybg_mat_mod.o  psb_s_csrg_mat_mod.o\
+        psb_c_elg_mat_mod.o   psb_c_hlg_mat_mod.o \
+	psb_c_hybg_mat_mod.o  psb_c_csrg_mat_mod.o\
+        psb_z_elg_mat_mod.o   psb_z_hlg_mat_mod.o \
+	psb_z_hybg_mat_mod.o  psb_z_csrg_mat_mod.o\
+	psb_d_diag_mat_mod.o \
+	psb_d_hdiag_mat_mod.o
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
@@ -58,6 +102,3 @@ iclean:
 
 verycleanlib: 
 	(cd ../..; make veryclean)
-
-
-
