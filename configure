@@ -641,6 +641,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+RSBTARGET
+GPUTARGET
 CDEFINES
 FDEFINES
 INSTALL_DOCSDIR
@@ -7676,12 +7678,12 @@ FIFLAG=-I
 
 
 
+
+
 ###############################################################################
 # the following files will be created by Automake
 
 ac_config_files="$ac_config_files Make.inc"
-
-ac_config_files="$ac_config_files Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -8327,7 +8329,6 @@ do
   case $ac_config_target in
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Make.inc") CONFIG_FILES="$CONFIG_FILES Make.inc" ;;
-    "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

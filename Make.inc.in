@@ -2,10 +2,13 @@
 # It should be ready to use, included by Makefile.
 # If it gives problems, consider editing it.
 PSBLASDIR=@PSBLAS_DIR@
-include $(PSBLASDIR)/Make.inc
+include $(PSBLASDIR)/include/Make.inc.psblas
 
 
 PSB_EXTLIBNAME=libpsb_ext.a
+
+TARGETS=extd @GPUTARGET@ @RSBTARGET@
+
 
 INSTALL=@INSTALL@
 INSTALL_DATA=@INSTALL_DATA@

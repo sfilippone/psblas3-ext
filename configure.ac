@@ -310,6 +310,8 @@ AC_SUBST(INSTALL_INCLUDEDIR)
 AC_SUBST(INSTALL_DOCSDIR)
 AC_SUBST(FDEFINES)
 AC_SUBST(CDEFINES)
+AC_SUBST(GPUTARGET)
+AC_SUBST(RSBTARGET)
 
 
 
@@ -318,7 +320,6 @@ AC_SUBST(CDEFINES)
 # the following files will be created by Automake
 
 AC_CONFIG_FILES([Make.inc])
-AC_CONFIG_FILES([Makefile])
 AC_OUTPUT()
 #AC_OUTPUT(Make.inc Makefile)
 ###############################################################################

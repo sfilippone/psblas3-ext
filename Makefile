@@ -1,20 +1,24 @@
 include Make.inc
 
-all: libd srcd
+all: libd $(TARGETS)
 	@echo "====================================="
 	@echo "PSBLAS-GPU library Compilation Successful."
 
-srcd: libd
+extd: libd
 
 libd:
 	(if test ! -d lib ; then mkdir lib; fi)
 	(if test ! -d include ; then mkdir include; fi)
-srcd:
-	cd src && $(MAKE) lib LIBNAME=$(PSB_EXTLIBNAME)
+extd:
+	cd extc && $(MAKE) lib LIBNAME=$(PSB_EXTLIBNAME)
+gpud:
+	cd gpu && $(MAKE) lib LIBNAME=$(PSB_GPULIBNAME)
+rsbd:
+	cd rsb && $(MAKE) lib LIBNAME=$(PSB_RSBLIBNAME)
 
 install: all
-	(./mkdir.sh  $(INSTALL_DIR) &&\
-	   $(INSTALL_DATA) Make.inc  $(INSTALL_DIR))
+	(./mkdir.sh  $(INSTALL_INCLUDEDIR) &&\
+	   $(INSTALL_DATA) Make.inc  $(INSTALL_INCLUDEDIR)/Make.inc.ext)
 	(./mkdir.sh  $(INSTALL_LIBDIR) &&\
 	   $(INSTALL_DATA) lib/*.a  $(INSTALL_LIBDIR))
 	(./mkdir.sh  $(INSTALL_INCLUDEDIR) && \
