@@ -77,7 +77,7 @@ if test ! -d "$PSBLAS_DIR" ; then
    AC_MSG_ERROR([Could not find PSBLAS build dir $PSBLAS_DIR!])	
 fi
 AC_MSG_RESULT([$PSBLAS_DIR])
-pac_cv_status_file="$PSBLAS_DIR/Make.inc"
+pac_cv_status_file="$PSBLAS_DIR/include/Make.inc.psblas"
 if test ! -f "$pac_cv_status_file" ; then 
    AC_MSG_ERROR([Could not find an installation  in $PSBLAS_DIR.])		
 fi
@@ -318,6 +318,7 @@ AC_SUBST(CDEFINES)
 # the following files will be created by Automake
 
 AC_CONFIG_FILES([Make.inc])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT()
 #AC_OUTPUT(Make.inc Makefile)
 ###############################################################################
