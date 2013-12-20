@@ -41,6 +41,7 @@ program pdgenmv
   use psb_base_mod
   use psb_util_mod
   use psb_gpu_mod
+  use psb_rsb_mod
   implicit none
 
   ! input parameters

@@ -34,6 +34,7 @@ program compformat
   use psb_util_mod
   use data_input
   use psb_ext_mod
+  use psb_rsb_mod
   implicit none
 
   ! input parameters

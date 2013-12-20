@@ -6,11 +6,13 @@ LIBDIR=../../lib/
 PSBLIBDIR=$(PSBLASDIR)/lib/
 OPTDIR=$(LIBDIR)
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_base 
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_gpu -lpsb_rsb -lpsb_util -lpsb_base 
+INCDIR=../../include
 
 LDLIBS=$(PSBLDLIBS)
 
-FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
+FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
+#FINCLUDES=$(PSBLAS_LIB) $(FMFLAG). $(FMFLAG)$(PSBINCDIR)
 
 ZTOBJS=z_file_spmv.o data_input.o
 CTOBJS=c_file_spmv.o data_input.o
@@ -18,18 +20,18 @@ DTOBJS=d_file_spmv.o data_input.o
 STOBJS=s_file_spmv.o data_input.o
 DPGOBJS=dpdegenmv.o
 SPGOBJS=spdegenmv.o
-SIMPLEOBJS=simple.o
+#SIMPLEOBJS=simple.o
 COMPFORMOBJS=compform.o data_input.o
 EXEDIR=./runs
 
-all: simple compform
+all: dpdegenmv spdegenmv compform
 
 compform: $(COMPFORMOBJS)
 	$(F90LINK) $(LOPT) $(COMPFORMOBJS) -fopenmp -o compform $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) $(LIBRSB_LIBS)
 	/bin/mv compform $(EXEDIR)
-simple: $(SIMPLEOBJS)
-	$(F90LINK) $(LOPT) $(SIMPLEOBJS) -fopenmp -o simple $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) $(LIBRSB_LIBS)
-	/bin/mv simple $(EXEDIR)
+# simple: $(SIMPLEOBJS)
+# 	$(F90LINK) $(LOPT) $(SIMPLEOBJS) -fopenmp -o simple $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) $(LIBRSB_LIBS)
+# 	/bin/mv simple $(EXEDIR)
 dpdegenmv: $(DPGOBJS)
 	$(F90LINK) $(LOPT) $(DPGOBJS) -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 
 	/bin/mv dpdegenmv $(EXEDIR) 

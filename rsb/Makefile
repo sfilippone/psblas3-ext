@@ -19,23 +19,26 @@ LIBNAME=libpsb_rsb.a
 
 
 FOBJS=  rsb_mod.o psb_d_rsb_mat_mod.o \
-	psb_rsb_penv_mod.o psb_ext_mod.o
+	psb_rsb_penv_mod.o psb_rsb_mod.o
 
 COBJS= rsb_int.o
 
 OBJS=$(COBJS) $(FOBJS)
 
-lib: cmp ilib copy
+lib: cmp mcopy ilib copy
 
 cmp: $(OBJS) 
 	ar cur $(LIBNAME) $(OBJS)
 
 copy: cmp ilib
-	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
+	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
+mcopy: cmp
+	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
+
 clean: cclean iclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a
 
