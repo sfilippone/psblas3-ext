@@ -41,7 +41,9 @@ program pdgenmv
   use psb_base_mod
   use psb_util_mod
   use psb_gpu_mod
+#ifdef HAVE_RSB
   use psb_rsb_mod
+#endif
   implicit none
 
   ! input parameters
@@ -66,7 +68,10 @@ program pdgenmv
   ! solver parameters
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
-  integer, parameter :: ntests=200, ngpu=50 
+  integer, parameter :: ntests=200, ngpu=50
+#ifdef HAVE_RSB
+  type(psb_d_rsb_sparse_mat), target   :: arsb
+#endif
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_elg_sparse_mat), target   :: aelg
@@ -88,6 +93,9 @@ program pdgenmv
   call psb_info(ictxt,iam,np)
 
   call psb_gpu_init(ictxt)
+#ifdef HAVE_RSB
+  call psb_rsb_init()
+#endif
 
   if (iam < 0) then 
     ! This should not happen, but just in case
@@ -139,6 +147,10 @@ program pdgenmv
     acmold => ahll
   case('CSR')
     acmold => acsr
+#ifdef HAVE_RSB
+  case('RSB')
+    acmold => arsb
+#endif
   case default
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
@@ -149,7 +161,6 @@ program pdgenmv
     call psb_error()
     stop
   end if
-
 
   select case(psb_toupper(agfmt))
   case('ELG')
@@ -179,7 +190,6 @@ program pdgenmv
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
   call xv%set(done)
   call xg%set(done)
-
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()

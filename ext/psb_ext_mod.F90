@@ -45,8 +45,8 @@ module psb_ext_mod
   
   use psb_d_dia_mat_mod
   use psb_d_hdia_mat_mod
-
+#ifdef HAVE_RSB
   use psb_d_rsb_mat_mod
-
+#endif
 end module psb_ext_mod
 

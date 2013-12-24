@@ -6,12 +6,13 @@ LIBDIR=../../lib/
 PSBLIBDIR=$(PSBLASDIR)/lib/
 OPTDIR=$(LIBDIR)
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_gpu -lpsb_rsb -lpsb_util -lpsb_base 
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_gpu -lpsb_util -lpsb_base 
+#PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_gpu $(LIBRSB_LIBS) -lpsb_util -lpsb_base 
 INCDIR=../../include
 
 LDLIBS=$(PSBLDLIBS)
 
-FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
+FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) $(LIBRSB_DEFINES)
 #FINCLUDES=$(PSBLAS_LIB) $(FMFLAG). $(FMFLAG)$(PSBINCDIR)
 
 ZTOBJS=z_file_spmv.o data_input.o
@@ -33,7 +34,7 @@ compform: $(COMPFORMOBJS)
 # 	$(F90LINK) $(LOPT) $(SIMPLEOBJS) -fopenmp -o simple $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) $(LIBRSB_LIBS)
 # 	/bin/mv simple $(EXEDIR)
 dpdegenmv: $(DPGOBJS)
-	$(F90LINK) $(LOPT) $(DPGOBJS) -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 
+	$(F90LINK) $(LOPT) $(DPGOBJS) -fopenmp -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 
 	/bin/mv dpdegenmv $(EXEDIR) 
 spdegenmv: $(SPGOBJS)
 	$(F90LINK) $(LOPT) $(SPGOBJS) -o spdegenmv $(PSBLAS_LIB) $(LDLIBS) 
@@ -55,7 +56,7 @@ s_file_spmv: $(STOBJS)
 d_file_spmv.o s_file_spmv.o compformats.o: data_input.o
 
 clean: 
-	/bin/rm -f $(DTOBJS) $(STOBJS) $(DPGOBJS) $(SPGOBJS) $(SIMPLEOBJS) $(ZTOBJS) $(CTOBJS) $(COMPFORMOBJS)\
+	/bin/rm -f $(DTOBJS) $(STOBJS) $(DPGOBJS) $(SPGOBJS) $(SIMPLEOBJS) $(ZTOBJS) $(CTOBJS) $(COMPFORMOBJS) \
 	$(EXEDIR)/dpdegenmv $(EXEDIR)/spdegenmv \
 	$(EXEDIR)/d_file_spmv $(EXEDIR)/s_file_spmv \
 	$(EXEDIR)/z_file_spmv $(EXEDIR)/c_file_spmv \

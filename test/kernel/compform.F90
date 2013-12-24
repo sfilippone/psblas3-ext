@@ -34,7 +34,9 @@ program compformat
   use psb_util_mod
   use data_input
   use psb_ext_mod
+#ifdef HAVE_RSB
   use psb_rsb_mod
+#endif
   implicit none
 
   ! input parameters
@@ -67,7 +69,9 @@ program compformat
 
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
+#ifdef HAVE_RSB
   type(psb_d_rsb_sparse_mat), target   :: arsb
+#endif
   type(psb_d_hdia_sparse_mat), target   :: ahdia
   type(psb_d_dia_sparse_mat), target   :: adia
   ! type(psb_d_elg_sparse_mat), target   :: aelg
@@ -87,8 +91,9 @@ program compformat
 
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
+#ifdef HAVE_RSB
   call psb_rsb_init()
-
+#endif
   if (iam < 0) then 
     ! This should not happen, but just in case
     call psb_exit(ictxt)
@@ -180,8 +185,10 @@ program compformat
      amold => adia
   case('HDIA')
      amold => ahdia
+#ifdef HAVE_RSB
   case('RSB')
      amold => arsb
+#endif
   case default
      write(*,*) 'Unknown format defaulting to HLG'
      amold => acsr
