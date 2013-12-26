@@ -30,22 +30,20 @@
 !!$ 
   
 
-module psb_ext_mod
+module psb_rsb_mod
   use psb_const_mod
 
-  use psb_d_ell_mat_mod
-  use psb_s_ell_mat_mod
-  use psb_z_ell_mat_mod
-  use psb_c_ell_mat_mod
+  ! use psb_d_ell_mat_mod
+  ! use psb_s_ell_mat_mod
+  ! use psb_z_ell_mat_mod
+  ! use psb_c_ell_mat_mod
 
-  use psb_s_hll_mat_mod
-  use psb_d_hll_mat_mod
-  use psb_c_hll_mat_mod
-  use psb_z_hll_mat_mod
+  ! use psb_s_hll_mat_mod
+  ! use psb_d_hll_mat_mod
+  ! use psb_c_hll_mat_mod
+  ! use psb_z_hll_mat_mod
   
-  use psb_d_dia_mat_mod
-  use psb_d_hdia_mat_mod
-#ifdef HAVE_RSB
+  ! use psb_d_dia_mat_mod
+  ! use psb_d_hdia_mat_mod
   use psb_d_rsb_mat_mod
-#endif
-end module psb_ext_mod
+end module psb_rsb_mod
