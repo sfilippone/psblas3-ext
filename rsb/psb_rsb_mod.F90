@@ -32,7 +32,8 @@
 
 module psb_rsb_mod
   use psb_const_mod
-
+  use rsb_mod
+  use psb_rsb_penv_mod
   ! use psb_d_ell_mat_mod
   ! use psb_s_ell_mat_mod
   ! use psb_z_ell_mat_mod
