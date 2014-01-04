@@ -1592,6 +1592,7 @@ AC_DEFUN(PAC_CHECK_SPGPU,
 	  SPGPU_INCDIR="$SPGPU_DIR/include";
 	  SPGPU_INCLUDES="-I$SPGPU_INCDIR";
 	  SPGPU_LIBS="-lspgpu -L$SPGPU_DIR/lib";
+	  LGPU=-lpsb_gpu
 	  CUDA_DIR="$psb_cv_cuda_dir";
 	  CUDA_DEFINES="-DHAVE_CUDA";
 	  CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
@@ -1695,6 +1696,7 @@ AC_DEFUN(PAC_ARG_WITH_LIBRSB,
 	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
 	  # CUDA_DIR="$psb_cv_cuda_dir";
 	  LIBRSB_DEFINES="-DHAVE_RSB";
+	  LRSB=-lpsb_rsb
 	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
 	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
 	  FDEFINES="$LIBRSB_DEFINES $psblas_cv_define_prepend $FDEFINES";
