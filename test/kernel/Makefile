@@ -23,7 +23,7 @@ STOBJS=s_file_spmv.o data_input.o
 DPGOBJS=dpdegenmv.o
 SPGOBJS=spdegenmv.o
 #SIMPLEOBJS=simple.o
-COMPFORMOBJS=compform.o data_input.o
+COMPFORMOBJS=data_input.o compform.o
 EXEDIR=./runs
 
 all: dpdegenmv spdegenmv compform
@@ -62,7 +62,6 @@ clean:
 	$(EXEDIR)/d_file_spmv $(EXEDIR)/s_file_spmv \
 	$(EXEDIR)/z_file_spmv $(EXEDIR)/c_file_spmv \
 	$(EXEDIR)/simple $(EXEDIR)/compform
-	$(EXEDIR)/data
 
 lib:
 	(cd ../../; make library)

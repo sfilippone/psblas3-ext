@@ -31,6 +31,7 @@
   
 
 module rsb_mod
+  use rsb
   use iso_c_binding 
 
 #ifdef HAVE_RSB

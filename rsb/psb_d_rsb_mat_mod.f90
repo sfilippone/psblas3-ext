@@ -58,7 +58,7 @@ module psb_d_rsb_mat_mod
     ! procedure, pass(a) :: aclsum       => psb_d_rsb_aclsum
     ! procedure, pass(a) :: reallocate_nz => psb_d_rsb_reallocate_nz
     ! procedure, pass(a) :: allocate_mnnz => psb_d_rsb_allocate_mnnz
-!    procedure, pass(a) :: cp_to_coo    => psb_d_cp_rsb_to_coo
+    procedure, pass(a) :: cp_to_coo    => psb_d_cp_rsb_to_coo
     procedure, pass(a) :: cp_from_coo  => psb_d_cp_rsb_from_coo
     ! procedure, pass(a) :: cp_to_fmt    => psb_d_cp_rsb_to_fmt
     ! procedure, pass(a) :: cp_from_fmt  => psb_d_cp_rsb_from_fmt
