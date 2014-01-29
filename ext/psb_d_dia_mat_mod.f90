@@ -48,7 +48,7 @@ module psb_d_dia_mat_mod
     procedure, pass(a) :: get_nzeros   => d_dia_get_nzeros
     procedure, nopass  :: get_fmt      => d_dia_get_fmt
     procedure, pass(a) :: sizeof       => d_dia_sizeof
-    procedure, pass(a) :: csmm         => psb_d_dia_csmm
+!    procedure, pass(a) :: csmm         => psb_d_dia_csmm
     procedure, pass(a) :: csmv         => psb_d_dia_csmv
     ! procedure, pass(a) :: inner_cssm   => psb_d_dia_cssm
     ! procedure, pass(a) :: inner_cssv   => psb_d_dia_cssv

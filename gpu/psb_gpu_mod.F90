@@ -66,6 +66,8 @@ module psb_gpu_mod
   use psb_c_hybg_mat_mod
   use psb_z_hybg_mat_mod
 
+  use psb_d_dia_mat_mod
+  use psb_d_hdia_mat_mod
   use psb_d_diag_mat_mod
   use psb_d_hdiag_mat_mod
 

@@ -51,7 +51,7 @@ module psb_d_diag_mat_mod
     procedure, nopass  :: get_fmt       => d_diag_get_fmt
     procedure, pass(a) :: sizeof        => d_diag_sizeof
     procedure, pass(a) :: vect_mv       => psb_d_diag_vect_mv
-    !procedure, pass(a) :: csmm          => psb_d_diag_csmm
+!    procedure, pass(a) :: csmm          => psb_d_diag_csmm
     procedure, pass(a) :: csmv          => psb_d_diag_csmv
 !    procedure, pass(a) :: in_vect_sv    => psb_d_diag_inner_vect_sv
 !    procedure, pass(a) :: scals         => psb_d_diag_scals

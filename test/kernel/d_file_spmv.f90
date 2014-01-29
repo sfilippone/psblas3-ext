@@ -32,12 +32,13 @@
 program d_file_spmv
   use psb_base_mod
   use psb_util_mod
+  use psb_ext_mod
   use psb_gpu_mod
   use data_input
   implicit none
 
   ! input parameters
-  character(len=40) :: mtrx_file
+  character(len=200) :: mtrx_file
 
   ! sparse matrices
   type(psb_dspmat_type) :: a, aux_a, agpu
@@ -71,6 +72,10 @@ program d_file_spmv
   type(psb_d_hybg_sparse_mat), target  :: ahybg
   type(psb_d_hll_sparse_mat), target   :: ahll
   type(psb_d_hlg_sparse_mat), target   :: ahlg
+  type(psb_d_dia_sparse_mat), target   :: adia
+  type(psb_d_diag_sparse_mat), target  :: adiag
+  type(psb_d_hdia_sparse_mat), target   :: ahdia
+  type(psb_d_hdiag_sparse_mat), target  :: ahdiag
   class(psb_d_base_sparse_mat), pointer :: amold
   ! other variables
   integer            :: i,info,j,nrt, ns, nr, ipart
@@ -176,6 +181,14 @@ program d_file_spmv
     amold => acsrg
   case('HYBG')
     amold => ahybg
+  case('DIA')
+    amold => adia
+  case('DIAG')
+    amold => adiag
+  case('HDIA')
+    amold => ahdia
+  case('HDIAG')
+    amold => ahdiag
   case default
     write(*,*) 'Unknown format defaulting to HLG'
     amold => ahlg
