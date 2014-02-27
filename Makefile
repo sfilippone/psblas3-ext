@@ -27,7 +27,7 @@ install: all
 clean: 
 	cd ext &&  $(MAKE) clean
 	cd rsb &&  $(MAKE) clean
-#	cd gpu &&  $(MAKE) clean
+	cd gpu &&  $(MAKE) clean
 
 cleanlib:
 	(cd lib; /bin/rm -f *.a *$(.mod) *$(.fh))
