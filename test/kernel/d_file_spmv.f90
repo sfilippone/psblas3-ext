@@ -333,7 +333,7 @@ program d_file_spmv
          &'("Number of nonzeros               : ",i20,"           ")') annz
     write(psb_out_unit,&
          &'("Memory occupation                : ",i20,"           ")') amatsize
-    flops  = ntests*(2*1.d0*annz-1.d0*nr)
+    flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
     flops  = flops / (t2)

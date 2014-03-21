@@ -33,7 +33,7 @@
 module psb_c_hybg_mat_mod
 
   use iso_c_binding
-  use psb_base_mod
+  use psb_c_mat_mod
   use cusparse_mod
 
   type, extends(psb_c_csr_sparse_mat) :: psb_c_hybg_sparse_mat

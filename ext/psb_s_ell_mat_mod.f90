@@ -55,6 +55,7 @@ module psb_s_ell_mat_mod
     real(psb_spk_), allocatable :: val(:,:)
 
   contains
+    procedure, pass(a) :: is_by_rows   => s_ell_is_by_rows
     procedure, pass(a) :: get_size     => s_ell_get_size
     procedure, pass(a) :: get_nzeros   => s_ell_get_nzeros
     procedure, nopass  :: get_fmt      => s_ell_get_fmt
@@ -96,7 +97,8 @@ module psb_s_ell_mat_mod
   end type psb_s_ell_sparse_mat
 
   private :: s_ell_get_nzeros, s_ell_free,  s_ell_get_fmt, &
-       & s_ell_get_size, s_ell_sizeof, s_ell_get_nz_row
+       & s_ell_get_size, s_ell_sizeof, s_ell_get_nz_row, &
+       & s_ell_is_by_rows
 
   interface
     subroutine  psb_s_ell_reallocate_nz(nz,a) 
@@ -421,6 +423,13 @@ contains
   !
   ! == ===================================
 
+
+  function s_ell_is_by_rows(a) result(res)
+    implicit none 
+    class(psb_s_ell_sparse_mat), intent(in) :: a
+    logical :: res
+    res = .true.
+  end function s_ell_is_by_rows
   
   function s_ell_sizeof(a) result(res)
     implicit none 
