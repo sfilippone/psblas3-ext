@@ -170,14 +170,14 @@ contains
             ic = gtl(ic)
             if ((ir > 0).and.(ir <= nr)) then 
               nc = a%irn(ir)
-              ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
+              ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
               if (ip>0) then 
-                a%val(i,ip) = val(i)
+                a%val(ir,ip) = val(i)
               else
                 if (debug_level >= psb_debug_serial_) &
                      & write(debug_unit,*) trim(name),&
                      & ': Was searching ',ic,' in: ',nc,&
-                     & ' : ',a%ja(i,1:nc)
+                     & ' : ',a%ja(ir,1:nc)
                 info = i
                 return
               end if
@@ -203,14 +203,14 @@ contains
             ic = gtl(ic)
             if ((ir > 0).and.(ir <= nr)) then 
               nc = a%irn(ir)
-              ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
+              ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
               if (ip>0) then 
-                a%val(i,ip) = a%val(i,ip) + val(i)
+                a%val(ir,ip) = a%val(ir,ip) + val(i)
               else
                 if (debug_level >= psb_debug_serial_) &
                      & write(debug_unit,*) trim(name),&
                      & ': Was searching ',ic,' in: ',nc,&
-                     & ' : ',a%ja(i,1:nc)
+                     & ' : ',a%ja(ir,1:nc)
                 info = i
                 return
               end if
@@ -246,14 +246,14 @@ contains
           if ((ir > 0).and.(ir <= nr)) then 
 
             nc = a%irn(ir)
-            ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
+            ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
             if (ip>0) then 
-              a%val(i,ip) = val(i)
+              a%val(ir,ip) = val(i)
             else
               if (debug_level >= psb_debug_serial_) &
                    & write(debug_unit,*) trim(name),&
                    & ': Was searching ',ic,' in: ',nc,&
-                   & ' : ',a%ja(i,1:nc)
+                   & ' : ',a%ja(ir,1:nc)
               info = i
               return
             end if
@@ -275,9 +275,9 @@ contains
           ic = ja(i) 
           if ((ir > 0).and.(ir <= nr)) then 
             nc = a%irn(ir)
-            ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
+            ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
             if (ip>0) then 
-              a%val(i,ip) = a%val(i,ip) + val(i)
+              a%val(ir,ip) = a%val(ir,ip) + val(i)
             else
               info = i
               return
