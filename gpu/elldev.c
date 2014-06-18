@@ -128,7 +128,7 @@ void sspmdmm_gpu(float *z,int s, int vPitch, float *y, float alpha, float* cM, i
   for (i=0; i<s; i++)
     {
       spgpuSellspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, rS, 
-		     NULL, n, (float*)x, beta, firstIndex);
+		     NULL, 0, n, (float*)x, beta, firstIndex);
       z += vPitch;
       y += vPitch;
       x += vPitch;		
@@ -141,7 +141,8 @@ dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, i
   int i=0;
   for (i=0; i<s; i++)
     {
-      spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP, pitch, pitch, rS, NULL, n, (double*)x, beta, firstIndex);
+      spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP, pitch, pitch, rS, 
+		     NULL, 200, n, (double*)x, beta, firstIndex);
       z += vPitch;
       y += vPitch;
       x += vPitch;		
@@ -154,7 +155,8 @@ cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y, cuFloatCom
   int i=0;
   for (i=0; i<s; i++)
     {
-      spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, pitch, pitch, rS, NULL, n, (cuFloatComplex *) x, beta, firstIndex);
+      spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
+		     pitch, pitch, rS, NULL, 0, n, (cuFloatComplex *) x, beta, firstIndex);
       z += vPitch;
       y += vPitch;
       x += vPitch;		
@@ -167,7 +169,8 @@ zspmdmm_gpu (cuDoubleComplex *z, int s, int vPitch, cuDoubleComplex *y, cuDouble
   int i=0;
   for (i=0; i<s; i++)
     {
-      spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, pitch, pitch, rS, NULL, n, (cuDoubleComplex *) x, beta, firstIndex);
+      spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
+		     pitch, pitch, rS, NULL, 0, n, (cuDoubleComplex *) x, beta, firstIndex);
       z += vPitch;
       y += vPitch;
       x += vPitch;		

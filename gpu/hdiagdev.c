@@ -242,7 +242,7 @@ int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   
   spgpuDhdiaspmv (handle, (double*)y->v_, (double *)y->v_, alpha,(double *)devMat->cM,devMat->hdiaOffsets, devMat->hackSize, devMat->hackOffsets, devMat->rows,devMat->cols,x->v_, beta);
   
-  cudaSync();
+  //cudaSync();
 
   return SPGPU_SUCCESS;
 #else

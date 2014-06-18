@@ -33,8 +33,7 @@
 module psb_s_csrg_mat_mod
 
   use iso_c_binding
-  use psb_s_base_mat_mod
-  use psb_s_csr_mat_mod
+  use psb_s_mat_mod
   use cusparse_mod
 
   type, extends(psb_s_csr_sparse_mat) :: psb_s_csrg_sparse_mat

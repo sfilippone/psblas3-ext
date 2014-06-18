@@ -39,8 +39,11 @@
 !
 program pdgenmv
   use psb_base_mod
-  use psb_util_mod
+  use psb_util_mod 
+  use psb_ext_mod
+#ifdef HAVE_GPU
   use psb_gpu_mod
+#endif
 #ifdef HAVE_RSB
   use psb_rsb_mod
 #endif
@@ -60,7 +63,9 @@ program pdgenmv
   type(psb_desc_type)   :: desc_a
   ! dense matrices
   type(psb_d_vect_type) :: xv, bv, xg, bg 
+#ifdef HAVE_GPU
   type(psb_d_vect_gpu)  :: vmold
+#endif
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
   integer            :: ictxt, iam, np
@@ -69,16 +74,18 @@ program pdgenmv
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
   integer, parameter :: ntests=200, ngpu=50
+  type(psb_d_csr_sparse_mat), target   :: acsr
+  type(psb_d_ell_sparse_mat), target   :: aell
+  type(psb_d_hll_sparse_mat), target   :: ahll
 #ifdef HAVE_RSB
   type(psb_d_rsb_sparse_mat), target   :: arsb
 #endif
-  type(psb_d_csr_sparse_mat), target   :: acsr
-  type(psb_d_ell_sparse_mat), target   :: aell
+#ifdef HAVE_GPU
   type(psb_d_elg_sparse_mat), target   :: aelg
   type(psb_d_csrg_sparse_mat), target  :: acsrg
   type(psb_d_hybg_sparse_mat), target  :: ahybg
-  type(psb_d_hll_sparse_mat), target   :: ahll
   type(psb_d_hlg_sparse_mat), target   :: ahlg
+#endif
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
@@ -92,7 +99,9 @@ program pdgenmv
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
 
+#ifdef HAVE_GPU
   call psb_gpu_init(ictxt)
+#endif
 #ifdef HAVE_RSB
   call psb_rsb_init()
 #endif
@@ -162,6 +171,7 @@ program pdgenmv
     stop
   end if
 
+#ifdef HAVE_GPU
   select case(psb_toupper(agfmt))
   case('ELG')
     agmold => aelg
@@ -188,8 +198,9 @@ program pdgenmv
 
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
-  call xv%set(done)
   call xg%set(done)
+#endif
+  call xv%set(done)
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()
@@ -200,6 +211,7 @@ program pdgenmv
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
 
+#ifdef HAVE_GPU
   ! FIXME: cache flush needed here
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
@@ -260,7 +272,7 @@ program pdgenmv
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
-
+#endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
@@ -286,7 +298,9 @@ program pdgenmv
     tflops = tflops / (tt2)
     gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+#ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+#endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
@@ -296,7 +310,7 @@ program pdgenmv
          & t2*1.d3/(1.d0*ntests)
     write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
          & flops/1.d6
-
+#ifdef HAVE_GPU
     write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
          & ntests, tt2
     write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
@@ -310,6 +324,7 @@ program pdgenmv
          & gt2*1.d3/(1.d0*ntests*ngpu)
     write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
          & gflops/1.d6
+#endif
     !
     ! This computation assumes the data movement associated with CSR:
     ! it is minimal in terms of coefficients. Other formats may either move
@@ -320,8 +335,10 @@ program pdgenmv
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
+#ifdef HAVE_GPU
     bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
     write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
+#endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 

@@ -98,6 +98,7 @@ contains
     real(psb_dpk_), intent(inout)  :: y(*)
 
     integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
+    real(psb_dpk_)   :: acc(4) 
 
     if (beta == dzero) then
       do i = 1, m

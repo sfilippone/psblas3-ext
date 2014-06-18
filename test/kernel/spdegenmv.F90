@@ -39,12 +39,15 @@
 !
 program pdgenmv
   use psb_base_mod
-  use psb_util_mod
+  use psb_util_mod 
+  use psb_ext_mod
+#ifdef HAVE_GPU
   use psb_gpu_mod
+#endif
   implicit none
 
   ! input parameters
-  character(len=5)  :: afmt
+  character(len=5)  :: acfmt, agfmt
   integer   :: idim
 
   ! miscellaneous 
@@ -57,7 +60,9 @@ program pdgenmv
   type(psb_desc_type)   :: desc_a
   ! dense matrices
   type(psb_s_vect_type)  :: xv,bv, xg, bg 
+#ifdef HAVE_GPU
   type(psb_s_vect_gpu)  :: vmold
+#endif
   real(psb_spk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
   integer            :: ictxt, iam, np
@@ -68,12 +73,14 @@ program pdgenmv
   integer, parameter :: ntests=200, ngpu=50 
   type(psb_s_csr_sparse_mat), target   :: acsr
   type(psb_s_ell_sparse_mat), target   :: aell
+  type(psb_s_hll_sparse_mat), target   :: ahll
+#ifdef HAVE_GPU
   type(psb_s_elg_sparse_mat), target   :: aelg
   type(psb_s_csrg_sparse_mat), target  :: acsrg
   type(psb_s_hybg_sparse_mat), target  :: ahybg
-  type(psb_s_hll_sparse_mat), target   :: ahll
   type(psb_s_hlg_sparse_mat), target   :: ahlg
-  class(psb_s_base_sparse_mat), pointer :: amold
+#endif
+  class(psb_s_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
   integer            :: info, i, nr
@@ -86,7 +93,9 @@ program pdgenmv
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
 
+#ifdef HAVE_GPU
   call psb_gpu_init(ictxt)
+#endif
 
   if (iam < 0) then 
     ! This should not happen, but just in case
@@ -106,7 +115,7 @@ program pdgenmv
   !
   !  get parameters
   !
-  call get_parms(ictxt,afmt,idim)
+  call get_parms(ictxt,acfmt,agfmt,idim)
 
   !
   !  allocate and fill in the coefficient matrix and initial vectors
@@ -131,34 +140,58 @@ program pdgenmv
     call a%print(fname,head='PDEGEN test matrix')
   end if
 
-  select case(psb_toupper(afmt))
-  case('ELG')
-    amold => aelg
+  select case(psb_toupper(acfmt))
   case('ELL')
-    amold => aell
+    acmold => aell
   case('HLL')
-    amold => ahll
-  case('HLG')
-    amold => ahlg
-  case('CSRG')
-    amold => acsrg
-  case('HYBG')
-    amold => ahybg
+    acmold => ahll
+  case('CSR')
+    acmold => acsr
+#ifdef HAVE_RSB
+  case('RSB')
+    acmold => arsb
+#endif
   case default
-    write(*,*) 'Unknown format defaulting to HLG'
-    amold => ahlg
+    write(*,*) 'Unknown format defaulting to HLL'
+    acmold => ahll
   end select
-  call a%cscnv(agpu,info,mold=amold)
+  call a%cscnv(info,mold=acmold)
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
     call psb_error()
     stop
   end if
+
+#ifdef HAVE_GPU
+  select case(psb_toupper(agfmt))
+  case('ELG')
+    agmold => aelg
+  case('ELL')
+    agmold => aell
+  case('HLL')
+    agmold => ahll
+  case('HLG')
+    agmold => ahlg
+  case('CSRG')
+    agmold => acsrg
+  case('HYBG')
+    agmold => ahybg
+  case default
+    write(*,*) 'Unknown format defaulting to HLG'
+    agmold => ahlg
+  end select
+  call a%cscnv(agpu,info,mold=agmold)
+  if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
+    write(0,*) 'From cscnv ',info
+    call psb_error()
+    stop
+  end if
+
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
-  call xv%set(sone)
   call xg%set(sone)
-  
+#endif
+  call xv%set(sone)
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()
@@ -169,6 +202,7 @@ program pdgenmv
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
 
+#ifdef HAVE_GPU
   ! FIXME: cache flush needed here
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
@@ -187,7 +221,7 @@ program pdgenmv
   call psb_amx(ictxt,tt2)
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
-  nr       = desc_a%get_global_rows() 
+  nr       = desc_a%get_local_rows() 
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
@@ -229,7 +263,7 @@ program pdgenmv
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
-
+#endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
@@ -255,7 +289,9 @@ program pdgenmv
     tflops = tflops / (tt2)
     gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+#ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+#endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
@@ -265,7 +301,7 @@ program pdgenmv
          & t2*1.d3/(1.d0*ntests)
     write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
          & flops/1.d6
-
+#ifdef HAVE_GPU
     write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
          & ntests, tt2
     write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
@@ -279,6 +315,7 @@ program pdgenmv
          & gt2*1.d3/(1.d0*ntests*ngpu)
     write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
          & gflops/1.d6
+#endif
     !
     ! This computation assumes the data movement associated with CSR:
     ! it is minimal in terms of coefficients. Other formats may either move
@@ -289,8 +326,10 @@ program pdgenmv
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
+#ifdef HAVE_GPU
     bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
     write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
+#endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 
@@ -321,9 +360,9 @@ contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,afmt,idim)
+  subroutine  get_parms(ictxt,acfmt,agfmt,idim)
     integer      :: ictxt
-    character(len=*) :: afmt
+    character(len=*) :: agfmt, acfmt
     integer      :: idim
     integer      :: np, iam
     integer      :: intbuf(10), ip
@@ -331,10 +370,12 @@ contains
     call psb_info(ictxt, iam, np)
 
     if (iam == 0) then
-      read(psb_inp_unit,*) afmt
+      read(psb_inp_unit,*) acfmt
+      read(psb_inp_unit,*) agfmt
       read(psb_inp_unit,*) idim
     endif
-    call psb_bcast(ictxt,afmt)
+    call psb_bcast(ictxt,acfmt)
+    call psb_bcast(ictxt,agfmt)
     call psb_bcast(ictxt,idim)
 
     if (iam == 0) then

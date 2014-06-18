@@ -136,52 +136,6 @@ int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows, uns
 #endif
 }
 
-/*void sspmdmm_gpu(int s, int xPitch, float *y, float alpha, float *cM, int *rP, int *rS, int n, int aPitch, float *x, float beta, int firstIndex)
-{
-  int i=0;
-  for(i=0;i<s;i++)
-    {
-      spgpuSellspmv (handle, (float*) y, (float*)y, alpha, (float*) cM, rP, aPitch, aPitch, rS, n, (float*)x, beta, firstIndex);
-
-      y += xPitch;
-      x += xPitch;
-    }
-}
-
-void
-dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, int* rP, int* rS, int n, int pitch, double *x, double beta, int firstIndex)
-{
-  int i=0;
-  for (i=0; i<s; i++)
-    {
-      spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP, pitch, pitch, rS, n, (double*)x, beta, firstIndex);
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}*/
-
-//new
-/*int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
-		       float beta, void* deviceY)
-{ int i=SPGPU_SUCCESS;
-  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
-  struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
-  struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
-  spgpuHandle_t handle;
-
-#ifdef HAVE_SPGPU
-#ifdef VERBOSE
-  __assert(x->count_ == x->count_, "ERROR: x and y don't share the same number of vectors");
-  __assert(x->size_ >= devMat->columns, "ERROR: x vector's size is not >= to matrix size (columns)");
-  __assert(y->size_ >= devMat->rows, "ERROR: y vector's size is not >= to matrix size (rows)");
-#endif
-  sspmdmm_gpu (y->count_, y->pitch_, (float *)y->v_, alpha, (float *)devMat->cM, devMat->rP, devMat->rS, devMat->rows, devMat->pitch, (float *)x->v_, beta, devMat->baseIndex);
-  return(i);
-#else
-  return SPGPU_UNSUPPORTED;
-#endif
-}*/
 
 int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
 			float beta, void* deviceY)
@@ -202,7 +156,7 @@ int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
 
   spgpuShellspmv (handle, (float *)y->v_, (float *)y->v_, alpha, (float *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  devMat->rows, (float *)x->v_, beta, devMat->baseIndex);
+		  0, devMat->rows, (float *)x->v_, beta, devMat->baseIndex);
 
   return SPGPU_SUCCESS;
 #else
@@ -230,8 +184,8 @@ int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 
   spgpuDhellspmv (handle, (double *)y->v_, (double *)y->v_, alpha, (double*)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  devMat->rows, (double *)x->v_, beta, devMat->baseIndex);
-  cudaSync();
+		  200, devMat->rows, (double *)x->v_, beta, devMat->baseIndex);
+  //cudaSync();
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
@@ -259,7 +213,7 @@ int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* device
 
   spgpuChellspmv (handle, (cuFloatComplex *)y->v_, (cuFloatComplex *)y->v_, a, (cuFloatComplex *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  devMat->rows, (cuFloatComplex *)x->v_, b, devMat->baseIndex);
+		  0, devMat->rows, (cuFloatComplex *)x->v_, b, devMat->baseIndex);
 
   return SPGPU_SUCCESS;
 #else
@@ -282,13 +236,10 @@ int spmvHllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
   /*__assert(x->size_ >= devMat->columns, "ERROR: x vector's size is not >= to matrix size (columns)");*/
   /*__assert(y->size_ >= devMat->rows, "ERROR: y vector's size is not >= to matrix size (rows)");*/
 #endif
-  /*dspmdmm_gpu ((double *)z->v_, y->count_, y->pitch_, (double *)y->v_, alpha, (double *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->rows, devMat->pitch, (double *)x->v_, beta,
-	       devMat->baseIndex);*/
 
   spgpuZhellspmv (handle, (cuDoubleComplex *)y->v_, (cuDoubleComplex *)y->v_, a, (cuDoubleComplex *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  devMat->rows, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
+		  0,devMat->rows, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
 
   return SPGPU_SUCCESS;
 #else

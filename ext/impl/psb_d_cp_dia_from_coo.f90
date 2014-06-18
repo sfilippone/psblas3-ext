@@ -28,7 +28,6 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
 
 subroutine psb_d_cp_dia_from_coo(a,b,info) 
   
@@ -52,7 +51,7 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
   ! This is to have fix_coo called behind the scenes
   call b%cp_to_coo(tmp,info)
 
-  call tmp%fix(info)
+  if (.not.tmp%is_sorted()) call tmp%fix(info)
   if (info /= psb_success_) return
 
   nr  = tmp%get_nrows()

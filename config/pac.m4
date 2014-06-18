@@ -1597,7 +1597,7 @@ AC_DEFUN(PAC_CHECK_SPGPU,
 	  CUDA_DEFINES="-DHAVE_CUDA";
 	  CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
 	  CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
-	  FDEFINES="$psblas_cv_define_prepend-DHAVE_SPGPU $psblas_cv_define_prepend-DHAVE_CUDA $FDEFINES";
+	  FDEFINES="$psblas_cv_define_prepend-DHAVE_GPU $psblas_cv_define_prepend-DHAVE_SPGPU $psblas_cv_define_prepend-DHAVE_CUDA $FDEFINES";
 	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
 	  fi
   fi

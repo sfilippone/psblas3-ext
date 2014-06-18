@@ -51,6 +51,7 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
 
   call b%allocate(nr,nc,nza)
   b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
+  
   ! k=0
   ! do i=1,size(a%data,1)
   !    do j=1,size(a%data,2)

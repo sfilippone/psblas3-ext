@@ -52,7 +52,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   ! This is to have fix_coo called behind the scenes
   call b%cp_to_coo(tmp,info)
 
-  call tmp%fix(info)
+  if (.not.tmp%is_sorted()) call tmp%fix(info)
   if (info /= psb_success_) return
 
   nr  = tmp%get_nrows()
@@ -65,8 +65,8 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   mj = maxval(tmp%ja)
 
   a%nblocks = ceiling(nr/real(a%hack))
-  nblocks = a%nblocks
-  hack = a%hack
+  nblocks   = a%nblocks
+  hack      = a%hack
 
   ndiag = hack+nc-1
   allocate(d(ndiag), a%hdia(nblocks),a%offset(nblocks))
@@ -103,7 +103,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
         !call psb_realloc(nd,a%offset(i)%off,info)
         allocate(a%offset(dm)%off(nd))
         if (info /= 0) goto 9999
-        a%offset(dm)%off = dzero
+        a%offset(dm)%off = izero
         
         w=1
         
@@ -143,7 +143,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
  !call psb_realloc(nd,a%offset(i)%off,info)
  allocate(a%offset(dm)%off(nd))
  if (info /= 0) goto 9999
- a%offset(dm)%off = dzero
+ a%offset(dm)%off = izero
  
  w=1
  

@@ -30,12 +30,12 @@
 !!$ 
   
 
-subroutine psb_d_dia_csmm(alpha,a,x,beta,y,info,trans) 
+subroutine psb_d_ell_csmm(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
-  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_csmm
+  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_csmm
   implicit none 
-  class(psb_d_dia_sparse_mat), intent(in) :: a
+  class(psb_d_ell_sparse_mat), intent(in) :: a
   real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
   real(psb_dpk_), intent(inout)       :: y(:,:)
   integer(psb_ipk_), intent(out)       :: info
@@ -46,7 +46,7 @@ subroutine psb_d_dia_csmm(alpha,a,x,beta,y,info,trans)
   real(psb_dpk_), allocatable  :: acc(:)
   logical   :: tra, ctra
   Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='d_dia_csmm'
+  character(len=20)  :: name='d_ell_csmm'
   logical, parameter :: debug=.false.
 
   info = psb_success_
@@ -86,10 +86,20 @@ subroutine psb_d_dia_csmm(alpha,a,x,beta,y,info,trans)
     goto 9999
   end if
 
-  call  psb_d_dia_csmm_inner(m,n,alpha,size(a%data,1),&
-       & size(a%data,2),a%data,a%offset, &
+  nxy = min(size(x,2) , size(y,2) )
+
+  allocate(acc(nxy), stat=info)
+  if(info /= psb_success_) then
+    info=psb_err_from_subroutine_
+    call psb_errpush(info,name,a_err='allocate')
+    goto 9999
+  end if
+
+  call  psb_d_ell_csmm_inner(m,n,nxy,alpha,size(a%ja,2),&
+       & a%ja,size(a%ja,1),a%val,size(a%val,1), &
        & a%is_triangle(),a%is_unit(),x,size(x,1), &
-       & beta,y,size(y,1),tra,ctra) 
+       & beta,y,size(y,1),tra,ctra,acc) 
+
 
   call psb_erractionrestore(err_act)
   return
@@ -103,43 +113,269 @@ subroutine psb_d_dia_csmm(alpha,a,x,beta,y,info,trans)
   return
 
 contains
-!It has to be tested!!!
-  subroutine psb_d_dia_csmm_inner(m,n,alpha,nr,nc,data,off,&
-       & is_triangle,is_unit,x,ldx,beta,y,ldy,tra,ctra) 
-    integer(psb_ipk_), intent(in)    :: m,n,nr,nc,ldx,ldy,off(*)
-    real(psb_dpk_), intent(in)      :: alpha, beta, x(ldx,*),data(nr,*)
+  subroutine psb_d_ell_csmm_inner(m,n,nxy,alpha,nc,ja,ldj,val,ldv,&
+       & is_triangle,is_unit,x,ldx,beta,y,ldy,tra,ctra,acc) 
+    integer(psb_ipk_), intent(in)    :: m,n,ldx,ldy,nxy,nc,ldj,ldv
+    integer(psb_ipk_), intent(in)    :: ja(ldj,*)
+    real(psb_dpk_), intent(in)      :: alpha, beta, x(ldx,*),val(ldv,*)
     real(psb_dpk_), intent(inout)   :: y(ldy,*)
-    logical, intent(in)              :: is_triangle,is_unit,tra,ctra
-    integer(psb_ipk_)   :: i,j,k, ir1, ir2,jc
+    logical, intent(in)              :: is_triangle,is_unit,tra, ctra
 
-    if (beta == dzero) then
-       do i = 1,m
-          do j=1,n
-             y(i,j) = dzero
-          enddo
-       enddo
-    else
-       do i = 1,m
-          do j=1,n
-             y(i,j) = y(i,j)*beta
-          enddo
-       enddo
+    real(psb_dpk_), intent(inout)   :: acc(*)
+    integer(psb_ipk_)   :: i,j,k, ir, jc
+
+
+    if (alpha == dzero) then
+      if (beta == dzero) then
+        do i = 1, m
+          y(i,1:nxy) = dzero
+        enddo
+      else
+        do  i = 1, m
+          y(i,1:nxy) = beta*y(i,1:nxy)
+        end do
+      endif
+      return
+    end if
+
+    if (.not.(tra.or.ctra)) then 
+
+      if (beta == dzero) then 
+
+        if (alpha == done) then 
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = acc(1:nxy)
+          end do
+
+        else if (alpha == -done) then 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) - val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = acc(1:nxy)
+          end do
+
+        else 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = alpha*acc(1:nxy)
+          end do
+
+        end if
+
+
+      else if (beta == done) then 
+
+        if (alpha == done) then 
+          do i=1,m 
+            acc(1:nxy)  = y(i,1:nxy)
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = acc(1:nxy)
+          end do
+
+        else if (alpha == -done) then 
+
+          do i=1,m
+            acc(1:nxy)  = y(i,1:nxy)
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) - val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = acc(1:nxy)
+          end do
+
+        else 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = y(i,1:nxy) + alpha*acc(1:nxy)
+          end do
+
+        end if
+
+      else if (beta == -done) then 
+
+        if (alpha == done) then 
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = -y(i,1:nxy) + acc(1:nxy)
+          end do
+
+        else if (alpha == -done) then 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = -y(i,1:nxy) -acc(1:nxy)
+          end do
+
+        else 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = -y(i,1:nxy) + alpha*acc(1:nxy)
+          end do
+
+        end if
+
+      else 
+
+        if (alpha == done) then 
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = beta*y(i,1:nxy) + acc(1:nxy)
+          end do
+
+        else if (alpha == -done) then 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = beta*y(i,1:nxy) - acc(1:nxy)
+          end do
+
+        else 
+
+          do i=1,m 
+            acc(1:nxy)  = dzero
+            do j=1,nc
+              acc(1:nxy)  = acc(1:nxy) + val(i,j) * x(ja(i,j),1:nxy)          
+            enddo
+            y(i,1:nxy) = beta*y(i,1:nxy) + alpha*acc(1:nxy)
+          end do
+
+        end if
+
+      end if
+
+    else if (tra) then 
+
+      if (beta == dzero) then 
+        do i=1, m
+          y(i,1:nxy) = dzero
+        end do
+      else if (beta == done) then 
+        ! Do nothing
+      else if (beta == -done) then 
+        do i=1, m
+          y(i,1:nxy) = -y(i,1:nxy) 
+        end do
+      else
+        do i=1, m
+          y(i,1:nxy) = beta*y(i,1:nxy) 
+        end do
+      end if
+
+      if (alpha == done) then
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) +  val(i,j)*x(i,1:nxy)
+          end do
+        enddo
+
+      else if (alpha == -done) then
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) -  val(i,j)*x(i,1:nxy)
+          end do
+        enddo
+
+      else                    
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) + alpha*val(i,j)*x(i,1:nxy)
+          end do
+        enddo
+
+      end if
+
+    else if (ctra) then 
+
+      if (beta == dzero) then 
+        do i=1, m
+          y(i,1:nxy) = dzero
+        end do
+      else if (beta == done) then 
+        ! Do nothing
+      else if (beta == -done) then 
+        do i=1, m
+          y(i,1:nxy) = -y(i,1:nxy) 
+        end do
+      else
+        do i=1, m
+          y(i,1:nxy) = beta*y(i,1:nxy) 
+        end do
+      end if
+
+      if (alpha == done) then
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) +  (val(i,j))*x(i,1:nxy)
+          end do
+        enddo
+
+      else if (alpha == -done) then
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) -  (val(i,j))*x(i,1:nxy)
+          end do
+        enddo
+
+      else                    
+
+        do i=1,n
+          do j=1,nc
+            ir = ja(i,j)
+            y(ir,1:nxy) = y(ir,1:nxy) + alpha*(val(i,j))*x(i,1:nxy)
+          end do
+        enddo
+
+      end if
+
     endif
 
-    do i=1,nr
-       do j=1,nc
-          if(off(j) > 0) then
-             ir1=1
-             ir2 = nr-off(j)
-          else
-             ir1 = 1-off(j)
-             ir2 = nr
-          endif
-          do k=ir1,ir2
-             y(k,j) = y(k,j) + alpha*data(k,j)*x(k+off(j),j)
-          enddo
-       enddo
-    enddo
+    if (is_unit) then 
+      do i=1, min(m,n)
+        y(i,1:nxy) = y(i,1:nxy) + alpha*x(i,1:nxy)
+      end do
+    end if
 
-  end subroutine psb_d_dia_csmm_inner
-end subroutine psb_d_dia_csmm
+  end subroutine psb_d_ell_csmm_inner
+end subroutine psb_d_ell_csmm

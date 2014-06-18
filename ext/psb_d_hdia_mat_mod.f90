@@ -430,8 +430,8 @@ contains
 
      if(a%dim==0.and.allocated(a%hdia)) then
         do i=1,a%nblocks
-           res = res + (size(a%hdia(i)%data,1) + size(a%hdia(i)%data,2))*8
-           res = res + size(a%offset(i)%off)*8
+           res = res + (size(a%hdia(i)%data,1) + size(a%hdia(i)%data,2))*psb_sizeof_dp
+           res = res + size(a%offset(i)%off)*psb_sizeof_int
         enddo
      else
         !Dim is set during cp_hdia_from_coo

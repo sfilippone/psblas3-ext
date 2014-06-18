@@ -33,6 +33,7 @@
 module psb_d_elg_mat_mod
 
   use iso_c_binding
+  use psb_d_mat_mod
   use psb_d_ell_mat_mod
 
   type, extends(psb_d_ell_sparse_mat) :: psb_d_elg_sparse_mat

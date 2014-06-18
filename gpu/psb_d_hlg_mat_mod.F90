@@ -33,7 +33,7 @@
 module psb_d_hlg_mat_mod
 
   use iso_c_binding
-  use psb_base_mod
+  use psb_d_mat_mod
   use psb_d_hll_mat_mod
 
   type, extends(psb_d_hll_sparse_mat) :: psb_d_hlg_sparse_mat
