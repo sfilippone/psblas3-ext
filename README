@@ -27,7 +27,7 @@ ACM Trans. on Math. Software, vol. 38, No. 4, 2012.
 
 PREREQUISITES
 
-To build this code you need to have PSBLAS 3.1.0 or later, together
+To build this code you need to have PSBLAS 3.2.0 or later, together
 with its prerequisites. 
 
 To make use of the NVIDIA GPU you'll need:
