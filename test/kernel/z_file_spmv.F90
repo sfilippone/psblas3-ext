@@ -32,12 +32,15 @@
 program z_file_spmv
   use psb_base_mod
   use psb_util_mod
+  use psb_ext_mod
+#ifdef HAVE_GPU
   use psb_gpu_mod
+#endif
   use data_input
   implicit none
 
   ! input parameters
-  character(len=40) :: mtrx_file
+  character(len=200) :: mtrx_file
 
   ! sparse matrices
   type(psb_zspmat_type) :: a, aux_a, agpu
@@ -48,30 +51,35 @@ program z_file_spmv
        & x_col_glob(:), r_col_glob(:), bres(:)
   complex(psb_dpk_), pointer  :: b_col_glob(:)
   type(psb_z_vect_type) :: xg, bg, xv, bv
+#ifdef HAVE_GPU
   type(psb_z_vect_gpu)  :: vmold
+#endif
   complex(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! communications data structure
   type(psb_desc_type):: desc_a
 
   integer            :: ictxt, iam, np
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
-  real(psb_dpk_)   :: err, eps 
+  complex(psb_dpk_)   :: err, eps 
 
-  character(len=5)   :: afmt
+  character(len=5)   :: acfmt, agfmt
   character(len=20)  :: name
   character(len=2)   :: filefmt
   integer, parameter :: iunit=12
   integer, parameter :: times=2000 
   integer, parameter :: ntests=200, ngpu=50 
 
+  type(psb_z_coo_sparse_mat), target   :: acoo
   type(psb_z_csr_sparse_mat), target   :: acsr
   type(psb_z_ell_sparse_mat), target   :: aell
+  type(psb_z_hll_sparse_mat), target   :: ahll
+#ifdef HAVE_GPU
   type(psb_z_elg_sparse_mat), target   :: aelg
   type(psb_z_csrg_sparse_mat), target  :: acsrg
   type(psb_z_hybg_sparse_mat), target  :: ahybg
-  type(psb_z_hll_sparse_mat), target   :: ahll
   type(psb_z_hlg_sparse_mat), target   :: ahlg
-  class(psb_z_base_sparse_mat), pointer :: amold
+#endif
+  class(psb_z_base_sparse_mat), pointer :: acmold, agmold
   ! other variables
   integer            :: i,info,j,nrt, ns, nr, ipart
   integer            :: internal, m,ii,nnzero
@@ -83,7 +91,9 @@ program z_file_spmv
 
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
+#ifdef HAVE_GPU
   call psb_gpu_init(ictxt)
+#endif
   if (iam < 0) then 
     ! This should not happen, but just in case
     call psb_exit(ictxt)
@@ -95,16 +105,22 @@ program z_file_spmv
   if(psb_get_errstatus() /= 0) goto 9999
   info=psb_success_  
   call psb_set_errverbosity(2)
+  if (iam == psb_root_) then 
+    write(*,*) 'Welcome to PSBLAS version: ',psb_version_string_
+    write(*,*) 'This is the ',trim(name),' sample program'
+  end if
 
   if (iam == 0) then 
     call read_data(mtrx_file,psb_inp_unit)
     call read_data(filefmt,psb_inp_unit)
-    call read_data(afmt,psb_inp_unit)
+    call read_data(acfmt,psb_inp_unit)
+    call read_data(agfmt,psb_inp_unit)
     call read_data(ipart,psb_inp_unit)
   end if
   call psb_bcast(ictxt,mtrx_file)
   call psb_bcast(ictxt,filefmt)
-  call psb_bcast(ictxt,afmt)
+  call psb_bcast(ictxt,acfmt)
+  call psb_bcast(ictxt,agfmt)
   call psb_bcast(ictxt,ipart)
   call psb_barrier(ictxt)
   t1 = psb_wtime()  
@@ -163,23 +179,35 @@ program z_file_spmv
   end if
 
 
-  select case(psb_toupper(afmt))
-  case('ELG')
-    amold => aelg
+  select case(psb_toupper(acfmt))
+  case('COO')
+    acmold => acoo
+  case('CSR')
+    acmold => acsr
   case('ELL')
-    amold => aell
+    acmold => aell
   case('HLL')
-    amold => ahll
+    acmold => ahll
+  case default
+    write(*,*) 'Unknown format defaulting to CSR'
+    acmold => acsr
+  end select
+
+#ifdef HAVE_GPU
+  select case(psb_toupper(agfmt))
+  case('ELG')
+    agmold => aelg
   case('HLG')
-    amold => ahlg
+    agmold => ahlg
   case('CSRG')
-    amold => acsrg
+    agmold => acsrg
   case('HYBG')
-    amold => ahybg
+    agmold => ahybg
   case default
     write(*,*) 'Unknown format defaulting to HLG'
-    amold => ahlg
+    agmold => ahlg
   end select
+#endif
 
 
   ! switch over different partition types
@@ -219,11 +247,16 @@ program z_file_spmv
   call psb_geasb(x_col,desc_a,info)
   t2 = psb_wtime() - t1
 
-  call a%cscnv(agpu,info,mold=amold)
-  call xv%bld(x_col)
+#ifdef HAVE_GPU
+  call a%cscnv(agpu,info,mold=agmold)
   call xg%bld(x_col,mold=vmold)
-  call psb_geasb(bv,desc_a,info,scratch=.true.)
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
+#endif
+
+  call a%cscnv(info,mold=acmold)
+  call xv%bld(x_col)
+  call psb_geasb(bv,desc_a,info,scratch=.true.)
+
   call psb_amx(ictxt, t2)
 
   if (iam==psb_root_) then
@@ -232,7 +265,7 @@ program z_file_spmv
     write(psb_out_unit,'(" ")')
   end if
 
-  write(*,*) 'Start products, CPU side'
+
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   do i=1,ntests 
@@ -241,10 +274,9 @@ program z_file_spmv
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
-  write(*,*) 'End products, CPU side'
 
+#ifdef HAVE_GPU
   ! FIXME: cache flush needed here
-  write(*,*) 'Start products, GPU mixed'
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
   do i=1,ntests 
@@ -260,7 +292,6 @@ program z_file_spmv
   call psb_barrier(ictxt)
   tt2 = psb_wtime() - tt1
   call psb_amx(ictxt,tt2)
-  write(*,*) 'End products, GPU mixed'
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
   nr       = desc_a%get_local_rows() 
@@ -268,10 +299,8 @@ program z_file_spmv
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
 
-
   call xg%sync()
   ! FIXME: cache flush needed here
-  write(*,*) 'Start products, GPU side'
 
   call psb_barrier(ictxt)
   gt1 = psb_wtime()
@@ -295,7 +324,6 @@ program z_file_spmv
   call psb_barrier(ictxt)
   gt2 = psb_wtime() - gt1
   call psb_amx(ictxt,gt2)
-  write(*,*) 'End products, GPU side'
   call bg%sync()
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
@@ -307,6 +335,8 @@ program z_file_spmv
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
+#endif
+
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
@@ -325,14 +355,16 @@ program z_file_spmv
          &'("Number of nonzeros               : ",i20,"           ")') annz
     write(psb_out_unit,&
          &'("Memory occupation                : ",i20,"           ")') amatsize
-    flops  = ntests*(8.d0*annz)
+    flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
     flops  = flops / (t2)
     tflops = tflops / (tt2)
     gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+#ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+#endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
@@ -342,6 +374,7 @@ program z_file_spmv
          & t2*1.d3/(1.d0*ntests)
     write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
          & flops/1.d6
+#ifdef HAVE_GPU
 
     write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
          & ntests, tt2
@@ -356,29 +389,36 @@ program z_file_spmv
          & gt2*1.d3/(1.d0*ntests*ngpu)
     write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
          & gflops/1.d6
+#endif
     !
     ! This computation assumes the data movement associated with CSR:
     ! it is minimal in terms of coefficients. Other formats may either move
     ! more data (padding etc.) or less data (if they can save on the indices). 
     !
-    nbytes = nr*(4*psb_sizeof_dp + psb_sizeof_int)+&
+    nbytes = nr*(2*2*psb_sizeof_dp + psb_sizeof_int)+&
          & annz*(2*psb_sizeof_dp + psb_sizeof_int)
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
+#ifdef HAVE_GPU
     bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
     write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
+#endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 
   end if
 
+  call psb_gefree(b_col, desc_a,info)
+  call psb_gefree(x_col, desc_a,info)
   call psb_gefree(xv, desc_a,info)
   call psb_gefree(bv, desc_a,info)
-  call psb_gefree(xg, desc_a,info) 
-  call psb_gefree(bg, desc_a,info)
   call psb_spfree(a, desc_a,info)
+#ifdef HAVE_GPU
+  call psb_gefree(xg, desc_a,info)
+  call psb_gefree(bg, desc_a,info)
   call psb_spfree(agpu,desc_a,info)
+#endif
   call psb_cdfree(desc_a,info)
 
 9999 continue

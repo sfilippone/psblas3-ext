@@ -1,4 +1,5 @@
-a.mtx                  ! Matrix file
+mat_fem.mtx            ! Matrix file
 MM                     ! Matrix file format
-HLG                    ! Storage format
+HLL                    ! CPU Storage format
+HLG                    ! GPU Storage format
 0                      ! Partition type

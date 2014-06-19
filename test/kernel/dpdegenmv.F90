@@ -77,6 +77,8 @@ program pdgenmv
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_hll_sparse_mat), target   :: ahll
+  type(psb_d_dia_sparse_mat), target   :: adia
+  type(psb_d_hdia_sparse_mat), target   :: ahdia
 #ifdef HAVE_RSB
   type(psb_d_rsb_sparse_mat), target   :: arsb
 #endif
@@ -85,6 +87,8 @@ program pdgenmv
   type(psb_d_csrg_sparse_mat), target  :: acsrg
   type(psb_d_hybg_sparse_mat), target  :: ahybg
   type(psb_d_hlg_sparse_mat), target   :: ahlg
+  type(psb_d_diag_sparse_mat), target   :: adiag
+  type(psb_d_hdiag_sparse_mat), target   :: ahdiag
 #endif
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
@@ -154,6 +158,10 @@ program pdgenmv
     acmold => aell
   case('HLL')
     acmold => ahll
+  case('DIA')
+    acmold => adia
+  case('HDIA')
+    acmold => ahdia
   case('CSR')
     acmold => acsr
 #ifdef HAVE_RSB
@@ -175,12 +183,12 @@ program pdgenmv
   select case(psb_toupper(agfmt))
   case('ELG')
     agmold => aelg
-  case('ELL')
-    agmold => aell
-  case('HLL')
-    agmold => ahll
   case('HLG')
     agmold => ahlg
+  case('DIAG')
+    agmold => adiag
+  case('HDIAG')
+    agmold => ahdiag
   case('CSRG')
     agmold => acsrg
   case('HYBG')
