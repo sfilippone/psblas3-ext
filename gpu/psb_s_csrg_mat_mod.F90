@@ -299,9 +299,9 @@ contains
 #else 
   interface 
     subroutine psb_s_csrg_mold(a,b,info) 
-      import :: psb_s_csrg_sparse_mat, psb_s_base_sparse_mat, psb_long_int_k_
+      import :: psb_s_csrg_sparse_mat, psb_s_base_sparse_mat, psb_ipk_
       class(psb_s_csrg_sparse_mat), intent(in)               :: a
-      class(psb_s_base_sparse_mat), intent(out), allocatable :: b
+      class(psb_s_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                         :: info
     end subroutine psb_s_csrg_mold
   end interface

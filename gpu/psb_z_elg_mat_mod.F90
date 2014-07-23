@@ -303,7 +303,7 @@ contains
     subroutine psb_z_elg_mold(a,b,info) 
       import :: psb_z_elg_sparse_mat, psb_z_base_sparse_mat, psb_ipk_
       class(psb_z_elg_sparse_mat), intent(in)                :: a
-      class(psb_z_base_sparse_mat), intent(out), allocatable :: b
+      class(psb_z_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                         :: info
     end subroutine psb_z_elg_mold
   end interface

@@ -296,9 +296,9 @@ contains
 
   interface 
     subroutine psb_c_hybg_mold(a,b,info) 
-      import :: psb_c_hybg_sparse_mat, psb_c_base_sparse_mat, psb_long_int_k_
+      import :: psb_c_hybg_sparse_mat, psb_c_base_sparse_mat, psb_ipk_
       class(psb_c_hybg_sparse_mat), intent(in)               :: a
-      class(psb_c_base_sparse_mat), intent(out), allocatable :: b
+      class(psb_c_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                         :: info
     end subroutine psb_c_hybg_mold
   end interface

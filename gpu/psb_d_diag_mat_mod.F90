@@ -300,9 +300,9 @@ contains
 
   interface 
     subroutine psb_d_diag_mold(a,b,info) 
-      import :: psb_d_diag_sparse_mat, psb_d_base_sparse_mat, psb_long_int_k_
+      import :: psb_d_diag_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
       class(psb_d_diag_sparse_mat), intent(in)                :: a
-      class(psb_d_base_sparse_mat), intent(out), allocatable :: b
+      class(psb_d_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                         :: info
     end subroutine psb_d_diag_mold
   end interface

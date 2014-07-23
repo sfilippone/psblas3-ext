@@ -33,7 +33,7 @@
 module psb_z_hlg_mat_mod
 
   use iso_c_binding
-  use psb_z_mat_mod
+  use psb_z_mat_mod 
   use psb_z_hll_mat_mod
 
   type, extends(psb_z_hll_sparse_mat) :: psb_z_hlg_sparse_mat
@@ -301,9 +301,9 @@ contains
 
   interface 
     subroutine psb_z_hlg_mold(a,b,info) 
-      import :: psb_z_hlg_sparse_mat, psb_z_base_sparse_mat, psb_long_int_k_
+      import :: psb_z_hlg_sparse_mat, psb_z_base_sparse_mat, psb_ipk_
       class(psb_z_hlg_sparse_mat), intent(in)                :: a
-      class(psb_z_base_sparse_mat), intent(out), allocatable :: b
+      class(psb_z_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                         :: info
     end subroutine psb_z_hlg_mold
   end interface

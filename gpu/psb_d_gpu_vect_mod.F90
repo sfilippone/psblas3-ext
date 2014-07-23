@@ -371,7 +371,6 @@ contains
       ny = getMultiVecDeviceSize(y%deviceVect)
       if ((nx<m).or.(ny<m)) then
         info = psb_err_internal_error_
-        info = psb_err_internal_error_
       else
         info = axpbyMultiVecDevice(m,alpha,xx%deviceVect,beta,y%deviceVect)
       end if
