@@ -32,10 +32,10 @@
 
 #include <stdio.h>
 #include <complex.h>
+#if defined(HAVE_SPGPU)
 #include "cuComplex.h"
 //#include "utils.h"
 //#include "common.h"
-#if defined(HAVE_SPGPU)
 #include "vectordev.h"
 #include "cuda_runtime.h"
 #include "core.h"
