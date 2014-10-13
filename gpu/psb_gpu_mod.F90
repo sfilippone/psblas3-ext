@@ -32,7 +32,9 @@
 
 module psb_gpu_mod
   use psb_const_mod
-  use psb_gpu_penv_mod
+  use psb_gpu_env_mod
+
+  use psb_i_gpu_vect_mod
 
   use psb_s_gpu_vect_mod
   use psb_d_gpu_vect_mod

@@ -42,6 +42,7 @@
 #include "cuComplex.h"
 
 int allocRemoteBuffer(void** buffer, int count);
+int allocMappedMemory(void **buffer, void **dp, int size);
 int registerMappedMemory(void *buffer, void **dp, int size);
 int unregisterMappedMemory(void *buffer);
 int writeRemoteBuffer(void* hostSrc, void* buffer, int count);
@@ -50,6 +51,14 @@ int freeRemoteBuffer(void* buffer);
 int gpuInit(int dev);
 int getDeviceCount();
 void cudaSync();
+void cudaReset();
+
+spgpuHandle_t psb_gpuGetHandle(); 
+void psb_gpuCreateHandle();
+void psb_gpuDestroyHandle();
+cudaStream_t psb_gpuGetStream();
+void  psb_gpuSetStream(cudaStream_t stream);
+
 #endif
 
 #endif

@@ -113,10 +113,7 @@ int FallocDiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,u
 { int i;
 #ifdef HAVE_SPGPU
   DiagDeviceParams p;
-
-  if(!handle)
-    spgpuCreate(&handle, 0);
-
+  
   p = getDiagDeviceParams(rows, columns, diags,elementType);
   i = allocDiagDevice(deviceMat, &p);
   if (i != 0) {
@@ -189,6 +186,7 @@ int spmvDiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   struct DiagDevice *devMat = (struct DiagDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
 #ifdef VERBOSE

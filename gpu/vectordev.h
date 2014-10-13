@@ -81,11 +81,14 @@ int unregisterMapped(void *);
 int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, unsigned int size, unsigned int elementType);
 void freeMultiVecDevice(void* deviceVec);
 int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
+
+int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
 int writeMultiVecDeviceFloat(void* deviceMultiVec, float* hostMultiVec);
 int writeMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
 int writeMultiVecDeviceFloatComplex(void* deviceVec, cuFloatComplex* hostVec);
 int writeMultiVecDeviceDoubleComplex(void* deviceVec, cuDoubleComplex* hostVec);
 
+int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
 int writeMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld);
 int writeMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
 int writeMultiVecDeviceFloatComplexR2(void* deviceVec, cuFloatComplex* hostVec, int ld);
@@ -93,11 +96,19 @@ int writeMultiVecDeviceDoubleComplexR2(void* deviceVec, cuDoubleComplex* hostVec
 
 int getMultiVecDeviceSize(void* deviceVec);
 int getMultiVecDeviceCount(void* deviceVec);
+int getMultiVecDevicePitch(void* deviceVec);
 
+int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
 int readMultiVecDeviceFloat(void* deviceMultiVec, float* hostMultiVec);
 int readMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
 int readMultiVecDeviceFloatComplex(void* deviceVec, float complex* hostVec);
 int readMultiVecDeviceDoubleComplex(void* deviceVec, double complex* hostVec);
+
+int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
+int readMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld);
+int readMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
+int readMultiVecDeviceFloatComplexR2(void* deviceMultiVec, float complex* hostMultiVec, int ld);
+int readMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, double complex* hostMultiVec, int ld);
 
 int nrm2MultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devVecA);
@@ -108,6 +119,10 @@ int dotMultiVecDeviceFloat(float* y_res, int n, void* devVecA, void* devVecB);
 int dotMultiVecDeviceDouble(double* y_res, int n, void* devVecA, void* devVecB);
 int dotMultiVecDeviceFloatComplex(float complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
 int dotMultiVecDeviceDoubleComplex(double complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
+
+int geinsMultiVecDeviceDouble(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
+
 
 int axpbyMultiVecDeviceFloat(int n, float alpha, void* devVecX, float beta, void* devVecY);
 int axpbyMultiVecDeviceDouble(int n, double alpha, void* devVecX, double beta, void* devVecY);

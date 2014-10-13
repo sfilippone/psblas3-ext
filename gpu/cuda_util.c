@@ -33,6 +33,7 @@
 #include "cuda_util.h"
 
 #if defined(HAVE_CUDA)
+
 int allocRemoteBuffer(void** buffer, int count)
 {
   cudaError_t err = cudaMalloc(buffer, count);
@@ -118,7 +119,7 @@ int registerMappedMemory(void *buffer, void **dp, int size)
 int allocMappedMemory(void **buffer, void **dp, int size)
 {
   cudaError_t err = cudaHostAlloc(buffer,size,cudaHostAllocMapped);
-  if (err == 0) err = cudaHostGetDevicePointer(dp,buffer,0);
+  if (err == 0) err = cudaHostGetDevicePointer(dp,*buffer,0);
 
   if (err == cudaSuccess)
     {
@@ -172,7 +173,8 @@ int readRemoteBuffer(void* hostDest, void* buffer, int count)
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
   else {
-    fprintf(stderr,"CUDA Error readRemoteBuffer: %s\n", cudaGetErrorString(err));
+    fprintf(stderr,"CUDA Error readRemoteBuffer: %s %p  %p %d %d\n", 
+	    cudaGetErrorString(err),hostDest,buffer,count,err);
     return SPGPU_UNSPECIFIED;
   }
 }
@@ -243,4 +245,47 @@ void cudaSync()
     return SPGPU_UNSPECIFIED;
   }
 }
+
+void cudaReset()
+{
+  cudaError_t err;
+  err = cudaDeviceReset();
+  if (err != cudaSuccess) {
+    fprintf(stderr,"CUDA Error Reset: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
+}
+
+static spgpuHandle_t psb_gpu_handle = NULL;
+static spgpuHandle_t psb_gpu_handle_v = NULL;
+
+
+spgpuHandle_t psb_gpuGetHandle()
+{
+  return psb_gpu_handle;
+}
+
+void psb_gpuCreateHandle()
+{
+  if (!psb_gpu_handle)
+    spgpuCreate(&psb_gpu_handle, 0);
+}
+
+void psb_gpuDestroyHandle()
+{
+  spgpuDestroy(psb_gpu_handle);
+}
+
+cudaStream_t psb_gpuGetStream()
+{
+  return spgpuGetStream(psb_gpu_handle);
+}
+
+void  psb_gpuSetStream(cudaStream_t stream)
+{
+  spgpuSetStream(psb_gpu_handle, stream);
+  return ;
+}
+
+
 #endif

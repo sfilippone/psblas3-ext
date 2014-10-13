@@ -30,7 +30,7 @@
 !!$ 
   
 
-module psb_gpu_penv_mod
+module psb_gpu_env_mod
   use psb_const_mod
   use psb_penv_mod
   !use psi_comm_buffers_mod, only : psb_buffer_queue
@@ -40,6 +40,22 @@ module psb_gpu_penv_mod
 !    module procedure  psb_gpu_init
 !  end interface
 #if defined(HAVE_CUDA)
+  interface 
+    function psb_gpuGetHandle() &
+         & result(res) bind(c,name='psb_gpuGetHandle')
+      use iso_c_binding   
+      type(c_ptr)		:: res
+    end function psb_gpuGetHandle
+  end interface
+
+  interface 
+    function psb_gpuGetStream() &
+         & result(res) bind(c,name='psb_gpuGetStream')
+      use iso_c_binding   
+      type(c_ptr)		:: res
+    end function psb_gpuGetStream
+  end interface
+
   interface 
     function psb_C_gpu_init(dev) &
          & result(res) bind(c,name='gpuInit')
@@ -59,10 +75,39 @@ module psb_gpu_penv_mod
 
 
   interface 
+    subroutine psb_gpuCreateHandle() &
+         & bind(c,name='psb_gpuCreateHandle')
+      use iso_c_binding   
+    end subroutine psb_gpuCreateHandle
+  end interface
+
+  interface 
+    subroutine psb_gpuSetStream(handle,stream) &
+         & bind(c,name='psb_gpuSetStream')
+      use iso_c_binding   
+      type(c_ptr), value :: handle, stream
+    end subroutine psb_gpuSetStream
+  end interface
+
+  interface 
+    subroutine psb_gpuDestroyHandle() &
+         & bind(c,name='psb_gpuDestroyHandle')
+      use iso_c_binding   
+    end subroutine psb_gpuDestroyHandle
+  end interface
+
+  interface 
     subroutine psb_cudaSync() &
          & bind(c,name='cudaSync')
       use iso_c_binding   
     end subroutine psb_cudaSync
+  end interface
+
+  interface 
+    subroutine psb_cudaReset() &
+         & bind(c,name='cudaReset')
+      use iso_c_binding   
+    end subroutine psb_cudaReset
   end interface
 #endif
 
@@ -101,6 +146,7 @@ contains
       end if
       info = psb_C_gpu_init(dev_)
     end if
+    call psb_gpuCreateHandle()
 #endif
   end subroutine psb_gpu_init
 
@@ -120,4 +166,9 @@ contains
 #endif
   end function psb_gpu_getDeviceCount
 
-end module psb_gpu_penv_mod
+  subroutine psb_gpu_exit()
+    call psb_gpuDestroyHandle()
+    call psb_cudaReset()
+  end subroutine psb_gpu_exit
+
+end module psb_gpu_env_mod

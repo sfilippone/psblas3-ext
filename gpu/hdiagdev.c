@@ -133,9 +133,6 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
 #ifdef HAVE_SPGPU
   HdiagDeviceParams p;
 
-  if(!handle)
-    spgpuCreate(&handle, 0);
-
   p = getHdiagDeviceParams(rows, columns, diags, hackSize, elementType);
   i = allocHdiagDevice(deviceMat, &p, data);
   if (i != 0) {
@@ -230,6 +227,7 @@ int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
 #ifdef VERBOSE

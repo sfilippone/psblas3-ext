@@ -62,7 +62,9 @@ program pdgenmv
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type) :: xv, bv, xg, bg 
+  type(psb_d_vect_type), target :: xv, bv, xg, bg, tt
+  class(psb_d_vect_type), pointer  :: pv
+  
 #ifdef HAVE_GPU
   type(psb_d_vect_gpu)  :: vmold
 #endif
@@ -221,6 +223,9 @@ program pdgenmv
 
 #ifdef HAVE_GPU
   ! FIXME: cache flush needed here
+  xc1 = bv%get_vect()
+  xc2 = bg%get_vect()
+
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
   do i=1,ntests 
@@ -231,7 +236,11 @@ program pdgenmv
       call psb_error()
       stop
     end if
-
+    xc1 = bv%get_vect()
+    xc2 = bg%get_vect()
+    call tt%bld(bg%get_vect())
+    pv => bg
+    call tt%bld(pv%get_vect())
   end do
   call psb_barrier(ictxt)
   tt2 = psb_wtime() - tt1

@@ -45,8 +45,7 @@
 #define ELL_PITCH_ALIGN_S 32
 #define ELL_PITCH_ALIGN_D 16
 
-static spgpuHandle_t handle = NULL;
-static spgpuHandle_t handle_v = NULL;
+
 #endif
 
 #endif

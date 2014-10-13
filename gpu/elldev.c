@@ -107,9 +107,6 @@ int FallocEllDevice(void** deviceMat,unsigned int rows, unsigned int maxRowSize,
 #ifdef HAVE_SPGPU
   EllDeviceParams p;
 
-  if(!handle)
-    spgpuCreate(&handle, 0);
-
   p = getEllDeviceParams(rows, maxRowSize, columns, elementType, firstIndex);
   i = allocEllDevice(deviceMat, &p);
   if (i != 0) {
@@ -125,6 +122,8 @@ void sspmdmm_gpu(float *z,int s, int vPitch, float *y, float alpha, float* cM, i
 		 int n, int pitch, float *x, float beta, int firstIndex)
 {
   int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
   for (i=0; i<s; i++)
     {
       spgpuSellspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, rS, 
@@ -139,6 +138,7 @@ void
 dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, int* rP, int* rS, int n, int pitch, double *x, double beta, int firstIndex)
 {
   int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
   for (i=0; i<s; i++)
     {
       spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP, pitch, pitch, rS, 
@@ -153,6 +153,7 @@ void
 cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y, cuFloatComplex alpha, cuFloatComplex* cM, int* rP, int* rS, int n, int pitch, cuFloatComplex *x, cuFloatComplex beta, int firstIndex)
 {
   int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
   for (i=0; i<s; i++)
     {
       spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
@@ -167,6 +168,7 @@ void
 zspmdmm_gpu (cuDoubleComplex *z, int s, int vPitch, cuDoubleComplex *y, cuDoubleComplex alpha, cuDoubleComplex* cM, int* rP, int* rS, int n, int pitch, cuDoubleComplex *x, cuDoubleComplex beta, int firstIndex)
 {
   int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
   for (i=0; i<s; i++)
     {
       spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
@@ -184,7 +186,6 @@ int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
-  spgpuHandle_t handle;
 
 #ifdef HAVE_SPGPU
 #ifdef VERBOSE

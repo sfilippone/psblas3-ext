@@ -122,9 +122,6 @@ int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows, uns
 #ifdef HAVE_SPGPU
   HllDeviceParams p;
 
-  if(!handle)
-    spgpuCreate(&handle, 0);
-
   p = getHllDeviceParams(hksize, rows, allocsize, elementType, firstIndex);
   i = allocHllDevice(deviceMat, &p);
   if (i != 0) {
@@ -143,6 +140,7 @@ int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
   struct HllDevice *devMat = (struct HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
 #ifdef VERBOSE
@@ -171,6 +169,7 @@ int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   struct HllDevice *devMat = (struct HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
 #ifdef VERBOSE
@@ -198,6 +197,7 @@ int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* device
   struct HllDevice *devMat = (struct HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
   cuFloatComplex a = make_cuFloatComplex(crealf(alpha),cimagf(alpha));
@@ -227,6 +227,7 @@ int spmvHllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
   struct HllDevice *devMat = (struct HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
 
 #ifdef HAVE_SPGPU
   cuDoubleComplex a = make_cuDoubleComplex(creal(alpha),cimag(alpha));
