@@ -80,7 +80,7 @@ module psb_s_hdia_mat_mod
     procedure, pass(a) :: mv_from_coo  => psb_s_mv_hdia_from_coo
     ! procedure, pass(a) :: mv_to_fmt    => psb_s_mv_hdia_to_fmt
 !    procedure, pass(a) :: mv_from_fmt  => psb_s_mv_hdia_from_fmt
-    ! procedure, pass(a) :: csput        => psb_s_hdia_csput
+    ! procedure, pass(a) :: csput_a        => psb_s_hdia_csput_a
     ! procedure, pass(a) :: get_hdiag     => psb_s_hdia_get_hdiag
     ! procedure, pass(a) :: csgetptn     => psb_s_hdia_csgetptn
     ! procedure, pass(a) :: csgetrow     => psb_s_hdia_csgetrow
@@ -221,7 +221,7 @@ module psb_s_hdia_mat_mod
   end interface
   
   interface 
-    subroutine psb_s_hdia_csput(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_s_hdia_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
       import :: psb_s_hdia_sparse_mat, psb_spk_, psb_ipk_
       class(psb_s_hdia_sparse_mat), intent(inout) :: a
       real(psb_spk_), intent(in)      :: val(:)
@@ -229,7 +229,7 @@ module psb_s_hdia_mat_mod
            &  imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)            :: info
       integer(psb_ipk_), intent(in), optional   :: gtl(:)
-    end subroutine psb_s_hdia_csput
+    end subroutine psb_s_hdia_csput_a
   end interface
   
   interface 

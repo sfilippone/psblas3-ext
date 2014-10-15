@@ -30,46 +30,41 @@
 !!$ 
   
 
-module psb_gpu_mod
-  use psb_const_mod
-  use psb_gpu_env_mod
-
-  use psb_i_gpu_vect_mod
-
-  use psb_s_gpu_vect_mod
-  use psb_d_gpu_vect_mod
-  use psb_c_gpu_vect_mod
-  use psb_z_gpu_vect_mod
-
-  use psb_d_ell_mat_mod
-  use psb_d_elg_mat_mod
-  use psb_s_ell_mat_mod
-  use psb_s_elg_mat_mod
-  use psb_z_ell_mat_mod
-  use psb_z_elg_mat_mod
-  use psb_c_ell_mat_mod
-  use psb_c_elg_mat_mod
-
-  use psb_s_hll_mat_mod
-  use psb_s_hlg_mat_mod
-  use psb_d_hll_mat_mod
-  use psb_d_hlg_mat_mod
-  use psb_c_hll_mat_mod
-  use psb_c_hlg_mat_mod
-  use psb_z_hll_mat_mod
-  use psb_z_hlg_mat_mod
+subroutine psb_c_elg_asb(a)
   
-  use psb_s_csrg_mat_mod
-  use psb_d_csrg_mat_mod
-  use psb_s_hybg_mat_mod
-  use psb_d_hybg_mat_mod
-  use psb_c_csrg_mat_mod
-  use psb_z_csrg_mat_mod
-  use psb_c_hybg_mat_mod
-  use psb_z_hybg_mat_mod
+  use psb_base_mod
+  use psb_c_elg_mat_mod, psb_protect_name => psb_c_elg_asb
+  implicit none 
 
-  use psb_d_diag_mat_mod
-  use psb_d_hdiag_mat_mod
+  class(psb_c_elg_sparse_mat), intent(inout) :: a   
 
-end module psb_gpu_mod
+  integer(psb_ipk_)  :: err_act, info
+  character(len=20)  :: name='elg_asb'
+  logical            :: clear_
+  logical, parameter :: debug=.false.
+  real(psb_dpk_), allocatable :: valt(:,:) 
+  integer(psb_ipk_), allocatable :: jat(:,:)
+  integer(psb_ipk_)  :: nr, nc
 
+  call psb_erractionsave(err_act)
+  info = psb_success_
+
+  ! Only call sync() if we are on host
+  if (a%is_host()) then 
+    call a%sync()
+  end if
+  call a%set_asb()
+  
+  call psb_erractionrestore(err_act)
+  return
+
+9999 continue
+  call psb_erractionrestore(err_act)
+
+  if (err_act == psb_act_abort_) then
+    call psb_error()
+    return
+  end if
+  return
+
+end subroutine psb_c_elg_asb

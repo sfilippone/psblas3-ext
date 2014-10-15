@@ -74,7 +74,7 @@ module psb_z_gpu_vect_mod
     procedure, pass(x) :: bld_x    => z_gpu_bld_x
     procedure, pass(x) :: bld_n    => z_gpu_bld_n
     procedure, pass(x) :: free     => z_gpu_free
-    procedure, pass(x) :: ins      => z_gpu_ins
+    procedure, pass(x) :: ins_a    => z_gpu_ins_a
     procedure, pass(x) :: is_host  => z_gpu_is_host
     procedure, pass(x) :: is_dev   => z_gpu_is_dev
     procedure, pass(x) :: is_sync  => z_gpu_is_sync
@@ -725,7 +725,7 @@ contains
   end subroutine z_gpu_vect_finalize
 #endif
 
-  subroutine z_gpu_ins(n,irl,val,dupl,x,info)
+  subroutine z_gpu_ins_a(n,irl,val,dupl,x,info)
     use psi_serial_mod
     implicit none 
     class(psb_z_vect_gpu), intent(inout) :: x
@@ -741,7 +741,7 @@ contains
     call x%psb_z_base_vect_type%ins(n,irl,val,dupl,info)
     call x%set_host()
 
-  end subroutine z_gpu_ins
+  end subroutine z_gpu_ins_a
 
 #endif
 

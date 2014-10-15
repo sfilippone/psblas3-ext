@@ -78,7 +78,8 @@ elldev.o: elldev.c
 fcusparse.h elldev.c: elldev.h vectordev.h
 fcusparse.o: fcusparse.h
 
-psb_gpu_mod.o:  psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\
+psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
+	psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\
 	psb_z_gpu_vect_mod.o  psb_c_gpu_vect_mod.o\
         psb_d_elg_mat_mod.o   psb_d_hlg_mat_mod.o \
 	psb_d_hybg_mat_mod.o  psb_d_csrg_mat_mod.o\

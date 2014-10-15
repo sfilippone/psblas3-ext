@@ -74,7 +74,7 @@ module psb_c_gpu_vect_mod
     procedure, pass(x) :: bld_x    => c_gpu_bld_x
     procedure, pass(x) :: bld_n    => c_gpu_bld_n
     procedure, pass(x) :: free     => c_gpu_free
-    procedure, pass(x) :: ins      => c_gpu_ins
+    procedure, pass(x) :: ins_a    => c_gpu_ins_a
     procedure, pass(x) :: is_host  => c_gpu_is_host
     procedure, pass(x) :: is_dev   => c_gpu_is_dev
     procedure, pass(x) :: is_sync  => c_gpu_is_sync
@@ -725,7 +725,7 @@ contains
   end subroutine c_gpu_vect_finalize
 #endif
 
-  subroutine c_gpu_ins(n,irl,val,dupl,x,info)
+  subroutine c_gpu_ins_a(n,irl,val,dupl,x,info)
     use psi_serial_mod
     implicit none 
     class(psb_c_vect_gpu), intent(inout) :: x
@@ -741,7 +741,7 @@ contains
     call x%psb_c_base_vect_type%ins(n,irl,val,dupl,info)
     call x%set_host()
 
-  end subroutine c_gpu_ins
+  end subroutine c_gpu_ins_a
 
 #endif
 

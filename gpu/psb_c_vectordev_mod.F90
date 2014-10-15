@@ -139,6 +139,17 @@ module psb_c_vectordev_mod
     end function dotMultiVecDeviceFloatComplex
   end interface
   
+!!$  interface 
+!!$    function geinsMultiVecDeviceFloatComplex(n,deviceVecIrl,deviceVecVal,&
+!!$         & dupl,indexbase,deviceVecX) &
+!!$         & result(res) bind(c,name='geinsMultiVecDeviceFloatComplex')
+!!$      use iso_c_binding
+!!$      integer(c_int)      :: res
+!!$      integer(c_int), value :: n, dupl,indexbase
+!!$      type(c_ptr), value  :: deviceVecIrl, deviceVecVal, deviceVecX
+!!$    end function geinsMultiVecDeviceDouble
+!!$  end interface
+
   interface axpbyMultiVecDevice
     function axpbyMultiVecDeviceFloatComplex(n,alpha,deviceVecA,beta,deviceVecB) &
          & result(res) bind(c,name='axpbyMultiVecDeviceFloatComplex')

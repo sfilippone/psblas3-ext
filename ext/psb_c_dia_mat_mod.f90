@@ -71,7 +71,7 @@ module psb_c_dia_mat_mod
     procedure, pass(a) :: mv_from_coo  => psb_c_mv_dia_from_coo
     ! procedure, pass(a) :: mv_to_fmt    => psb_c_mv_dia_to_fmt
 !    procedure, pass(a) :: mv_from_fmt  => psb_c_mv_dia_from_fmt
-    ! procedure, pass(a) :: csput        => psb_c_dia_csput
+    ! procedure, pass(a) :: csput_a      => psb_c_dia_csput_a
     ! procedure, pass(a) :: get_diag     => psb_c_dia_get_diag
     ! procedure, pass(a) :: csgetptn     => psb_c_dia_csgetptn
     ! procedure, pass(a) :: csgetrow     => psb_c_dia_csgetrow
@@ -212,7 +212,7 @@ module psb_c_dia_mat_mod
   end interface
   
   interface 
-    subroutine psb_c_dia_csput(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_c_dia_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
       import :: psb_c_dia_sparse_mat, psb_spk_, psb_ipk_
       class(psb_c_dia_sparse_mat), intent(inout) :: a
       complex(psb_spk_), intent(in)      :: val(:)
@@ -220,7 +220,7 @@ module psb_c_dia_mat_mod
            &  imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)            :: info
       integer(psb_ipk_), intent(in), optional   :: gtl(:)
-    end subroutine psb_c_dia_csput
+    end subroutine psb_c_dia_csput_a
   end interface
   
   interface 

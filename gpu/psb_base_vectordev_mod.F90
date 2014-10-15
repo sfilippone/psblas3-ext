@@ -54,7 +54,7 @@ module psb_base_vectordev_mod
     end function FallocMultiVecDevice
   end interface
 
-  interface
+  interface allocateIdx
     function allocateIdx(didx,n) &
          & result(res) bind(c,name='allocateIdx') 
       use iso_c_binding
@@ -62,9 +62,16 @@ module psb_base_vectordev_mod
       integer(c_int),value :: n
       integer(c_int)  :: res
     end function allocateIdx
+    function allocateMultiIdx(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiIdx') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: m,n
+      integer(c_int)  :: res
+    end function allocateMultiIdx
   end interface
 
-  interface
+  interface writeIdx
     function writeIdx(didx,hidx,n) &
          & result(res) bind(c,name='writeIdx')
       use iso_c_binding
@@ -73,9 +80,17 @@ module psb_base_vectordev_mod
       integer(c_int)       :: hidx(*)
       integer(c_int),value :: n
     end function writeIdx
+    function writeMultiIdx(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiIdx')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      integer(c_int)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function writeMultiIdx
   end interface
   
-  interface
+  interface readIdx
     function readIdx(didx,hidx,n) &
          & result(res) bind(c,name='readIdx')
       use iso_c_binding
@@ -84,6 +99,14 @@ module psb_base_vectordev_mod
       integer(c_int)       :: hidx(*)
       integer(c_int),value :: n
     end function readIdx
+    function readMultiIdx(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiIdx')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      integer(c_int)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function readMultiIdx
   end interface
   
   interface
@@ -138,6 +161,15 @@ module psb_base_vectordev_mod
       type(c_ptr), value  :: deviceVec
       integer(c_int)      :: res
     end function getMultiVecDeviceCount
+  end interface
+
+  interface 
+    function  getMultiVecDevicePitch(deviceVec) &
+         & bind(c,name='getMultiVecDevicePitch') result(res)
+      use iso_c_binding
+      type(c_ptr), value  :: deviceVec
+      integer(c_int)      :: res
+    end function getMultiVecDevicePitch
   end interface
 
 #endif  

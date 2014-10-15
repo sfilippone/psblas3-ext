@@ -30,46 +30,50 @@
 !!$ 
   
 
-module psb_gpu_mod
-  use psb_const_mod
-  use psb_gpu_env_mod
-
-  use psb_i_gpu_vect_mod
-
-  use psb_s_gpu_vect_mod
-  use psb_d_gpu_vect_mod
-  use psb_c_gpu_vect_mod
-  use psb_z_gpu_vect_mod
-
-  use psb_d_ell_mat_mod
-  use psb_d_elg_mat_mod
-  use psb_s_ell_mat_mod
-  use psb_s_elg_mat_mod
-  use psb_z_ell_mat_mod
-  use psb_z_elg_mat_mod
-  use psb_c_ell_mat_mod
-  use psb_c_elg_mat_mod
-
-  use psb_s_hll_mat_mod
-  use psb_s_hlg_mat_mod
-  use psb_d_hll_mat_mod
-  use psb_d_hlg_mat_mod
-  use psb_c_hll_mat_mod
-  use psb_c_hlg_mat_mod
-  use psb_z_hll_mat_mod
-  use psb_z_hlg_mat_mod
+subroutine psb_c_elg_from_gpu(a,info) 
   
-  use psb_s_csrg_mat_mod
-  use psb_d_csrg_mat_mod
-  use psb_s_hybg_mat_mod
-  use psb_d_hybg_mat_mod
-  use psb_c_csrg_mat_mod
-  use psb_z_csrg_mat_mod
-  use psb_c_hybg_mat_mod
-  use psb_z_hybg_mat_mod
+  use psb_base_mod
+#ifdef HAVE_SPGPU
+  use elldev_mod
+  use psb_vectordev_mod
+  use psb_c_elg_mat_mod, psb_protect_name => psb_c_elg_from_gpu
+#else 
+  use psb_c_elg_mat_mod
+#endif
+  implicit none 
+  class(psb_c_elg_sparse_mat), intent(inout) :: a
+  integer(psb_ipk_), intent(out)             :: info
 
-  use psb_d_diag_mat_mod
-  use psb_d_hdiag_mat_mod
+  integer(psb_ipk_)  :: m, nzm, n, pitch,maxrowsize
+#ifdef HAVE_SPGPU
+  type(elldev_parms) :: gpu_parms
+#endif
 
-end module psb_gpu_mod
+  info = 0
 
+#ifdef HAVE_SPGPU
+  if (.not.(c_associated(a%deviceMat))) then 
+    call a%free()
+    return
+  end if
+
+  
+  m   = a%get_nrows()
+  nzm = size(a%val,2)
+  n   = a%get_ncols()
+  
+!!$  gpu_parms = FgetEllDeviceParams(m,nzm,n,spgpu_type_double,1)
+  
+  pitch      = getEllDevicePitch(a%deviceMat)
+  maxrowsize = getEllDeviceMaxRowSize(a%deviceMat)
+
+  if ((pitch /= size(a%val,1)).or.(maxrowsize /= size(a%val,2))) then 
+    call psb_realloc(pitch,maxrowsize,a%val,info)
+    if (info == 0) call psb_realloc(pitch,maxrowsize,a%ja,info)
+  end if
+  if (info == 0)  info = &
+       & readEllDevice(a%deviceMat,a%val,a%ja,size(a%ja,1),a%irn)
+!!$  if (info /= 0) goto 9999
+#endif
+
+end subroutine psb_c_elg_from_gpu

@@ -83,7 +83,7 @@ module psb_z_ell_mat_mod
     procedure, pass(a) :: mv_from_coo  => psb_z_mv_ell_from_coo
     procedure, pass(a) :: mv_to_fmt    => psb_z_mv_ell_to_fmt
     procedure, pass(a) :: mv_from_fmt  => psb_z_mv_ell_from_fmt
-    procedure, pass(a) :: csput        => psb_z_ell_csput
+    procedure, pass(a) :: csput_a      => psb_z_ell_csput_a
     procedure, pass(a) :: get_diag     => psb_z_ell_get_diag
     procedure, pass(a) :: csgetptn     => psb_z_ell_csgetptn
     procedure, pass(a) :: csgetrow     => psb_z_ell_csgetrow
@@ -225,7 +225,7 @@ module psb_z_ell_mat_mod
   end interface
   
   interface 
-    subroutine psb_z_ell_csput(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
       import :: psb_z_ell_sparse_mat, psb_dpk_, psb_ipk_
       class(psb_z_ell_sparse_mat), intent(inout) :: a
       complex(psb_dpk_), intent(in)      :: val(:)
@@ -233,7 +233,7 @@ module psb_z_ell_mat_mod
            &  imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)            :: info
       integer(psb_ipk_), intent(in), optional   :: gtl(:)
-    end subroutine psb_z_ell_csput
+    end subroutine psb_z_ell_csput_a
   end interface
   
   interface 

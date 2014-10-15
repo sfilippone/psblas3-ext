@@ -30,10 +30,10 @@
 !!$ 
   
 
-subroutine psb_z_hll_csput(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+subroutine psb_z_hll_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
   
   use psb_base_mod
-  use psb_z_hll_mat_mod, psb_protect_name => psb_z_hll_csput
+  use psb_z_hll_mat_mod, psb_protect_name => psb_z_hll_csput_a
   implicit none 
 
   class(psb_z_hll_sparse_mat), intent(inout) :: a
@@ -44,7 +44,7 @@ subroutine psb_z_hll_csput(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
  
 
   Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='z_hll_csput'
+  character(len=20)  :: name='z_hll_csput_a'
   logical, parameter :: debug=.false.
   integer(psb_ipk_)  :: nza, i,j,k, nzl, isza, int_err(5)
 
@@ -302,4 +302,4 @@ contains
 !!$    end if
 
   end subroutine psb_z_hll_srch_upd
-end subroutine psb_z_hll_csput
+end subroutine psb_z_hll_csput_a
