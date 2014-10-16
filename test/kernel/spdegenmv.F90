@@ -192,6 +192,7 @@ program pdgenmv
   call xg%set(sone)
 #endif
   call xv%set(sone)
+  nr       = desc_a%get_local_rows() 
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()
@@ -221,7 +222,6 @@ program pdgenmv
   call psb_amx(ictxt,tt2)
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
-  nr       = desc_a%get_local_rows() 
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
@@ -259,7 +259,6 @@ program pdgenmv
   eps = psb_geamax(bv,desc_a,info)
 
   call psb_amx(ictxt,t2)
-  nr       = desc_a%get_local_rows() 
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
