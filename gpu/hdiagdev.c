@@ -151,45 +151,29 @@ int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
   char buf_a[255], buf_o[255],tmp[255];
 #ifdef HAVE_SPGPU
   struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
-  // Ex updateFromHost function
-  /* memset(buf_a,'\0',255); */
-  /* memset(buf_o,'\0',255); */
-  /* memset(tmp,'\0',255); */
-
-  /* strcat(buf_a,"mat_"); */
-  /* strcat(buf_o,"off_"); */
-  /* sprintf(tmp,"%d_%d.dat",devMat->rows,devMat->cols); */
-  /* strcat(buf_a,tmp); */
-  /* memset(tmp,'\0',255); */
-  /* sprintf(tmp,"%d.dat",devMat->cols); */
-  /* strcat(buf_o,tmp); */
-
-  /* fa = open(buf_a, O_CREAT | O_WRONLY | O_TRUNC, 0664); */
-  /* fo = open(buf_o, O_CREAT | O_WRONLY | O_TRUNC, 0664); */
-
-  /* i = write(fa, a, sizeof(double)*devMat->cols*devMat->rows); */
-  /* i = write(fo, off, sizeof(int)*devMat->cols); */
-
-  /* close(fa); */
-  /* close(fo); */
 
   hoff = (int *)calloc(devMat->allocationHeight,sizeof(int));
   values = (double *)calloc(devMat->hackSize*devMat->allocationHeight,sizeof(double));
 
-  diaToHdia((void *)values,hoff,devMat->hackOffsets,devMat->hackSize,(void *)a,off,devMat->rows,devMat->diags,devMat->rows,SPGPU_TYPE_DOUBLE);
+  diaToHdia((void *)values,hoff,devMat->hackOffsets,devMat->hackSize,
+	    (void *)a,off,devMat->rows,devMat->diags,devMat->rows,SPGPU_TYPE_DOUBLE);
 
   hackoff = devMat->hackOffsets;
 
   if (i == SPGPU_SUCCESS)
-    i=allocRemoteBuffer((void **)&(devMat->hackOffsets), (devMat->hackCount+1)*sizeof(int));
+    i=allocRemoteBuffer((void **)&(devMat->hackOffsets),
+			(devMat->hackCount+1)*sizeof(int));
   
   if(i== SPGPU_SUCCESS)
-    i = writeRemoteBuffer(hackoff,devMat->hackOffsets,(devMat->hackCount+1)*sizeof(int));
+    i = writeRemoteBuffer(hackoff,devMat->hackOffsets,
+			  (devMat->hackCount+1)*sizeof(int));
 
   free(hackoff);
 
-  i = writeRemoteBuffer((void*) hoff, (void *)devMat->hdiaOffsets, devMat->allocationHeight*sizeof(int));
-  i = writeRemoteBuffer((void*) values, (void *)devMat->cM, devMat->allocationHeight*devMat->hackSize*sizeof(double));
+  i = writeRemoteBuffer((void*) hoff, (void *)devMat->hdiaOffsets, 
+			devMat->allocationHeight*sizeof(int));
+  i = writeRemoteBuffer((void*) values, (void *)devMat->cM, 
+			devMat->allocationHeight*devMat->hackSize*sizeof(double));
 
   free(hoff);
   free(values);
@@ -235,10 +219,11 @@ int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   /*__assert(x->size_ >= devMat->columns, "ERROR: x vector's size is not >= to matrix size (columns)");*/
   /*__assert(y->size_ >= devMat->rows, "ERROR: y vector's size is not >= to matrix size (rows)");*/
 #endif
-
-  /* spgpuDdiaspmv(handle, (double *)y->v_, (double *)y->v_,alpha,(double *)devMat->cM,devMat->off,devMat->rows,devMat->rows,devMat->cols,devMat->diags,x->v_,beta); */
   
-  spgpuDhdiaspmv (handle, (double*)y->v_, (double *)y->v_, alpha,(double *)devMat->cM,devMat->hdiaOffsets, devMat->hackSize, devMat->hackOffsets, devMat->rows,devMat->cols,x->v_, beta);
+  spgpuDhdiaspmv (handle, (double*)y->v_, (double *)y->v_, alpha,
+		  (double *)devMat->cM,devMat->hdiaOffsets, 
+		  devMat->hackSize, devMat->hackOffsets, devMat->rows,devMat->cols,
+		  x->v_, beta);
   
   //cudaSync();
 
@@ -248,33 +233,5 @@ int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 #endif
 }
 
-/* int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,  */
-/* 		       float complex beta, void* deviceY) */
-/* { */
-/*   struct HllDevice *devMat = (struct HllDevice *) deviceMat; */
-/*   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX; */
-/*   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; */
-
-/* #ifdef HAVE_SPGPU */
-/*   cuFloatComplex a = make_cuFloatComplex(crealf(alpha),cimagf(alpha)); */
-/*   cuFloatComplex b = make_cuFloatComplex(crealf(beta),cimagf(beta)); */
-/* #ifdef VERBOSE */
-/*   /\*__assert(x->count_ == x->count_, "ERROR: x and y don't share the same number of vectors");*\/ */
-/* int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int *hkoffs, int* irn) */
-/* { int i; */
-/* #ifdef HAVE_SPGPU */
-/*   struct HllDevice *devMat = (struct HllDevice *) deviceMat; */
-/*   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex)); */
-/*   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int)); */
-/*   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int)); */
-/*   i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int)); */
-/*   /\*if (i != 0) { */
-/*     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i); */
-/*   }*\/ */
-/*   return SPGPU_SUCCESS; */
-/* #else */
-/*   return SPGPU_UNSUPPORTED; */
-/* #endif */
-/* } */
 
 #endif

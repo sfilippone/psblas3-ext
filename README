@@ -1,11 +1,12 @@
-This is the extenstions plugin for PSBLAS, version 1.0-beta.
+This is the extenstions plugin for PSBLAS, version 1.0-beta2.
 
 This package contains: 
 1. Extended matrix formats: ELLPACK, Hacked ELLPACK, DIAgonals, Hacked
-   DIAgonals.       
+   DIAgonals. Note: DIA and HDIA have limited support.      
 2. A GPU plugin: gpu-enabled versions of the above, with the CUDA code
    from http://spgpu.googlecode.com,  plus interfaces to
    CSR and HYB formats available in the NVIDIA CuSPARSE lib.
+   Note: DIAG and HDIAG have limited support. 
 3. RSB: an interface to http://sourceforge.net/projects/librsb
 
 
@@ -27,7 +28,7 @@ ACM Trans. on Math. Software, vol. 38, No. 4, 2012.
 
 PREREQUISITES
 
-To build this code you need to have PSBLAS 3.2.0 or later, together
+To build this code you need to have PSBLAS 3.3.0 or later, together
 with its prerequisites. 
 
 To make use of the NVIDIA GPU you'll need:

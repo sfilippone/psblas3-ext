@@ -87,11 +87,13 @@ int dia2hdia(void *hdiaValues,int *hdiaOffsets,int *hackOffsets,int hackSize,
 HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns,
 				       unsigned int diags, unsigned int hackSize,
 				       unsigned int elementType);
-int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols, 
-		      unsigned int diags, unsigned int hackSize,double *data,unsigned int elementType);
 int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params,double * data);
 void freeHdiagDevice(void* remoteMatrix);
-/* int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn); */
+
+int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols, 
+		      unsigned int diags, unsigned int hackSize,
+		      double *data,unsigned int elementType);
+
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n);
 #else
 #define CINTRF_UNSUPPORTED   -1

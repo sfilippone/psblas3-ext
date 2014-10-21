@@ -50,7 +50,7 @@ subroutine psb_d_dia_print(iout,a,iv,head,ivr,ivc)
   class(psb_d_coo_sparse_mat),allocatable :: acoo
 
   character(len=80)  :: frmtv 
-  integer(psb_ipk_)  :: irs,ics,i,j, nmx, ni, nr, nc, nz
+  integer(psb_ipk_)  :: irs,ics,i,j, nmx, ni, nr, nc, nz, jc, ir1, ir2
 
   if (present(head)) then 
     write(iout,'(a)') '%%MatrixMarket matrix coordinate real general'
@@ -72,46 +72,86 @@ subroutine psb_d_dia_print(iout,a,iv,head,ivr,ivc)
     write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),2(es26.18,1x),2(i',ni,',1x))'
   end if
   write(iout,*) nr, nc, nz 
-  ! if(present(iv)) then 
-  !   do i=1, nr
-  !     do j=1,a%irn(i)
-  !       write(iout,frmtv) iv(i),iv(a%ja(i,j)),a%val(i,j)
-  !     end do
-  !   enddo
-  ! else      
-  !   if (present(ivr).and..not.present(ivc)) then 
-  !     do i=1, nr
-  !       do j=1,a%irn(i)
-  !         write(iout,frmtv) ivr(i),(a%ja(i,j)),a%val(i,j)
-  !       end do
-  !     enddo
-  !   else if (present(ivr).and.present(ivc)) then 
-  !     do i=1, nr
-  !       do j=1,a%irn(i)
-  !         write(iout,frmtv) ivr(i),ivc(a%ja(i,j)),a%val(i,j)
-  !       end do
-  !     enddo
-  !   else if (.not.present(ivr).and.present(ivc)) then 
-  !     do i=1, nr
-  !       do j=1,a%irn(i)
-  !         write(iout,frmtv) (i),ivc(a%ja(i,j)),a%val(i,j)
-  !       end do
-  !     enddo
-  !   else if (.not.present(ivr).and..not.present(ivc)) then 
 
-  !   endif
-  ! endif
-!!$
-!!$  do i=1, nz
-!!$     write(iout,frmtv) a%ia(i),a%ja(i),a%val(i)
-!!$  enddo
+  nc=size(a%data,2)
 
-  !call acoo%free()
+      
+    
+  if(present(iv)) then 
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        write(iout,frmtv) iv(i),iv(i+jc),a%data(i,j)
+      enddo
+    enddo
 
-  ! do i=1, size(a%data,1)
-  !    do j=1,size(acoo%data,2)
-  !       write(iout,frmtv) (i),(a%data(i,j))
-  !    end do
-  ! enddo
+  else  if (present(ivr).and..not.present(ivc)) then 
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        write(iout,frmtv) ivr(i),(i+jc),a%data(i,j)
+      enddo
+    enddo
+
+  else if (present(ivr).and.present(ivc)) then 
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        write(iout,frmtv) ivr(i),ivc(i+jc),a%data(i,j)
+      enddo
+    enddo
+
+  else if (.not.present(ivr).and.present(ivc)) then 
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        write(iout,frmtv) (i),ivc(i+jc),a%data(i,j)
+      enddo
+    enddo
+
+  else if (.not.present(ivr).and..not.present(ivc)) then 
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        write(iout,frmtv) (i),(i+jc),a%data(i,j)
+      enddo
+    enddo
+    
+  endif
   
 end subroutine psb_d_dia_print

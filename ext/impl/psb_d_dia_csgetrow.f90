@@ -30,13 +30,13 @@
 !!$ 
   
 
-subroutine psb_d_ell_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
+subroutine psb_d_dia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
      & jmin,jmax,iren,append,nzin,rscale,cscale)
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_csgetrow
+  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_csgetrow
   implicit none
 
-  class(psb_d_ell_sparse_mat), intent(in)       :: a
+  class(psb_d_dia_sparse_mat), intent(in)       :: a
   integer(psb_ipk_), intent(in)                 :: imin,imax
   integer(psb_ipk_), intent(out)                :: nz
   integer(psb_ipk_), allocatable, intent(inout) :: ia(:), ja(:)
@@ -96,10 +96,14 @@ subroutine psb_d_ell_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
     goto 9999
   end if
-
-  call ell_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,&
-       & append_,info,iren)
+  info = psb_err_missing_override_method_
+  call psb_errpush(info,name)
+  goto 9999
   
+
+  call dia_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,&
+       & append_,info,iren)
+  if (info /= psb_success_) goto 9999
   if (rscale_) then 
     do i=nzin_+1, nzin_+nz
       ia(i) = ia(i) - imin + 1
@@ -111,7 +115,6 @@ subroutine psb_d_ell_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     end do
   end if
 
-  if (info /= psb_success_) goto 9999
 
   call psb_erractionrestore(err_act)
   return
@@ -127,12 +130,12 @@ subroutine psb_d_ell_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
 
 contains
 
-  subroutine ell_getrow(imin,imax,jmin,jmax,a,nz,ia,ja,val,nzin,append,info,&
+  subroutine dia_getrow(imin,imax,jmin,jmax,a,nz,ia,ja,val,nzin,append,info,&
        & iren)
 
     implicit none
 
-    class(psb_d_ell_sparse_mat), intent(in)       :: a
+    class(psb_d_dia_sparse_mat), intent(in)       :: a
     integer(psb_ipk_)                             :: imin,imax,jmin,jmax
     integer(psb_ipk_), intent(out)                :: nz
     integer(psb_ipk_), allocatable, intent(inout) :: ia(:), ja(:)
@@ -141,9 +144,10 @@ contains
     logical, intent(in)                           :: append
     integer(psb_ipk_)                             :: info
     integer(psb_ipk_), optional                   :: iren(:)
-    integer(psb_ipk_)  :: nzin_, nza, idx,i,j,k, nzt, irw, lrw
+    integer(psb_ipk_)  :: nzin_, nza, idx,i,j,k, nzt, irw, lrw,&
+         & ir, jc, m4, ir1, ir2, nzc, nr, nc
     integer(psb_ipk_)  :: debug_level, debug_unit
-    character(len=20) :: name='coo_getrow'
+    character(len=20) :: name='dia_getrow'
 
     debug_unit  = psb_get_debug_unit()
     debug_level = psb_get_debug_level()
@@ -161,42 +165,36 @@ contains
     else
       nzin_ = 0
     endif
+    nz = 0 
 
-    nzt = sum(a%irn(irw:lrw))
-    nz  = 0 
-
-
-    call psb_ensure_size(nzin_+nzt,ia,info)
-    if (info == psb_success_) call psb_ensure_size(nzin_+nzt,ja,info)
-    if (info == psb_success_) call psb_ensure_size(nzin_+nzt,val,info)
-
-    if (info /= psb_success_) return
-    
-    if (present(iren)) then 
-      do i=irw, lrw
-        do j=1,a%irn(i)
-          if ((jmin <= a%ja(i,j)).and.(a%ja(i,j)<=jmax)) then 
-            nzin_ = nzin_ + 1
-            nz    = nz + 1
-            val(nzin_) = a%val(i,j)
-            ia(nzin_)  = iren(i)
-            ja(nzin_)  = iren(a%ja(i,j))
-          end if
+    nr = size(a%data,1)
+    nc = size(a%data,2)
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      ir1 = max(irw,ir1)
+      ir1 = max(ir1,jmin-jc)
+      ir2 = min(lrw,ir2)
+      ir2 = min(ir2,jmax-jc)
+      nzc = ir2-ir1+1
+      if (nzc>0) then 
+        call psb_ensure_size(nzin_+nzc,ia,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
+        do i=ir1, ir2
+          nzin_ = nzin_ + 1
+          nz    = nz + 1
+          val(nzin_) = a%data(i,j)
+          ia(nzin_)  = i
+          ja(nzin_)  = i+jc
         enddo
-      end do
-    else
-      do i=irw, lrw
-        do j=1,a%irn(i)
-          if ((jmin <= a%ja(i,j)).and.(a%ja(i,j)<=jmax)) then 
-            nzin_ = nzin_ + 1
-            nz    = nz + 1
-            val(nzin_) = a%val(i,j)
-            ia(nzin_)  = (i)
-            ja(nzin_)  = (a%ja(i,j))
-          end if
-        enddo
-      end do
-    end if
-
-  end subroutine ell_getrow
-end subroutine psb_d_ell_csgetrow
+      end if
+    enddo
+  end subroutine dia_getrow
+end subroutine psb_d_dia_csgetrow

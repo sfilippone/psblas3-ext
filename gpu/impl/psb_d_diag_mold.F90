@@ -39,7 +39,7 @@ subroutine psb_d_diag_mold(a,b,info)
   class(psb_d_base_sparse_mat), intent(inout), allocatable  :: b
   integer(psb_ipk_), intent(out)                            :: info
   Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='elg_mold'
+  character(len=20)  :: name='diag_mold'
   logical, parameter :: debug=.false.
 
   call psb_get_erraction(err_act)

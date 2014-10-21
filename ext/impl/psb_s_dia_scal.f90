@@ -28,19 +28,17 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-subroutine psb_d_ell_scal(d,a,info,side) 
+subroutine psb_s_dia_scal(d,a,info,side) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_scal
+  use psb_s_dia_mat_mod, psb_protect_name => psb_s_dia_scal
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(inout) :: a
-  real(psb_dpk_), intent(in)     :: d(:)
+  class(psb_s_dia_sparse_mat), intent(inout) :: a
+  real(psb_spk_), intent(in)     :: d(:)
   integer(psb_ipk_), intent(out)  :: info
   character, intent(in), optional :: side
 
-  Integer(Psb_ipk_)  :: err_act,mnm, i, j, m, n, ierr(5)
+  Integer(Psb_ipk_)  :: err_act,mnm, i, j, m, n, ierr(5), nc, jc, nr, ir1, ir2
   character(len=20)  :: name='scal'
   character          :: side_
   logical            :: left 
@@ -70,7 +68,7 @@ subroutine psb_d_ell_scal(d,a,info,side)
     end if
     
     do i=1, m 
-      a%val(i,:) = a%val(i,:) * d(i)
+      a%data(i,:) = a%data(i,:) * d(i)
     enddo
   else
     n = a%get_ncols()
@@ -80,11 +78,21 @@ subroutine psb_d_ell_scal(d,a,info,side)
       call psb_errpush(info,name,i_err=ierr)
       goto 9999
     end if
-
-    do i=1, m 
-      do j=1, a%irn(i) 
-        a%val(i,j) = a%val(i,j) * d(a%ja(i,j))
-      end do
+    
+    nr=size(a%data,1)
+    nc=size(a%data,2)
+    do j=1,nc
+      jc = a%offset(j)
+      if (jc > 0) then 
+        ir1 = 1
+        ir2 = nr - jc
+      else
+        ir1 = 1 - jc
+        ir2 = nr
+      end if
+      do i=ir1, ir2
+        a%data(i,j) = a%data(i,j) * d(i+jc)
+      enddo
     enddo
     
   end if
@@ -99,4 +107,4 @@ subroutine psb_d_ell_scal(d,a,info,side)
   end if
   return
 
-end subroutine psb_d_ell_scal
+end subroutine psb_s_dia_scal

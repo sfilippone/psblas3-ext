@@ -28,18 +28,16 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-subroutine psb_d_ell_get_diag(a,d,info) 
+subroutine psb_d_dia_get_diag(a,d,info) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_get_diag
+  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_get_diag
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(in) :: a
+  class(psb_d_dia_sparse_mat), intent(in) :: a
   real(psb_dpk_), intent(out)         :: d(:)
   integer(psb_ipk_), intent(out)       :: info
 
-  Integer(Psb_ipk_)  :: err_act, mnm, i, j, k
+  integer(psb_ipk_)  :: err_act, mnm, i, j, k
   character(len=20)  :: name='get_diag'
   logical, parameter :: debug=.false.
 
@@ -57,9 +55,11 @@ subroutine psb_d_ell_get_diag(a,d,info)
   if (a%is_unit()) then 
     d(1:mnm) = done
   else
-    do i=1, mnm
-      if (1<=a%idiag(i).and.(a%idiag(i)<=size(a%ja,2))) &
-           &  d(i) = a%val(i,a%idiag(i))
+    do i=1, size(a%offset)
+      if (a%offset(i) == 0) then 
+        d(1:mnm) = a%data(1:mnm,i)
+        exit
+      end if
     end do
   end if
   do i=mnm+1,size(d) 
@@ -76,4 +76,4 @@ subroutine psb_d_ell_get_diag(a,d,info)
   end if
   return
 
-end subroutine psb_d_ell_get_diag
+end subroutine psb_d_dia_get_diag

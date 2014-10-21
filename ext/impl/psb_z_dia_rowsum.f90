@@ -28,45 +28,54 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-subroutine psb_d_ell_rowsum(d,a) 
+subroutine psb_z_dia_rowsum(d,a) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_rowsum
+  use psb_z_dia_mat_mod, psb_protect_name => psb_z_dia_rowsum
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(out)             :: d(:)
+  class(psb_z_dia_sparse_mat), intent(in) :: a
+  real(psb_dpk_), intent(out)              :: d(:)
 
-  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc, nc
-  Integer(Psb_ipk_)  :: err_act, info, int_err(5)
-  character(len=20)  :: name='rowsum'
-  logical            :: is_unit
+  integer(psb_ipk_) :: i,j,k,m,n, nnz, ir, jc, nc, ir1,ir2, nr
+  logical           :: tra
+  integer(psb_ipk_) :: err_act, info, int_err(5)
+  character(len=20) :: name='rowsum'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
 
   m = a%get_nrows()
-  if (size(d) < m) then 
+  n = a%get_ncols()
+  if (size(d) < n) then 
     info=psb_err_input_asize_small_i_
     int_err(1) = 1
     int_err(2) = size(d)
-    int_err(3) = m
+    int_err(3) = n
     call psb_errpush(info,name,i_err=int_err)
     goto 9999
   end if
 
-  is_unit = a%is_unit()
-  do i = 1, a%get_nrows()
-    if (is_unit) then 
-      d(i) = done
+  if (a%is_unit()) then 
+    d = done
+  else
+    d = dzero
+  end if
+
+  nr = size(a%data,1)
+  nc = size(a%data,2)
+  do j=1,nc
+    jc = a%offset(j) 
+    if (jc > 0) then 
+      ir1 = 1
+      ir2 = nr - jc
     else
-      d(i) = dzero
+      ir1 = 1 - jc
+      ir2 = nr
     end if
-    do j=1,a%irn(i) 
-      d(i) = d(i) + (a%val(i,j))
-    end do
-  end do
+    do i=ir1, ir2
+      d(i) = d(i) + a%data(i,j)
+    enddo
+  enddo
 
   call psb_erractionrestore(err_act)
   return  
@@ -80,4 +89,4 @@ subroutine psb_d_ell_rowsum(d,a)
   end if
   return
 
-end subroutine psb_d_ell_rowsum
+end subroutine psb_z_dia_rowsum

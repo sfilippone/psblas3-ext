@@ -30,13 +30,13 @@
 !!$ 
   
 
-subroutine psb_d_ell_reinit(a,clear)
+subroutine psb_c_dia_reinit(a,clear)
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_reinit
+  use psb_c_dia_mat_mod, psb_protect_name => psb_c_dia_reinit
   implicit none 
 
-  class(psb_d_ell_sparse_mat), intent(inout) :: a   
+  class(psb_c_dia_sparse_mat), intent(inout) :: a   
   logical, intent(in), optional :: clear
 
   Integer(Psb_ipk_)  :: err_act, info
@@ -58,7 +58,7 @@ subroutine psb_d_ell_reinit(a,clear)
     ! do nothing
     return
   else if (a%is_asb()) then 
-    if (clear_) a%val(:,:) = dzero
+    if (clear_) a%data(:,:) = czero
     call a%set_upd()
   else
     info = psb_err_invalid_mat_state_
@@ -78,4 +78,4 @@ subroutine psb_d_ell_reinit(a,clear)
   end if
   return
 
-end subroutine psb_d_ell_reinit
+end subroutine psb_c_dia_reinit

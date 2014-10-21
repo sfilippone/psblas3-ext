@@ -75,18 +75,19 @@ int FallocDiagDevice(void** deviceMat, unsigned int rows, unsigned int cols,
 		     unsigned int elementType, unsigned int firstIndex);
 int allocDiagDevice(void ** remoteMatrix, DiagDeviceParams* params);
 void freeDiagDevice(void* remoteMatrix);
-/* int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn); */
+
+int readDiagDeviceDouble(void* deviceMat, double* a, int* off);
 int writeDiagDeviceDouble(void* deviceMat, double* a, int* off, int n);
-int writeHllDeviceFloatComplex(void* deviceMat, float complex* val, 
-			       int* ja, int *hkoffs, int* irn);
-int writeHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
-				int* ja, int *hkoffs, int* irn);
-int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn);
-int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn);
-int readHllDeviceFloatComplex(void* deviceMat, float complex* val,
-			      int* ja, int *hkoffs, int* irn);
-int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
-			       int* ja, int *hkoffs, int* irn);
+int spmvDiagDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
+			 double beta, void* deviceY);
+
+int readDiagDeviceFloat(void* deviceMat, float* a, int* off);
+int writeDiagDeviceFloat(void* deviceMat, float* a, int* off, int n);
+int spmvDiagDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
+			float beta, void* deviceY);
+
+
+
 #else
 #define CINTRF_UNSUPPORTED   -1
 #endif

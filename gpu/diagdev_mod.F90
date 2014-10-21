@@ -68,14 +68,14 @@ module diagdev_mod
 
   interface writeDiagDevice
  
-    function writeDiagDeviceFloat(deviceMat,val,ja,ldj,irn) &
+    function writeDiagDeviceFloat(deviceMat,a,off,n) &
          & result(res) bind(c,name='writeDiagDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
-      integer(c_int), value :: ldj
-      real(c_float)       :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int), value :: n
+      real(c_float)       :: a(n,*)
+      integer(c_int)      :: off(*)!,irn(*)
     end function writeDiagDeviceFloat
 
     function writeDiagDeviceDouble(deviceMat,a,off,n) &
@@ -88,38 +88,37 @@ module diagdev_mod
       integer(c_int)      :: off(*)
     end function writeDiagDeviceDouble
 
-    function writeDiagDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
+    function writeDiagDeviceFloatComplex(deviceMat,a,off,n) &
          & result(res) bind(c,name='writeDiagDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
-      integer(c_int), value    :: ldj
-      complex(c_float_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int), value    :: n
+      complex(c_float_complex) :: a(n,*)
+      integer(c_int)           :: off(*)!,irn(*)
     end function writeDiagDeviceFloatComplex
 
-    function writeDiagDeviceDoubleComplex(deviceMat,val,ja,ldj,irn) &
+    function writeDiagDeviceDoubleComplex(deviceMat,a,off,n) &
          & result(res) bind(c,name='writeDiagDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)            :: res
       type(c_ptr), value        :: deviceMat
-      integer(c_int), value     :: ldj
-      complex(c_double_complex) :: val(ldj,*)
-      integer(c_int)            :: ja(ldj,*),irn(*)
+      integer(c_int), value     :: n
+      complex(c_double_complex) :: a(n,*)
+      integer(c_int)            :: off(*)!,irn(*)
     end function writeDiagDeviceDoubleComplex
-
-  end interface writeDiagDevice
+    
+  end interface
 
   interface readDiagDevice 
 
-    function readDiagDeviceFloat(deviceMat,val,ja,ldj,irn) &
+    function readDiagDeviceFloat(deviceMat,a,off,n) &
          & result(res) bind(c,name='readDiagDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
-      integer(c_int), value :: ldj
-      real(c_float)       :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      real(c_float)       :: a(n,*)
+      integer(c_int)      :: off(*)!,irn(*)
     end function readDiagDeviceFloat
 
     function readDiagDeviceDouble(deviceMat,a,off,n) &
@@ -132,27 +131,27 @@ module diagdev_mod
       integer(c_int)      :: off(*)
     end function readDiagDeviceDouble
 
-    function readDiagDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
+    function readDiagDeviceFloatComplex(deviceMat,a,off,n) &
          & result(res) bind(c,name='readDiagDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
-      integer(c_int), value    :: ldj
-      complex(c_float_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int), value    :: n
+      complex(c_float_complex) :: a(n,*)
+      integer(c_int)           :: off(*)!,irn(*)
     end function readDiagDeviceFloatComplex
 
-    function readDiagDeviceDoubleComplex(deviceMat,val,ja,ldj,irn) &
+    function readDiagDeviceDoubleComplex(deviceMat,a,off,n) &
          & result(res) bind(c,name='readDiagDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
-      integer(c_int), value    :: ldj
-      complex(c_double_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int), value    :: n
+      complex(c_double_complex) :: a(n,*)
+      integer(c_int)           :: off(*)!,irn(*)
     end function readDiagDeviceDoubleComplex
 
-  end interface readDiagDevice
+  end interface
 
   interface 
     subroutine  freeDiagDevice(deviceMat) &

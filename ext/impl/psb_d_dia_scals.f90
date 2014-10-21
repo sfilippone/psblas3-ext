@@ -30,12 +30,12 @@
 !!$ 
   
 
-subroutine psb_d_ell_scals(d,a,info) 
+subroutine psb_d_dia_scals(d,a,info) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_scals
+  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_scals
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(inout) :: a
+  class(psb_d_dia_sparse_mat), intent(inout) :: a
   real(psb_dpk_), intent(in)      :: d
   integer(psb_ipk_), intent(out)   :: info
 
@@ -50,7 +50,7 @@ subroutine psb_d_ell_scals(d,a,info)
     call a%make_nonunit()
   end if
 
-  a%val(:,:) = a%val(:,:) * d
+  a%data(:,:) = a%data(:,:) * d
 
   call psb_erractionrestore(err_act)
   return
@@ -63,4 +63,4 @@ subroutine psb_d_ell_scals(d,a,info)
   end if
   return
 
-end subroutine psb_d_ell_scals
+end subroutine psb_d_dia_scals

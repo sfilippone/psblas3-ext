@@ -30,23 +30,22 @@
 !!$ 
   
 
-subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info) 
+subroutine psb_c_dia_csmv(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
-  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_csmv
+  use psb_c_dia_mat_mod, psb_protect_name => psb_c_dia_csmv
   implicit none 
-  class(psb_d_dia_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(in)        :: alpha, beta, x(:)
-  real(psb_dpk_), intent(inout)     :: y(:)
+  class(psb_c_dia_sparse_mat), intent(in) :: a
+  complex(psb_spk_), intent(in)        :: alpha, beta, x(:)
+  complex(psb_spk_), intent(inout)     :: y(:)
   integer(psb_ipk_), intent(out)     :: info
-  !character, optional, intent(in)    :: trans
+  character, optional, intent(in)    :: trans
 
   character :: trans_
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc
-  real(psb_dpk_)    :: acc
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
-  character(len=20)  :: name='d_dia_csmv'
+  character(len=20)  :: name='c_dia_csmv'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
@@ -58,8 +57,22 @@ subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info)
     goto 9999
   endif
 
+
+  if (present(trans)) then
+    trans_ = trans
+  else
+    trans_ = 'N'
+  end if
+
+  tra  = (psb_toupper(trans_) == 'T')
+  ctra = (psb_toupper(trans_) == 'C')
+  if (tra.or.ctra) then 
+    m = a%get_ncols()
+    n = a%get_nrows()
+  else
     n = a%get_ncols()
     m = a%get_nrows()
+  end if
 
   if (size(x,1)<n) then 
     info = 36
@@ -74,7 +87,7 @@ subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info)
   end if
 
 
-  call psb_d_dia_csmv_inner(m,n,alpha,size(a%data,1),&
+  call psb_c_dia_csmv_inner(m,n,alpha,size(a%data,1),&
        & size(a%data,2),a%data,a%offset,x,beta,y) 
 
   call psb_erractionrestore(err_act)
@@ -91,18 +104,17 @@ subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info)
 
 contains
 
-  subroutine psb_d_dia_csmv_inner(m,n,alpha,nr,nc,data,off,&
+  subroutine psb_c_dia_csmv_inner(m,n,alpha,nr,nc,data,off,&
        &x,beta,y) 
     integer(psb_ipk_), intent(in)   :: m,n,nr,nc,off(*)
-    real(psb_dpk_), intent(in)     :: alpha, beta, x(*),data(nr,*)
-    real(psb_dpk_), intent(inout)  :: y(*)
+    complex(psb_spk_), intent(in)     :: alpha, beta, x(*),data(nr,*)
+    complex(psb_spk_), intent(inout)  :: y(*)
 
     integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
-    real(psb_dpk_)   :: acc(4) 
 
-    if (beta == dzero) then
+    if (beta == czero) then
       do i = 1, m
-        y(i) = dzero
+        y(i) = czero
       enddo
     else
       do  i = 1, m
@@ -123,6 +135,6 @@ contains
       enddo
     enddo
 
-  end subroutine psb_d_dia_csmv_inner
+  end subroutine psb_c_dia_csmv_inner
 
-end subroutine psb_d_dia_csmv
+end subroutine psb_c_dia_csmv

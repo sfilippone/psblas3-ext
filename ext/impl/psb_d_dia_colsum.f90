@@ -28,20 +28,18 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-subroutine psb_d_ell_colsum(d,a) 
+subroutine psb_d_dia_colsum(d,a) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_colsum
+  use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_colsum
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(in) :: a
+  class(psb_d_dia_sparse_mat), intent(in) :: a
   real(psb_dpk_), intent(out)              :: d(:)
 
-  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc, nc
-  logical            :: tra
-  Integer(Psb_ipk_)  :: err_act, info, int_err(5)
-  character(len=20)  :: name='colsum'
+  integer(psb_ipk_) :: i,j,k,m,n, nnz, ir, jc, nc, ir1,ir2, nr
+  logical           :: tra
+  integer(psb_ipk_) :: err_act, info, int_err(5)
+  character(len=20) :: name='colsum'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
@@ -63,13 +61,22 @@ subroutine psb_d_ell_colsum(d,a)
     d = dzero
   end if
 
-  do i=1, m
-    do j=1,a%irn(i)
-      k    = a%ja(i,j)
-      d(k) = d(k) + (a%val(i,j))
-    end do
-  end do
- 
+  nr = size(a%data,1)
+  nc = size(a%data,2)
+  do j=1,nc
+    jc = a%offset(j) 
+    if (jc > 0) then 
+      ir1 = 1
+      ir2 = nr - jc
+    else
+      ir1 = 1 - jc
+      ir2 = nr
+    end if
+    do i=ir1, ir2
+      d(i+jc) = d(i+jc) + a%data(i,j)
+    enddo
+  enddo
+
   call psb_erractionrestore(err_act)
   return  
 
@@ -82,4 +89,4 @@ subroutine psb_d_ell_colsum(d,a)
   end if
   return
 
-end subroutine psb_d_ell_colsum
+end subroutine psb_d_dia_colsum

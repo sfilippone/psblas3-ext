@@ -28,32 +28,26 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-function psb_d_ell_maxval(a) result(res)
+function psb_s_dia_maxval(a) result(res)
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_maxval
+  use psb_s_dia_mat_mod, psb_protect_name => psb_s_dia_maxval
   implicit none 
-  class(psb_d_ell_sparse_mat), intent(in) :: a
-  real(psb_dpk_)         :: res
+  class(psb_s_dia_sparse_mat), intent(in) :: a
+  real(psb_spk_)         :: res
 
   integer(psb_ipk_)  :: i,j,k,m,n, nr, ir, jc, nc
   real(psb_dpk_)   :: acc
-  logical            :: tra
   Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='d_csnmi'
+  character(len=20)  :: name='s_maxval'
   logical, parameter :: debug=.false.
 
   if (a%is_unit()) then 
-    res = done
+    res = sone
   else
-    res = dzero
+    res = szero
   end if
  
-  do i = 1, a%get_nrows()
-    acc = maxval(abs(a%val(i,:)))
-    res = max(res,acc)
-  end do
+  res = max(res,maxval(abs(a%data)))
 
-end function psb_d_ell_maxval
+end function psb_s_dia_maxval

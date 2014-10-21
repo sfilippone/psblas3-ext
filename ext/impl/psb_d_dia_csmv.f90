@@ -30,7 +30,7 @@
 !!$ 
   
 
-subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info) 
+subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
   use psb_d_dia_mat_mod, psb_protect_name => psb_d_dia_csmv
@@ -39,11 +39,10 @@ subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info)
   real(psb_dpk_), intent(in)        :: alpha, beta, x(:)
   real(psb_dpk_), intent(inout)     :: y(:)
   integer(psb_ipk_), intent(out)     :: info
-  !character, optional, intent(in)    :: trans
+  character, optional, intent(in)    :: trans
 
   character :: trans_
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc
-  real(psb_dpk_)    :: acc
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_dia_csmv'
@@ -58,8 +57,22 @@ subroutine psb_d_dia_csmv(alpha,a,x,beta,y,info)
     goto 9999
   endif
 
+
+  if (present(trans)) then
+    trans_ = trans
+  else
+    trans_ = 'N'
+  end if
+
+  tra  = (psb_toupper(trans_) == 'T')
+  ctra = (psb_toupper(trans_) == 'C')
+  if (tra.or.ctra) then 
+    m = a%get_ncols()
+    n = a%get_nrows()
+  else
     n = a%get_ncols()
     m = a%get_nrows()
+  end if
 
   if (size(x,1)<n) then 
     info = 36
@@ -98,7 +111,6 @@ contains
     real(psb_dpk_), intent(inout)  :: y(*)
 
     integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
-    real(psb_dpk_)   :: acc(4) 
 
     if (beta == dzero) then
       do i = 1, m

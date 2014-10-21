@@ -57,7 +57,7 @@ subroutine  psb_d_dia_allocate_mnnz(m,n,a,nz)
   if (present(nz)) then 
     nz_ = (nz + m -1 )/m
   else
-    nz_ = (max(7*m,7*n,1)+m-1)/m
+    nz_ = ((max(7*m,7*n,1)+m-1)/m)
   end if
   if (nz_ < 0) then 
     info = psb_err_iarg_neg_
@@ -65,8 +65,8 @@ subroutine  psb_d_dia_allocate_mnnz(m,n,a,nz)
     goto 9999
   endif
 
-  if (info == psb_success_) call psb_realloc(m,m,a%data,info)
-  if (info == psb_success_) call psb_realloc(2*m,a%offset,info)
+  if (info == psb_success_) call psb_realloc(m,nz_,a%data,info)
+  if (info == psb_success_) call psb_realloc(m+n,a%offset,info)
   if (info == psb_success_) then 
     a%data   = 0
     a%offset = 0

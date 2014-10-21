@@ -28,34 +28,24 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
-subroutine  psb_d_ell_reallocate_nz(nz,a) 
+subroutine  psb_z_dia_reallocate_nz(nz,a) 
   
   use psb_base_mod
-  use psb_d_ell_mat_mod, psb_protect_name => psb_d_ell_reallocate_nz
+  use psb_z_dia_mat_mod, psb_protect_name => psb_z_dia_reallocate_nz
   implicit none 
   integer(psb_ipk_), intent(in) :: nz
-  class(psb_d_ell_sparse_mat), intent(inout) :: a
+  class(psb_z_dia_sparse_mat), intent(inout) :: a
   integer(psb_ipk_)  :: m, nzrm, ld
   Integer(Psb_ipk_)  :: err_act, info
-  character(len=20)  :: name='d_ell_reallocate_nz'
+  character(len=20)  :: name='z_dia_reallocate_nz'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
 
   !
-  ! What should this really do??? 
+  ! What should this really do???
+  ! Ans: NOTHING. 
   ! 
-  m    = a%get_nrows()
-  nzrm = (nz+m-1)/m
-  ld = size(a%ja,1)
-  call psb_realloc(ld,nzrm,a%ja,info)
-  if (info == psb_success_) call psb_realloc(ld,nzrm,a%val,info)
-  if (info /= psb_success_) then 
-    call psb_errpush(psb_err_alloc_dealloc_,name)
-    goto 9999
-  end if
 
   call psb_erractionrestore(err_act)
   return
@@ -69,4 +59,4 @@ subroutine  psb_d_ell_reallocate_nz(nz,a)
   end if
   return
 
-end subroutine psb_d_ell_reallocate_nz
+end subroutine psb_z_dia_reallocate_nz
