@@ -1,0 +1,5 @@
+mat_fem.mtx            ! Matrix file
+MM                     ! Matrix file format
+HLL                    ! CPU Storage format
+HLG                    ! GPU Storage format
+0                      ! Partition type
