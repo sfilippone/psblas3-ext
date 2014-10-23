@@ -45,7 +45,7 @@ subroutine psb_z_ell_csgetblk(imin,imax,a,b,info,&
   integer(psb_ipk_), intent(in), optional    :: jmin,jmax
   logical, intent(in), optional              :: rscale,cscale
   Integer(Psb_ipk_) :: err_act, nzin, nzout
-  character(len=20)  :: name='csget'
+  character(len=20)  :: name='ell_getblk'
   logical :: append_
   logical, parameter :: debug=.false.
 

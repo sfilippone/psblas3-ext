@@ -1,7 +1,7 @@
 7                      Number of entries below this
 BICGSTAB               Iterative method BICGSTAB CGS  BICG BICGSTABL RGMRES
 BJAC
-HLL                    Storage format for matrix A:  CSR COO JAD 
+DIA                    Storage format for matrix A:  CSR COO JAD 
 040                    Domain size (acutal system is this**3)
 2                      Stopping criterion
 1000                   MAXIT

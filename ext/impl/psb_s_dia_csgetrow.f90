@@ -49,7 +49,7 @@ subroutine psb_s_dia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
 
   logical :: append_, rscale_, cscale_ 
   integer(psb_ipk_) :: nzin_, jmin_, jmax_, err_act, i
-  character(len=20)  :: name='csget'
+  character(len=20)  :: name='dia_getrow'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
