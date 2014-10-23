@@ -177,7 +177,7 @@ contains
       nzc = ir2-ir1+1
       if (nzc>0) then 
         call psb_ensure_size(nzin_+nzc,ia,info)
-        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,ja,info)
         do i=ir1, ir2
           nzin_ = nzin_ + 1
           nz    = nz + 1

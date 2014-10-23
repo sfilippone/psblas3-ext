@@ -96,10 +96,6 @@ subroutine psb_z_dia_csgetptn(imin,imax,a,nz,ia,ja,info,&
     goto 9999
   end if
 
-  info = psb_err_missing_override_method_
-  call psb_errpush(info,name)
-  goto 9999
-  
   call dia_getptn(imin,imax,jmin_,jmax_,a,nz,ia,ja,nzin_,append_,info,iren)
 
   if (info /= psb_success_) goto 9999
@@ -181,7 +177,7 @@ contains
       nzc = ir2-ir1+1
       if (nzc>0) then 
         call psb_ensure_size(nzin_+nzc,ia,info)
-        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,ja,info)
         do i=ir1, ir2
           nzin_ = nzin_ + 1
           nz    = nz + 1

@@ -96,10 +96,6 @@ subroutine psb_z_dia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
     goto 9999
   end if
-  info = psb_err_missing_override_method_
-  call psb_errpush(info,name)
-  goto 9999
-  
 
   call dia_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,&
        & append_,info,iren)
@@ -185,8 +181,8 @@ contains
       nzc = ir2-ir1+1
       if (nzc>0) then 
         call psb_ensure_size(nzin_+nzc,ia,info)
-        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
-        if (info == 0) call psb_ensure_size(nzin_+nzc,ia,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,ja,info)
+        if (info == 0) call psb_ensure_size(nzin_+nzc,val,info)
         do i=ir1, ir2
           nzin_ = nzin_ + 1
           nz    = nz + 1
