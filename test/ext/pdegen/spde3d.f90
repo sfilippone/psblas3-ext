@@ -29,88 +29,100 @@
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
 !!$  
-! File: ppde2d.f90
+! File: spde3d.f90
 !
-! Program: ppde2d
+! Program: spde3d
 ! This sample program solves a linear system obtained by discretizing a
 ! PDE with Dirichlet BCs. 
 ! 
 !
-! The PDE is a general second order equation in 2d
+! The PDE is a general second order equation in 3d
 !
-!   a1 dd(u)  a2 dd(u)   b1 d(u)   b2 d(u) 
-! -   ------ -  ------   -----  +  ------  + c u = f
-!      dxdx     dydy        dx       dy    
+!   a1 dd(u)  a2 dd(u)    a3 dd(u)    b1 d(u)   b2 d(u)  b3 d(u)  
+! -   ------ -  ------ -  ------ +  -----  +  ------  +  ------ + c u = f
+!      dxdx     dydy       dzdz        dx       dy         dz   
 !
 ! with Dirichlet boundary conditions
 !   u = g 
 !
-!  on the unit square  0<=x,y<=1.
+!  on the unit cube  0<=x,y,z<=1.
 !
 !
-! Note that if b1=b2=c=0., the PDE is the  Laplace equation.
+! Note that if b1=b2=b3=c=0., the PDE is the  Laplace equation.
 !
 ! In this sample program the index space of the discretized
 ! computational domain is first numbered sequentially in a standard way, 
 ! then the corresponding vector is distributed according to a BLOCK
 ! data distribution.
 !
-module ppde2d_mod
+!
+module spde3d_mod
 contains
-
+  
   !
   ! functions parametrizing the differential equation 
   !  
-  function b1(x,y)
-    use psb_base_mod, only : psb_dpk_
-    real(psb_dpk_) :: b1
-    real(psb_dpk_), intent(in) :: x,y
-    b1=1.d0/sqrt(2.d0)
+  function b1(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) :: b1
+    real(psb_spk_), intent(in) :: x,y,z
+    b1=1.e0/sqrt(3.e0)
   end function b1
-  function b2(x,y)
-    use psb_base_mod, only : psb_dpk_
-    real(psb_dpk_) ::  b2
-    real(psb_dpk_), intent(in) :: x,y
-    b2=1.d0/sqrt(2.d0)
+  function b2(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  b2
+    real(psb_spk_), intent(in) :: x,y,z
+    b2=1.e0/sqrt(3.e0)
   end function b2
-  function c(x,y)
-    use psb_base_mod, only : psb_dpk_
-    real(psb_dpk_) ::  c
-    real(psb_dpk_), intent(in) :: x,y
-    c=0.d0
+  function b3(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  b3
+    real(psb_spk_), intent(in) :: x,y,z      
+    b3=1.e0/sqrt(3.e0)
+  end function b3
+  function c(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  c
+    real(psb_spk_), intent(in) :: x,y,z      
+    c=0.e0
   end function c
-  function a1(x,y)
-    use psb_base_mod, only : psb_dpk_
-    real(psb_dpk_) ::  a1   
-    real(psb_dpk_), intent(in) :: x,y
-    a1=1.d0/80
+  function a1(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  a1   
+    real(psb_spk_), intent(in) :: x,y,z
+    a1=1.e0/80
   end function a1
-  function a2(x,y)
-    use psb_base_mod, only : psb_dpk_
-    real(psb_dpk_) ::  a2
-    real(psb_dpk_), intent(in) :: x,y
-    a2=1.d0/80
+  function a2(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  a2
+    real(psb_spk_), intent(in) :: x,y,z
+    a2=1.e0/80
   end function a2
-  function g(x,y)
-    use psb_base_mod, only : psb_dpk_, done, dzero
-    real(psb_dpk_) ::  g
-    real(psb_dpk_), intent(in) :: x,y
-    g = dzero
-    if (x == done) then
-      g = done
-    else if (x == dzero) then 
-      g = exp(-y**2)
+  function a3(x,y,z)
+    use psb_base_mod, only : psb_spk_
+    real(psb_spk_) ::  a3
+    real(psb_spk_), intent(in) :: x,y,z
+    a3=1.e0/80
+  end function a3
+  function g(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    real(psb_spk_) ::  g
+    real(psb_spk_), intent(in) :: x,y,z
+    g = szero
+    if (x == sone) then
+      g = sone
+    else if (x == szero) then 
+      g = exp(y**2-z**2)
     end if
   end function g
+end module spde3d_mod
 
-end module ppde2d_mod
-
-program ppde2d
+program spde3d
   use psb_base_mod
   use psb_prec_mod
   use psb_krylov_mod
   use psb_util_mod
-  use ppde2d_mod
+  use spde3d_mod
   implicit none
 
   ! input parameters
@@ -119,23 +131,23 @@ program ppde2d
   integer(psb_ipk_) :: idim
 
   ! miscellaneous 
-  real(psb_dpk_), parameter :: one = 1.d0
+  real(psb_spk_), parameter :: one = 1.e0
   real(psb_dpk_) :: t1, t2, tprec 
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a
-  type(psb_dprec_type)  :: prec
+  type(psb_sspmat_type) :: a
+  type(psb_sprec_type)  :: prec
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense vectors
-  type(psb_d_vect_type) :: xxv,bv
+  type(psb_s_vect_type) :: xxv,bv
   ! parallel environment
   integer(psb_ipk_) :: ictxt, iam, np
 
   ! solver parameters
   integer(psb_ipk_) :: iter, itmax,itrace, istopc, irst
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, d2size
-  real(psb_dpk_)   :: err, eps
+  real(psb_spk_)   :: err, eps
 
   ! other variables
   integer(psb_ipk_) :: info, i
@@ -154,7 +166,7 @@ program ppde2d
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
-  name='pde2d90'
+  name='pde3d90'
   call psb_set_errverbosity(itwo)
   !
   ! Hello world
@@ -173,12 +185,13 @@ program ppde2d
   !
   call psb_barrier(ictxt)
   t1 = psb_wtime()
-  call psb_gen_pde2d(ictxt,idim,a,bv,xxv,desc_a,afmt,a1,a2,b1,b2,c,g,info)  
+  call psb_gen_pde3d(ictxt,idim,a,bv,xxv,desc_a,afmt,&
+       & a1,a2,a3,b1,b2,b3,c,g,info)  
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
     info=psb_err_from_subroutine_
-    ch_err='psb_gen_pde2d'
+    ch_err='psb_gen_pde3d'
     call psb_errpush(info,name,a_err=ch_err)
     goto 9999
   end if
@@ -312,7 +325,9 @@ contains
         endif
 
         write(psb_out_unit,'("Solving matrix       : ell1")')      
-        write(psb_out_unit,'("Grid dimensions      : ",i5," x ",i5)')idim,idim
+        write(psb_out_unit,&
+             & '("Grid dimensions      : ",i4," x ",i4," x ",i4)') &
+             & idim,idim,idim
         write(psb_out_unit,'("Number of processors : ",i0)')np
         write(psb_out_unit,'("Data distribution    : BLOCK")')
         write(psb_out_unit,'("Preconditioner       : ",a)') ptype
@@ -325,7 +340,6 @@ contains
         stop 1
       endif
     end if
-
     ! broadcast parameters to all processors
     call psb_bcast(ictxt,kmethd)
     call psb_bcast(ictxt,afmt)
@@ -336,7 +350,6 @@ contains
     call psb_bcast(ictxt,itrace)
     call psb_bcast(ictxt,irst)
 
-
     return
 
   end subroutine get_parms
@@ -346,7 +359,7 @@ contains
   subroutine pr_usage(iout)
     integer(psb_ipk_) :: iout
     write(iout,*)'incorrect parameter(s) found'
-    write(iout,*)' usage:  pde2d90 methd prec dim &
+    write(iout,*)' usage:  pde3d90 methd prec dim &
          &[istop itmax itrace]'  
     write(iout,*)' where:'
     write(iout,*)'     methd:    cgstab cgs rgmres bicgstabl' 
@@ -360,6 +373,7 @@ contains
     write(iout,*)'               >= 1 do tracing every itrace'
     write(iout,*)'               iterations ' 
   end subroutine pr_usage
-end program ppde2d
+
+end program spde3d
 
 

@@ -1,71 +1,50 @@
-include ../../Make.inc
+TOPDIR=../../..
+include $(TOPDIR)/Make.inc
 #
 # Libraries used
 #
-LIBDIR=../../lib/
+LIBDIR=$(TOPDIR)/lib/
+INCDIR=$(TOPDIR)/include
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base \
-	 -lpsb_gpu -L$(LIBDIR) -lamd
-MLDLIBDIR=$(MLDDIR)/lib
-MLDINCDIR=$(MLDDIR)/include 
-MLDLIBS=-L$(MLDLIBDIR) -lmld_prec
-AINVDIR=/home/sfilippo/NUMERICAL/NewPSBLAS/mld-ainv
-AINVINCDIR=$(AINVDIR)/lib
-AINVLIBDIR=$(AINVDIR)/lib
-AINVLIBS=-L$(AINVLIBDIR) -lainv_prec
+PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 
 LDLIBS=$(PSBLDLIBS) 
 #
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
-          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) 
+FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
 
 
 EXEDIR=./runs
 
-all: mldpde mldpde2d
+all: ppde3d spde3d ppde2d spde2d
 
-ppde: ppde.o 
-	$(F90LINK)  ppde.o -o ppde $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv ppde $(EXEDIR)
-mldpde.o: pde3d_exp_mod.o pde3d_gauss_mod.o pde3d_base_mod.o
-mldpde: mldpde.o pde3d_exp_mod.o pde3d_gauss_mod.o  pde3d_base_mod.o
-	$(F90LINK)  mldpde.o pde3d_exp_mod.o pde3d_gauss_mod.o pde3d_base_mod.o -o mldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv mldpde $(EXEDIR)
-mldpde2d.o:  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o
-mldpde2d: mldpde2d.o  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o
-	$(F90LINK)  mldpde2d.o  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o -o mldpde2d $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv mldpde2d $(EXEDIR)
 
-mmldpde: mmldpde.o 
-	$(F90LINK)  mmldpde.o -o mmldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv mmldpde $(EXEDIR)
+ppde3d: ppde3d.o 
+	$(F90LINK)  ppde3d.o -o ppde3d $(PSBLAS_LIB) $(LDLIBS)
+	/bin/mv ppde3d $(EXEDIR)
 
-ppeps2d: ppeps2d.o 
-	$(F90LINK)  ppeps2d.o -o ppeps2d  $(AINVLIBS) $(MLDLIBS)  $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv ppeps2d $(EXEDIR)
- 
+
+spde3d: spde3d.o 
+	$(F90LINK) spde3d.o  -o spde3d $(PSBLAS_LIB) $(LDLIBS)
+	/bin/mv spde3d $(EXEDIR)
 
 ppde2d: ppde2d.o 
 	$(F90LINK)  ppde2d.o -o ppde2d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppde2d $(EXEDIR)
 
-taxpby: taxpby.o 
-	$(F90LINK)  taxpby.o -o taxpby $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv taxpby $(EXEDIR)
 
-
-spde: spde.o 
-	$(F90LINK) spde.o  -o spde $(PSBLAS_LIB) $(LDLIBS)
-	/bin/mv spde $(EXEDIR)
+spde2d: spde2d.o 
+	$(F90LINK) spde2d.o  -o spde2d $(PSBLAS_LIB) $(LDLIBS)
+	/bin/mv spde2d $(EXEDIR)
 
 
 clean: 
-	/bin/rm -f *.o *$(.mod)\
-	 mldpde.o mmldpde.o ppeps2d.o  $(EXEDIR)/ppde  $(EXEDIR)/mldpde2d  $(EXEDIR)/mldpde 
+	/bin/rm -f ppde3d.o spde3d.o  ppde2d.o spde2d.o *$(.mod) \
+	$(EXEDIR)/ppde3d $(EXEDIR)/spde3d $(EXEDIR)/ppde2d $(EXEDIR)/spde2d 
+
 verycleanlib: 
 	(cd ../..; make veryclean)
 lib:
