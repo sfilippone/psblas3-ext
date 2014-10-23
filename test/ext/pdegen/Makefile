@@ -7,9 +7,9 @@ LIBDIR=$(TOPDIR)/lib/
 INCDIR=$(TOPDIR)/include
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 
-LDLIBS=$(PSBLDLIBS) 
+LDLIBS=$(PSBEXTLDLIBS)
 #
 # Compilers and such
 #

@@ -41,28 +41,23 @@ program pdgenmv
   use psb_base_mod
   use psb_util_mod 
   use psb_ext_mod
-#ifdef HAVE_GPU
-  use psb_gpu_mod
-#endif
   implicit none
 
   ! input parameters
-  character(len=5)  :: acfmt, agfmt
+  character(len=5)  :: acfmt
   integer   :: idim
 
   ! miscellaneous 
   real(psb_spk_), parameter :: one = 1.e0
-  real(psb_dpk_) :: t1, t2, tprec, flops, tflops, tt1, tt2, gt1, gt2, gflops, bdwdth
+  real(psb_dpk_) :: t1, t2, tprec, flops, tflops, tt1, tt2,  bdwdth
 
   ! sparse matrix and preconditioner
-  type(psb_sspmat_type) :: a, agpu
+  type(psb_sspmat_type) :: a
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_s_vect_type)  :: xv,bv, xg, bg 
-#ifdef HAVE_GPU
-  type(psb_s_vect_gpu)  :: vmold
-#endif
+  type(psb_s_vect_type)  :: xv,bv 
+
   real(psb_spk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
   integer            :: ictxt, iam, np
@@ -70,18 +65,14 @@ program pdgenmv
   ! solver parameters
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_spk_)   :: err, eps
-  integer, parameter :: ntests=200, ngpu=50 
+  integer, parameter :: ntests=200
+  type(psb_s_coo_sparse_mat), target   :: acoo
   type(psb_s_csr_sparse_mat), target   :: acsr
+  type(psb_s_csc_sparse_mat), target   :: acsc
   type(psb_s_ell_sparse_mat), target   :: aell
   type(psb_s_hll_sparse_mat), target   :: ahll
   type(psb_s_dia_sparse_mat), target   :: adia
-#ifdef HAVE_GPU
-  type(psb_s_elg_sparse_mat), target   :: aelg
-  type(psb_s_csrg_sparse_mat), target  :: acsrg
-  type(psb_s_hybg_sparse_mat), target  :: ahybg
-  type(psb_s_hlg_sparse_mat), target   :: ahlg
-  type(psb_s_diag_sparse_mat), target   :: adiag
-#endif
+
   class(psb_s_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
@@ -94,10 +85,6 @@ program pdgenmv
   
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
-
-#ifdef HAVE_GPU
-  call psb_gpu_init(ictxt)
-#endif
 
   if (iam < 0) then 
     ! This should not happen, but just in case
@@ -117,7 +104,7 @@ program pdgenmv
   !
   !  get parameters
   !
-  call get_parms(ictxt,acfmt,agfmt,idim)
+  call get_parms(ictxt,acfmt,idim)
 
   !
   !  allocate and fill in the coefficient matrix and initial vectors
@@ -151,10 +138,10 @@ program pdgenmv
     acmold => adia
   case('CSR')
     acmold => acsr
-#ifdef HAVE_RSB
-  case('RSB')
-    acmold => arsb
-#endif
+  case('CSC')
+    acmold => acsc
+  case('COO')
+    acmold => acoo
   case default
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
@@ -166,33 +153,6 @@ program pdgenmv
     stop
   end if
 
-#ifdef HAVE_GPU
-  select case(psb_toupper(agfmt))
-  case('ELG')
-    agmold => aelg
-  case('HLG')
-    agmold => ahlg
-  case('DIAG')
-    agmold => adiag
-  case('CSRG')
-    agmold => acsrg
-  case('HYBG')
-    agmold => ahybg
-  case default
-    write(*,*) 'Unknown format defaulting to HLG'
-    agmold => ahlg
-  end select
-  call a%cscnv(agpu,info,mold=agmold)
-  if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
-    write(0,*) 'From cscnv ',info
-    call psb_error()
-    stop
-  end if
-
-  call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
-  call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
-  call xg%set(sone)
-#endif
   call xv%set(sone)
   nr       = desc_a%get_local_rows() 
 
@@ -205,66 +165,6 @@ program pdgenmv
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
 
-#ifdef HAVE_GPU
-  ! FIXME: cache flush needed here
-  call psb_barrier(ictxt)
-  tt1 = psb_wtime()
-  do i=1,ntests 
-    call psb_spmm(sone,agpu,xv,szero,bg,desc_a,info)
-    call psb_gpu_DeviceSync()
-    if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
-      write(0,*) 'From 1 spmm',info,i,ntests
-      call psb_error()
-      stop
-    end if
-
-  end do
-  call psb_barrier(ictxt)
-  tt2 = psb_wtime() - tt1
-  call psb_amx(ictxt,tt2)
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
-  call psb_amx(ictxt,eps)
-  if (iam==0) write(*,*) 'Max diff on xGPU',eps
-
-
-  call xg%sync()
-  ! FIXME: cache flush needed here
-  
-  call psb_barrier(ictxt)
-  gt1 = psb_wtime()
-  do i=1,ntests*ngpu
-    ! Make sure the X vector is on the GPU side of things.
-    select type (v => xg%v)
-    type is (psb_s_vect_gpu) 
-      call v%set_dev()
-    end select
-    call psb_spmm(sone,agpu,xg,szero,bg,desc_a,info)
-    ! For timing purposes we need to make sure all threads
-    ! in the device are done. 
-    call psb_gpu_DeviceSync()
-    if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
-      write(0,*) 'From 2 spmm',info,i,ntests
-      call psb_error()
-      stop
-    end if
-    
-  end do
-  call psb_barrier(ictxt)
-  gt2 = psb_wtime() - gt1
-  call psb_amx(ictxt,gt2)
-  call bg%sync()
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
-  call psb_geaxpby(-sone,bg,+sone,bv,desc_a,info)
-  eps = psb_geamax(bv,desc_a,info)
-
-  call psb_amx(ictxt,t2)
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
-  call psb_amx(ictxt,eps)
-  if (iam==0) write(*,*) 'Max diff on GPU',eps
-#endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
@@ -285,14 +185,10 @@ program pdgenmv
          &'("Memory occupation                : ",i20,"           ")') amatsize
     flops  = ntests*(2.d0*annz)
     tflops = flops
-    gflops = flops * ngpu
     flops  = flops / (t2)
     tflops = tflops / (tt2)
-    gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
-#ifdef HAVE_GPU
-    write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
-#endif
+
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
@@ -302,21 +198,6 @@ program pdgenmv
          & t2*1.d3/(1.d0*ntests)
     write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
          & flops/1.d6
-#ifdef HAVE_GPU
-    write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
-         & ntests, tt2
-    write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
-         & tt2*1.d3/(1.d0*ntests)
-    write(psb_out_unit,'("MFLOPS                       (xGPU)  : ",F20.3)')&
-         & tflops/1.d6
-
-    write(psb_out_unit,'("Time for ",i6," products (s) (GPU.)  : ",F20.3)')&
-         & ngpu*ntests,gt2
-    write(psb_out_unit,'("Time per product    (ms)     (GPU.)  : ",F20.3)')&
-         & gt2*1.d3/(1.d0*ntests*ngpu)
-    write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
-         & gflops/1.d6
-#endif
     !
     ! This computation assumes the data movement associated with CSR:
     ! it is minimal in terms of coefficients. Other formats may either move
@@ -327,10 +208,6 @@ program pdgenmv
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
-#ifdef HAVE_GPU
-    bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
-    write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
-#endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 
@@ -361,9 +238,9 @@ contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,acfmt,agfmt,idim)
+  subroutine  get_parms(ictxt,acfmt,idim)
     integer      :: ictxt
-    character(len=*) :: agfmt, acfmt
+    character(len=*) :: acfmt
     integer      :: idim
     integer      :: np, iam
     integer      :: intbuf(10), ip
@@ -372,11 +249,9 @@ contains
 
     if (iam == 0) then
       read(psb_inp_unit,*) acfmt
-      read(psb_inp_unit,*) agfmt
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)
-    call psb_bcast(ictxt,agfmt)
     call psb_bcast(ictxt,idim)
 
     if (iam == 0) then

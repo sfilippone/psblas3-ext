@@ -33,9 +33,6 @@ program s_file_spmv
   use psb_base_mod
   use psb_util_mod
   use psb_ext_mod
-#ifdef HAVE_GPU
-  use psb_gpu_mod
-#endif
   use data_input
   implicit none
 
@@ -43,17 +40,14 @@ program s_file_spmv
   character(len=200) :: mtrx_file
 
   ! sparse matrices
-  type(psb_sspmat_type) :: a, aux_a, agpu
+  type(psb_sspmat_type) :: a, aux_a
 
   ! dense matrices
   real(psb_spk_), allocatable, target :: aux_b(:,:), d(:)
   real(psb_spk_), allocatable , save  :: b_col(:), x_col(:), r_col(:), &
        & x_col_glob(:), r_col_glob(:), bres(:)
   real(psb_spk_), pointer  :: b_col_glob(:)
-  type(psb_s_vect_type) :: xg, bg, xv, bv
-#ifdef HAVE_GPU
-  type(psb_s_vect_gpu)  :: vmold
-#endif
+  type(psb_s_vect_type) :: xv, bv
   real(psb_spk_), allocatable :: xc1(:),xc2(:)
   ! communications data structure
   type(psb_desc_type):: desc_a
@@ -62,24 +56,21 @@ program s_file_spmv
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_spk_)   :: err, eps 
 
-  character(len=5)   :: acfmt, agfmt
+  character(len=5)   :: acfmt
   character(len=20)  :: name
   character(len=2)   :: filefmt
   integer, parameter :: iunit=12
   integer, parameter :: times=2000 
-  integer, parameter :: ntests=200, ngpu=50 
+  integer, parameter :: ntests=200 
 
   type(psb_s_coo_sparse_mat), target   :: acoo
   type(psb_s_csr_sparse_mat), target   :: acsr
+  type(psb_s_csc_sparse_mat), target   :: acsc
   type(psb_s_ell_sparse_mat), target   :: aell
   type(psb_s_hll_sparse_mat), target   :: ahll
-#ifdef HAVE_GPU
-  type(psb_s_elg_sparse_mat), target   :: aelg
-  type(psb_s_csrg_sparse_mat), target  :: acsrg
-  type(psb_s_hybg_sparse_mat), target  :: ahybg
-  type(psb_s_hlg_sparse_mat), target   :: ahlg
-#endif
-  class(psb_s_base_sparse_mat), pointer :: acmold, agmold
+  type(psb_s_dia_sparse_mat), target   :: adia
+
+  class(psb_s_base_sparse_mat), pointer :: acmold
   ! other variables
   integer            :: i,info,j,nrt, ns, nr, ipart
   integer            :: internal, m,ii,nnzero
@@ -91,9 +82,7 @@ program s_file_spmv
 
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
-#ifdef HAVE_GPU
-  call psb_gpu_init(ictxt)
-#endif
+
   if (iam < 0) then 
     ! This should not happen, but just in case
     call psb_exit(ictxt)
@@ -184,30 +173,18 @@ program s_file_spmv
     acmold => acoo
   case('CSR')
     acmold => acsr
+  case('CSC')
+    acmold => acsc
   case('ELL')
     acmold => aell
   case('HLL')
     acmold => ahll
+  case('DIA')
+    acmold => adia
   case default
     write(*,*) 'Unknown format defaulting to CSR'
     acmold => acsr
   end select
-
-#ifdef HAVE_GPU
-  select case(psb_toupper(agfmt))
-  case('ELG')
-    agmold => aelg
-  case('HLG')
-    agmold => ahlg
-  case('CSRG')
-    agmold => acsrg
-  case('HYBG')
-    agmold => ahybg
-  case default
-    write(*,*) 'Unknown format defaulting to HLG'
-    agmold => ahlg
-  end select
-#endif
 
 
   ! switch over different partition types
@@ -247,12 +224,6 @@ program s_file_spmv
   call psb_geasb(x_col,desc_a,info)
   t2 = psb_wtime() - t1
 
-#ifdef HAVE_GPU
-  call a%cscnv(agpu,info,mold=agmold)
-  call xg%bld(x_col,mold=vmold)
-  call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
-#endif
-
   call a%cscnv(info,mold=acmold)
   call xv%bld(x_col)
   call psb_geasb(bv,desc_a,info,scratch=.true.)
@@ -275,67 +246,6 @@ program s_file_spmv
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
 
-#ifdef HAVE_GPU
-  ! FIXME: cache flush needed here
-  call psb_barrier(ictxt)
-  tt1 = psb_wtime()
-  do i=1,ntests 
-    call psb_spmm(sone,agpu,xv,szero,bg,desc_a,info)
-    call psb_gpu_DeviceSync()
-    if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
-      write(0,*) 'From 1 spmm',info,i,ntests
-      call psb_error()
-      stop
-    end if
-
-  end do
-  call psb_barrier(ictxt)
-  tt2 = psb_wtime() - tt1
-  call psb_amx(ictxt,tt2)
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
-  nr       = desc_a%get_local_rows() 
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
-  call psb_amx(ictxt,eps)
-  if (iam==0) write(*,*) 'Max diff on xGPU',eps
-
-  call xg%sync()
-  ! FIXME: cache flush needed here
-
-  call psb_barrier(ictxt)
-  gt1 = psb_wtime()
-  do i=1,ntests*ngpu
-    ! Make sure the X vector is on the GPU side of things.
-    select type (v => xg%v)
-    type is (psb_s_vect_gpu) 
-      call v%set_dev()
-    end select
-    call psb_spmm(sone,agpu,xg,szero,bg,desc_a,info)
-    ! For timing purposes we need to make sure all threads
-    ! in the device are done. 
-    call psb_gpu_DeviceSync()
-    if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
-      write(0,*) 'From 2 spmm',info,i,ntests
-      call psb_error()
-      stop
-    end if
-
-  end do
-  call psb_barrier(ictxt)
-  gt2 = psb_wtime() - gt1
-  call psb_amx(ictxt,gt2)
-  call bg%sync()
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
-  call psb_geaxpby(-sone,bg,+sone,bv,desc_a,info)
-  eps = psb_geamax(bv,desc_a,info)
-
-  call psb_amx(ictxt,t2)
-  nr       = desc_a%get_local_rows() 
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
-  call psb_amx(ictxt,eps)
-  if (iam==0) write(*,*) 'Max diff on GPU',eps
-#endif
 
 
   annz     = a%get_nzeros()
@@ -362,9 +272,6 @@ program s_file_spmv
     tflops = tflops / (tt2)
     gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
-#ifdef HAVE_GPU
-    write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
-#endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
@@ -374,22 +281,6 @@ program s_file_spmv
          & t2*1.d3/(1.d0*ntests)
     write(psb_out_unit,'("MFLOPS                       (CPU)   : ",F20.3)')&
          & flops/1.d6
-#ifdef HAVE_GPU
-
-    write(psb_out_unit,'("Time for ",i6," products (s) (xGPU)  : ",F20.3)')&
-         & ntests, tt2
-    write(psb_out_unit,'("Time per product    (ms)     (xGPU)  : ",F20.3)')&
-         & tt2*1.d3/(1.d0*ntests)
-    write(psb_out_unit,'("MFLOPS                       (xGPU)  : ",F20.3)')&
-         & tflops/1.d6
-
-    write(psb_out_unit,'("Time for ",i6," products (s) (GPU.)  : ",F20.3)')&
-         & ngpu*ntests,gt2
-    write(psb_out_unit,'("Time per product    (ms)     (GPU.)  : ",F20.3)')&
-         & gt2*1.d3/(1.d0*ntests*ngpu)
-    write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
-         & gflops/1.d6
-#endif
     !
     ! This computation assumes the data movement associated with CSR:
     ! it is minimal in terms of coefficients. Other formats may either move
@@ -400,10 +291,6 @@ program s_file_spmv
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
-#ifdef HAVE_GPU
-    bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
-    write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
-#endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
 
@@ -414,11 +301,6 @@ program s_file_spmv
   call psb_gefree(xv, desc_a,info)
   call psb_gefree(bv, desc_a,info)
   call psb_spfree(a, desc_a,info)
-#ifdef HAVE_GPU
-  call psb_gefree(xg, desc_a,info)
-  call psb_gefree(bg, desc_a,info)
-  call psb_spfree(agpu,desc_a,info)
-#endif
   call psb_cdfree(desc_a,info)
 
 9999 continue

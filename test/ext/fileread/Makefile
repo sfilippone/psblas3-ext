@@ -1,29 +1,22 @@
-include ../../Make.inc
-LIBDIR=../../lib/
+TOPDIR=../../..
+include $(TOPDIR)/Make.inc
+#
+# Libraries used
+#
+LIBDIR=$(TOPDIR)/lib/
+INCDIR=$(TOPDIR)/include
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base \
-	 -lpsb_gpu -L$(LIBDIR)
-MLDLIBDIR=$(MLDDIR)/lib
-MLDINCDIR=$(MLDDIR)/include 
-MLDLIBS=-L$(MLDLIBDIR) -lmld_prec
-AINVDIR=/home/sfilippo/NUMERICAL/NewPSBLAS/mld-ainv
-AINVINCDIR=$(AINVDIR)/lib
-AINVLIBDIR=$(AINVDIR)/lib
-AINVLIBS=-L$(AINVLIBDIR) -lainv_prec
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 
-LDLIBS=$(PSBLDLIBS) -lamd
+LDLIBS=$(PSBEXTLDLIBS)
 #
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
-          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) 
+FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
 
-DFSOBJS=df_sample.o data_input.o
-SFSOBJS=sf_sample.o data_input.o
-CFSOBJS=cf_sample.o data_input.o
-ZFSOBJS=zf_sample.o data_input.o
+DFSOBJS=df_sample.o getp.o
 
 EXEDIR=./runs
 
@@ -31,16 +24,14 @@ all:  df_sample
 
 df_sample: $(DFSOBJS)
 	$(F90LINK) $(LINKOPT) $(DFSOBJS) -o df_sample \
-	$(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
+	$(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv df_sample $(EXEDIR) 
 
-df_sample.o: data_input.o
+df_sample.o: getp.o
 
 clean: 
-	/bin/rm -f $(DFOBJS) $(ZFOBJS) $(SFSOBJS)  $(DFSOBJS) \
-        *$(.mod)  $(EXEDIR)/df_bench $(EXEDIR)/zf_bench \
-	$(EXEDIR)/sf_sample $(EXEDIR)/cf_sample  \
-	$(EXEDIR)/df_sample $(EXEDIR)/zf_sample
+	/bin/rm -f $(DFSOBJS) \
+        *$(.mod)  	$(EXEDIR)/df_sample 
 
 lib:
 	(cd ../../; make library)

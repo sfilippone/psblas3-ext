@@ -1,15 +1,16 @@
-include ../../Make.inc
+TOPDIR=../../..
+include $(TOPDIR)/Make.inc
 #
 # Libraries used
 #
-LIBDIR=../../lib/
+LIBDIR=$(TOPDIR)/lib
 PSBLIBDIR=$(PSBLASDIR)/lib/
 OPTDIR=$(LIBDIR)
 PSBINCDIR=$(PSBLASDIR)/include
-PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext $(LGPU) $(LRSB) -lpsb_util -lpsb_base 
-INCDIR=../../include
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_base 
+INCDIR=$(TOPDIR)/include
 
-LDLIBS=$(PSBLDLIBS)
+LDLIBS=$(PSBEXTLDLIBS)
 
 FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) $(LIBRSB_DEFINES)
 

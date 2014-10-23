@@ -122,6 +122,7 @@ program ppde3d
   use psb_krylov_mod
   use psb_util_mod
   use ppde3d_mod
+  use psb_ext_mod
   implicit none
 
   ! input parameters
@@ -136,6 +137,15 @@ program ppde3d
   ! sparse matrix and preconditioner
   type(psb_dspmat_type) :: a
   type(psb_dprec_type)  :: prec
+  type(psb_d_coo_sparse_mat), target   :: acoo
+  type(psb_d_csr_sparse_mat), target   :: acsr
+  type(psb_d_csc_sparse_mat), target   :: acsc
+  type(psb_d_ell_sparse_mat), target   :: aell
+  type(psb_d_hll_sparse_mat), target   :: ahll
+  type(psb_d_dia_sparse_mat), target   :: adia
+  type(psb_d_hdia_sparse_mat), target   :: ahdia
+
+  class(psb_d_base_sparse_mat), pointer :: acmold
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense vectors
@@ -180,13 +190,40 @@ program ppde3d
   !
   call get_parms(ictxt,kmethd,ptype,afmt,idim,istopc,itmax,itrace,irst)
 
+  select case(psb_toupper(afmt))
+  case('ELL')
+    acmold => aell
+  case('HLL')
+    acmold => ahll
+  case('DIA')
+    acmold => adia
+  case('HDIA')
+    acmold => ahdia
+  case('CSR')
+    acmold => acsr
+  case('CSC')
+    acmold => acsc
+  case('COO')
+    acmold => acoo
+  case default
+    write(*,*) 'Unknown format defaulting to CSR'
+    acmold => acsr
+  end select
+
   !
   !  allocate and fill in the coefficient matrix, rhs and initial guess 
   !
   call psb_barrier(ictxt)
   t1 = psb_wtime()
-  call psb_gen_pde3d(ictxt,idim,a,bv,xxv,desc_a,afmt,&
+  call psb_gen_pde3d(ictxt,idim,a,bv,xxv,desc_a,'CSR  ',&
        & a1,a2,a3,b1,b2,b3,c,g,info)  
+  call a%cscnv(info,mold=acmold)
+  
+  if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
+    write(0,*) 'From cscnv ',info
+    call psb_error()
+    stop
+  end if
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
@@ -195,7 +232,9 @@ program ppde3d
     call psb_errpush(info,name,a_err=ch_err)
     goto 9999
   end if
+
   if (iam == psb_root_) write(psb_out_unit,'("Overall matrix creation time : ",es12.5)')t2
+  if (iam == psb_root_) write(psb_out_unit,'("        matrix converted to  : ",a)') a%get_fmt()
   if (iam == psb_root_) write(psb_out_unit,'(" ")')
   !
   !  prepare the preconditioner.
@@ -256,6 +295,7 @@ program ppde3d
     write(psb_out_unit,'("Total memory occupation for A:      ",i12)')amatsize
     write(psb_out_unit,'("Total memory occupation for PREC:   ",i12)')precsize    
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
+    write(psb_out_unit,'("Storage type for      A: ",a)') a%get_fmt()
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%get_fmt()
   end if
 
