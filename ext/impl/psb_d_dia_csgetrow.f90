@@ -96,10 +96,6 @@ subroutine psb_d_dia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
     goto 9999
   end if
-  info = psb_err_missing_override_method_
-  call psb_errpush(info,name)
-  goto 9999
-  
 
   call dia_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,&
        & append_,info,iren)

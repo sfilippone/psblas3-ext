@@ -96,10 +96,6 @@ subroutine psb_d_dia_csgetptn(imin,imax,a,nz,ia,ja,info,&
     goto 9999
   end if
 
-  info = psb_err_missing_override_method_
-  call psb_errpush(info,name)
-  goto 9999
-  
   call dia_getptn(imin,imax,jmin_,jmax_,a,nz,ia,ja,nzin_,append_,info,iren)
 
   if (info /= psb_success_) goto 9999
