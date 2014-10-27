@@ -1,5 +1,6 @@
-include ../../Make.inc
-LIBDIR=../../lib/
+TOPDIR=../../..
+include $(TOPDIR)/Make.inc
+LIBDIR=$(TOPDIR)lib/
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base \
@@ -12,7 +13,7 @@ AINVINCDIR=$(AINVDIR)/lib
 AINVLIBDIR=$(AINVDIR)/lib
 AINVLIBS=-L$(AINVLIBDIR) -lainv_prec
 
-LDLIBS=$(PSBLDLIBS) -lamd
+LDLIBS=$(PSBGPULDLIBS)
 #
 # Compilers and such
 #

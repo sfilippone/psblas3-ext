@@ -1,35 +1,13 @@
-thm1000x600.mtx              ! This matrix (and others) from:rixMarket/ or 
-NONE                        !memplus_b.mtx                        ! rhs          
-MM                          ! 
-BICGSTAB                    ! Iterative method: BiCGSTAB BiCG CGS RGMRES BiCGSTABL CG
-CSR                         ! Storage format: CSR COO JAD 
-0                           ! IPART (partition method): 0 (block)  2 (graph, with Metis) 
-2                           ! ISTOPC
-02000                       ! ITMAX
--1                          ! ITRACE
-30                          ! IRST (restart for RGMRES and BiCGSTABL) 
-1.d-8                       ! EPS
-gps                        ! RENUM: none, gps amd
-AINV                        ! 3L-M-RAS-I-D4 ! Longer descriptive name  (up to 20 chars) 
-AINV                        ! Preconditioner type: NONE JACOBI BJAC AS ML
-0                           ! Number of overlap layers for AS preconditioner
-HALO                        ! AS restriction operator: NONE HALO 
-NONE                        ! AS prolongation operator: NONE SUM AVG
-AORTH                       ! AS subdomain solver: DSCALE ILU MILU ILUT UMF SLU 
-5                           ! Fill level P for ILU(P) and ILU(T,P)
-1.d-5                       ! Threshold T for ILU(T,P) 
-4                           ! Number of Jacobi sweeps for base smoother
-3                           ! Number of levels in a multilevel preconditioner
-AS                          ! Smoother type  JACOBI BJAC AS ignored for non-ML
-NONSMOOTHED                    ! Type of aggregation: SMOOTHED NONSMOOTHED
-DEC                         ! Type of aggregation: DEC
-MULT                        ! Type of multilevel correction: ADD MULT
-TWOSIDE                     ! Side of correction PRE POST TWOSIDE (ignored for ADD)
-REPL                        ! Coarsest-level matrix distribution: DIST  REPL           
-BJAC                        ! Coarsest-level solver: JACOBI BJAC UMF SLU SLUDIST
-UMF                         ! Coarsest-level subsolver: ILU UMF SLU SLUDIST (DSCALE for JACOBI)
-1                           ! Coarsest-level fillin P for ILU(P) and ILU(T,P)
-1.d-4                       ! Coarsest-level threshold T for ILU(T,P) 
-4                           ! Number of Jacobi sweeps for BJAC/PJAC coarsest-level solver
-0.01d0                      ! Smoothed aggregation threshold: >= 0.0
-F                           ! dump preconditioner on file     
+11                  Number of inputs
+thm400x400.mtx        This (and others) from: http://math.nist.gov/MatrixMarket/  or 
+NONE                  sherman3_b.mtx      http://www.cise.ufl.edu/research/sparse/matrices/index.html
+MM                  File format: MM: Matrix Market  HB: Harwell-Boeing.
+BiCGSTAB            Iterative method: BiCGSTAB CGS RGMRES BiCGSTABL BICG CG
+BJAC                Preconditioner NONE  DIAG  BJAC 
+DIA                 Storage format CSR COO JAD 
+3                   IPART: Partition method 0: BLK   2: graph (with Metis) 
+2                   ISTOPC
+02100               ITMAX
+-1                  ITRACE
+002                 IRST     (restart for RGMRES and 
+1.d-6               EPS
