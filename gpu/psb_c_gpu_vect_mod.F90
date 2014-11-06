@@ -421,7 +421,8 @@ contains
       info = axyMultiVecDevice(n,cone,xx%deviceVect,y%deviceVect)
       call y%set_dev()
     class default
-      call xx%sync()
+      if (xx%is_dev()) call xx%sync()
+      if (y%is_dev())  call y%sync()
       call y%mlt(xx%v,info)
       call y%set_host()
     end select
@@ -498,15 +499,17 @@ contains
              & yy%deviceVect,beta,z%deviceVect)
         call z%set_dev()
       class default
-        call xx%sync()
-        call yy%sync()
+        if (xx%is_dev()) call xx%sync()
+        if (yy%is_dev()) call yy%sync()
+        if ((beta /= czero).and.(z%is_dev())) call z%sync()
         call z%psb_c_base_vect_type%mlt(alpha,xx,yy,beta,info)
         call z%set_host()
       end select
       
     class default
-      call x%sync()
-      call y%sync()
+      if (xx%is_dev()) call xx%sync()
+      if (yy%is_dev()) call yy%sync()
+      if ((beta /= czero).and.(z%is_dev())) call z%sync()
       call z%psb_c_base_vect_type%mlt(alpha,x,y,beta,info)
       call z%set_host()
     end select
