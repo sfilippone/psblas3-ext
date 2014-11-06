@@ -493,7 +493,7 @@ contains
       type is (psb_c_vect_gpu)
         if (xx%is_host()) call xx%sync()
         if (yy%is_host()) call yy%sync()
-        ! Z state is irrelevant: it will be done on the GPU. 
+        if ((beta /= czero).and.(z%is_host())) call z%sync()
         info = axybzMultiVecDevice(n,alpha,xx%deviceVect,&
              & yy%deviceVect,beta,z%deviceVect)
         call z%set_dev()

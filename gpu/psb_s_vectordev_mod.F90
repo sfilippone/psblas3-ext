@@ -167,7 +167,7 @@ module psb_s_vectordev_mod
       use iso_c_binding
       integer(c_int)        :: res
       integer(c_int), value :: n
-      real(c_float) :: alpha
+      real(c_float), value :: alpha
       type(c_ptr), value       :: deviceVecA, deviceVecB
     end function axyMultiVecDeviceFloat
   end interface

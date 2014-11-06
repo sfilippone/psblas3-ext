@@ -167,7 +167,7 @@ module psb_c_vectordev_mod
       use iso_c_binding
       integer(c_int)        :: res
       integer(c_int), value :: n
-      complex(c_float_complex) :: alpha
+      complex(c_float_complex), value :: alpha
       type(c_ptr), value       :: deviceVecA, deviceVecB
     end function axyMultiVecDeviceFloatComplex
   end interface
