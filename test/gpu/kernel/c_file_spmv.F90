@@ -281,7 +281,6 @@ program c_file_spmv
   tt1 = psb_wtime()
   do i=1,ntests 
     call psb_spmm(cone,agpu,xv,czero,bg,desc_a,info)
-    call psb_gpu_DeviceSync()
     if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
       write(0,*) 'From 1 spmm',info,i,ntests
       call psb_error()
@@ -289,6 +288,7 @@ program c_file_spmv
     end if
 
   end do
+  call psb_gpu_DeviceSync()
   call psb_barrier(ictxt)
   tt2 = psb_wtime() - tt1
   call psb_amx(ictxt,tt2)
@@ -313,7 +313,6 @@ program c_file_spmv
     call psb_spmm(cone,agpu,xg,czero,bg,desc_a,info)
     ! For timing purposes we need to make sure all threads
     ! in the device are done. 
-    call psb_gpu_DeviceSync()
     if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
       write(0,*) 'From 2 spmm',info,i,ntests
       call psb_error()
@@ -321,6 +320,7 @@ program c_file_spmv
     end if
 
   end do
+  call psb_gpu_DeviceSync()
   call psb_barrier(ictxt)
   gt2 = psb_wtime() - gt1
   call psb_amx(ictxt,gt2)
