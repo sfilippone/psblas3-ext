@@ -59,7 +59,7 @@ program d_file_spmv
   type(psb_desc_type):: desc_a
 
   integer            :: ictxt, iam, np
-  integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
+  integer(psb_long_int_k_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps 
 
   character(len=5)   :: acfmt, agfmt
@@ -88,7 +88,7 @@ program d_file_spmv
   integer            :: i,info,j,nrt, ns, nr, ipart
   integer            :: internal, m,ii,nnzero
   real(psb_dpk_) :: t1, t2, tprec, flops
-  real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth
+  real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth, tcnvcsr,tcnvgpu
   integer :: nrhs, nrow, n_row, dim, nv, ne
   integer, allocatable :: ivg(:), ipv(:)
 
@@ -115,11 +115,17 @@ program d_file_spmv
   end if
 
   if (iam == 0) then 
+    write(*,*) 'Matrix? '
     call read_data(mtrx_file,psb_inp_unit)
+    write(*,*) 'file format'
     call read_data(filefmt,psb_inp_unit)
+    write(*,*) 'CPU format'
     call read_data(acfmt,psb_inp_unit)
+    write(*,*) 'GPU format'
     call read_data(agfmt,psb_inp_unit)
+    write(*,*) 'distribution '
     call read_data(ipart,psb_inp_unit)
+    write(*,*) 'Read all data, going on'
   end if
   call psb_bcast(ictxt,mtrx_file)
   call psb_bcast(ictxt,filefmt)
@@ -260,7 +266,18 @@ program d_file_spmv
   t2 = psb_wtime() - t1
 
 #ifdef HAVE_GPU
-  call a%cscnv(agpu,info,mold=agmold)
+  call a%cscnv(agpu,info,mold=acoo)
+  call psb_barrier(ictxt)
+  t1 = psb_wtime()
+  call agpu%cscnv(a,info,mold=acmold)
+  tcnvcsr = psb_wtime()-t1
+  call psb_amx(ictxt,tcnvcsr)
+  call psb_barrier(ictxt)
+  t1 = psb_wtime()
+  call agpu%cscnv(info,mold=agmold)
+  tcnvgpu = psb_wtime()-t1
+  call psb_amx(ictxt,tcnvgpu)
+  
   call xg%bld(x_col,mold=vmold)
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
 #endif
@@ -323,8 +340,6 @@ program d_file_spmv
       call v%set_dev()
     end select
     call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
-    ! For timing purposes we need to make sure all threads
-    ! in the device are done. 
     if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
       write(0,*) 'From 2 spmm',info,i,ntests
       call psb_error()
@@ -332,6 +347,8 @@ program d_file_spmv
     end if
 
   end do
+  ! For timing purposes we need to make sure all threads
+  ! in the device are done. 
   call psb_gpu_DeviceSync()
   call psb_barrier(ictxt)
   gt2 = psb_wtime() - gt1
@@ -352,9 +369,11 @@ program d_file_spmv
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
+  agmatsize = agpu%sizeof()
   descsize = psb_sizeof(desc_a)
   call psb_sum(ictxt,annz)
   call psb_sum(ictxt,amatsize)
+  call psb_sum(ictxt,agmatsize)
   call psb_sum(ictxt,descsize)
 
   if (iam == psb_root_) then
@@ -366,7 +385,9 @@ program d_file_spmv
     write(psb_out_unit,&
          &'("Number of nonzeros               : ",i20,"           ")') annz
     write(psb_out_unit,&
-         &'("Memory occupation                : ",i20,"           ")') amatsize
+         &'("Memory occupation CPU            : ",i40,"           ")') amatsize
+    write(psb_out_unit,&
+         &'("Memory occupation GPU            : ",i40,"           ")') agmatsize
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
@@ -376,6 +397,10 @@ program d_file_spmv
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+    write(psb_out_unit,'("Time to convert A from COO to CPU    : ",F20.3)')&
+         & tcnvcsr
+    write(psb_out_unit,'("Time to convert A from COO to GPU    : ",F20.3)')&
+         & tcnvgpu
 #endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
