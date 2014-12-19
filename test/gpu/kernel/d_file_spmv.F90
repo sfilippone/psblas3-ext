@@ -60,7 +60,7 @@ program d_file_spmv
 
   integer            :: ictxt, iam, np
   integer(psb_long_int_k_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
-  real(psb_dpk_)   :: err, eps 
+  real(psb_dpk_)   :: err, eps, damatsize, dgmatsize
 
   character(len=5)   :: acfmt, agfmt
   character(len=20)  :: name
@@ -370,10 +370,14 @@ program d_file_spmv
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   agmatsize = agpu%sizeof()
+  damatsize = amatsize
+  damatsize = damatsize/(1024*1024)
+  dgmatsize = agmatsize
+  dgmatsize = dgmatsize/(1024*1024)
   descsize = psb_sizeof(desc_a)
   call psb_sum(ictxt,annz)
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,agmatsize)
+  call psb_sum(ictxt,damatsize)
+  call psb_sum(ictxt,dgmatsize)
   call psb_sum(ictxt,descsize)
 
   if (iam == psb_root_) then
@@ -385,9 +389,9 @@ program d_file_spmv
     write(psb_out_unit,&
          &'("Number of nonzeros               : ",i20,"           ")') annz
     write(psb_out_unit,&
-         &'("Memory occupation CPU            : ",i40,"           ")') amatsize
+         &'("Memory occupation CPU  (MBytes)  : ",f20.2,"           ")') damatsize
     write(psb_out_unit,&
-         &'("Memory occupation GPU            : ",i40,"           ")') agmatsize
+         &'("Memory occupation GPU  (MBytes)  : ",f20.2,"           ")') dgmatsize
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
