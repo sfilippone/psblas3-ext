@@ -56,10 +56,8 @@ subroutine psb_d_hdia_mold(a,b,info)
     goto 9999
   end if
   return
-9999 continue
-  if (err_act /= psb_act_ret_) then
-    call psb_error()
-  end if
+
+9999 call psb_error_handler(err_act)
   return
 
 end subroutine psb_d_hdia_mold

@@ -84,13 +84,7 @@ function psb_c_hll_csnm1(a) result(res)
   return
   
 
-9999 continue
-  call psb_erractionrestore(err_act)
-
-  if (err_act == psb_act_abort_) then
-    call psb_error()
-    return
-  end if
+9999 call psb_error_handler(err_act)
   return
 
 contains

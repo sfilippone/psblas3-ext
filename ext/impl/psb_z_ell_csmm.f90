@@ -103,13 +103,8 @@ subroutine psb_z_ell_csmm(alpha,a,x,beta,y,info,trans)
 
   call psb_erractionrestore(err_act)
   return
-9999 continue
-  call psb_erractionrestore(err_act)
 
-  if (err_act == psb_act_abort_) then
-    call psb_error()
-    return
-  end if
+9999 call psb_error_handler(err_act)
   return
 
 contains
