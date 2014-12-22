@@ -135,13 +135,8 @@ subroutine psb_d_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   call psb_erractionrestore(err_act)
   return
 
-9999 continue
-  call psb_erractionrestore(err_act)
+9999 call psb_error_handler(err_act)
 
-  if (err_act == psb_act_abort_) then
-    call psb_error()
-    return
-  end if
   return
 
 #if 0
@@ -350,13 +345,8 @@ subroutine psb_d_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   call psb_erractionrestore(err_act)
   return
 
-9999 continue
-  call psb_erractionrestore(err_act)
+9999 call psb_error_handler(err_act)
 
-  if (err_act == psb_act_abort_) then
-    call psb_error()
-    return
-  end if
   return
 
 
