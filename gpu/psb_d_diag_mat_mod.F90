@@ -61,7 +61,9 @@ module psb_d_diag_mat_mod
     ! Note: we do *not* need the TO methods, because the parent type
     ! methods will work. 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_diag_from_coo
+!    procedure, pass(a) :: cp_from_fmt   => psb_d_cp_diag_from_fmt
     procedure, pass(a) :: mv_from_coo   => psb_d_mv_diag_from_coo
+!    procedure, pass(a) :: mv_from_fmt   => psb_d_mv_diag_from_fmt
     procedure, pass(a) :: free          => d_diag_free
     procedure, pass(a) :: mold          => psb_d_diag_mold
     procedure, pass(a) :: to_gpu        => psb_d_diag_to_gpu

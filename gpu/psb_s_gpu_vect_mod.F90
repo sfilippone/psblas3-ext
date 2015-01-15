@@ -507,8 +507,8 @@ contains
       end select
       
     class default
-      if (x%is_dev()) call x%sync()
-      if (y%is_dev()) call y%sync()
+      if (xx%is_dev()) call xx%sync()
+      if (yy%is_dev()) call yy%sync()
       if ((beta /= szero).and.(z%is_dev())) call z%sync()
       call z%psb_s_base_vect_type%mlt(alpha,x,y,beta,info)
       call z%set_host()
@@ -570,8 +570,8 @@ contains
     integer(psb_ipk_), intent(in)        :: n
     real(psb_spk_)                :: res
 
-    if (x%is_dev()) call x%sync()
-    res =  maxval(abs(x%v(1:n)))
+    if (x%is_host()) call x%sync()
+    info = amaxMultiVecDevice(res,n,x%deviceVect)
 
   end function s_gpu_amax
 
@@ -581,8 +581,8 @@ contains
     integer(psb_ipk_), intent(in)        :: n
     real(psb_spk_)                :: res
 
-    if (x%is_dev()) call x%sync()
-    res =  sum(abs(x%v(1:n)))
+    if (x%is_host()) call x%sync()
+    info = asumMultiVecDevice(res,n,x%deviceVect)
 
   end function s_gpu_asum
   

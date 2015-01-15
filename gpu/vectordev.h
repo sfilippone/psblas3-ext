@@ -115,6 +115,19 @@ int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int nrm2MultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA);
 int nrm2MultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA);
 
+int amaxMultiVecDeviceFloat(float* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
+
+
+int asumMultiVecDeviceFloat(float* y_res, int n, void* devVecA);
+int asumMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
+int asumMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
+int asumMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
+
+
+
 int dotMultiVecDeviceFloat(float* y_res, int n, void* devVecA, void* devVecB);
 int dotMultiVecDeviceDouble(double* y_res, int n, void* devVecA, void* devVecB);
 int dotMultiVecDeviceFloatComplex(float complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);

@@ -116,6 +116,17 @@ module psb_c_vectordev_mod
     end function iscatMultiVecDeviceFloatComplex
   end interface
 
+  interface dotMultiVecDevice
+    function dotMultiVecDeviceFloatComplex(res, n,deviceVecA,deviceVecB) &
+         & result(val) bind(c,name='dotMultiVecDeviceFloatComplex')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      complex(c_float_complex) :: res
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function dotMultiVecDeviceFloatComplex
+  end interface
+
     
   interface nrm2MultiVecDeviceComplex
     function nrm2MultiVecDeviceFloatComplex(res,n,deviceVecA) &
@@ -128,17 +139,29 @@ module psb_c_vectordev_mod
     end function nrm2MultiVecDeviceFloatComplex
   end interface
 
-  interface dotMultiVecDevice
-    function dotMultiVecDeviceFloatComplex(res, n,deviceVecA,deviceVecB) &
-         & result(val) bind(c,name='dotMultiVecDeviceFloatComplex')
+  interface amaxMultiVecDeviceComplex
+    function amaxMultiVecDeviceFloatComplex(res,n,deviceVecA) &
+         & result(val) bind(c,name='amaxMultiVecDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)        :: val
       integer(c_int), value :: n
-      complex(c_float_complex) :: res
-      type(c_ptr), value    :: deviceVecA, deviceVecB
-    end function dotMultiVecDeviceFloatComplex
+      real(c_float) :: res
+      type(c_ptr), value    :: deviceVecA
+    end function amaxMultiVecDeviceFloatComplex
+  end interface
+
+  interface asumMultiVecDeviceComplex
+    function asumMultiVecDeviceFloatComplex(res,n,deviceVecA) &
+         & result(val) bind(c,name='asumMultiVecDeviceFloatComplex')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      real(c_float) :: res
+      type(c_ptr), value    :: deviceVecA
+    end function asumMultiVecDeviceFloatComplex
   end interface
   
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceFloatComplex(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &

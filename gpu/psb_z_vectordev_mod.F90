@@ -116,6 +116,17 @@ module psb_z_vectordev_mod
     end function iscatMultiVecDeviceDoubleComplex
   end interface
 
+  interface dotMultiVecDevice
+    function dotMultiVecDeviceDoubleComplex(res, n,deviceVecA,deviceVecB) &
+         & result(val) bind(c,name='dotMultiVecDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      complex(c_double_complex) :: res
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function dotMultiVecDeviceDoubleComplex
+  end interface
+
     
   interface nrm2MultiVecDeviceComplex
     function nrm2MultiVecDeviceDoubleComplex(res,n,deviceVecA) &
@@ -128,17 +139,29 @@ module psb_z_vectordev_mod
     end function nrm2MultiVecDeviceDoubleComplex
   end interface
 
-  interface dotMultiVecDevice
-    function dotMultiVecDeviceDoubleComplex(res, n,deviceVecA,deviceVecB) &
-         & result(val) bind(c,name='dotMultiVecDeviceDoubleComplex')
+  interface amaxMultiVecDeviceComplex
+    function amaxMultiVecDeviceDoubleComplex(res,n,deviceVecA) &
+         & result(val) bind(c,name='amaxMultiVecDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)        :: val
       integer(c_int), value :: n
-      complex(c_double_complex) :: res
-      type(c_ptr), value    :: deviceVecA, deviceVecB
-    end function dotMultiVecDeviceDoubleComplex
+      real(c_double) :: res
+      type(c_ptr), value    :: deviceVecA
+    end function amaxMultiVecDeviceDoubleComplex
+  end interface
+
+  interface asumMultiVecDeviceComplex
+    function asumMultiVecDeviceDoubleComplex(res,n,deviceVecA) &
+         & result(val) bind(c,name='asumMultiVecDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      real(c_double) :: res
+      type(c_ptr), value    :: deviceVecA
+    end function asumMultiVecDeviceDoubleComplex
   end interface
   
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceDoubleComplex(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &

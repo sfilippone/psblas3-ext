@@ -116,6 +116,17 @@ module psb_d_vectordev_mod
     end function iscatMultiVecDeviceDouble
   end interface
 
+  interface dotMultiVecDevice
+    function dotMultiVecDeviceDouble(res, n,deviceVecA,deviceVecB) &
+         & result(val) bind(c,name='dotMultiVecDeviceDouble')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      real(c_double) :: res
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function dotMultiVecDeviceDouble
+  end interface
+
     
   interface nrm2MultiVecDevice
     function nrm2MultiVecDeviceDouble(res,n,deviceVecA) &
@@ -128,17 +139,29 @@ module psb_d_vectordev_mod
     end function nrm2MultiVecDeviceDouble
   end interface
 
-  interface dotMultiVecDevice
-    function dotMultiVecDeviceDouble(res, n,deviceVecA,deviceVecB) &
-         & result(val) bind(c,name='dotMultiVecDeviceDouble')
+  interface amaxMultiVecDevice
+    function amaxMultiVecDeviceDouble(res,n,deviceVecA) &
+         & result(val) bind(c,name='amaxMultiVecDeviceDouble')
       use iso_c_binding
       integer(c_int)        :: val
       integer(c_int), value :: n
       real(c_double) :: res
-      type(c_ptr), value    :: deviceVecA, deviceVecB
-    end function dotMultiVecDeviceDouble
+      type(c_ptr), value    :: deviceVecA
+    end function amaxMultiVecDeviceDouble
+  end interface
+
+  interface asumMultiVecDevice
+    function asumMultiVecDeviceDouble(res,n,deviceVecA) &
+         & result(val) bind(c,name='asumMultiVecDeviceDouble')
+      use iso_c_binding
+      integer(c_int)        :: val
+      integer(c_int), value :: n
+      real(c_double) :: res
+      type(c_ptr), value    :: deviceVecA
+    end function asumMultiVecDeviceDouble
   end interface
   
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceDouble(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &
