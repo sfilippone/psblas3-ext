@@ -507,8 +507,8 @@ contains
       end select
       
     class default
-      if (xx%is_dev()) call xx%sync()
-      if (yy%is_dev()) call yy%sync()
+      if (x%is_dev()) call x%sync()
+      if (y%is_dev()) call y%sync()
       if ((beta /= czero).and.(z%is_dev())) call z%sync()
       call z%psb_c_base_vect_type%mlt(alpha,x,y,beta,info)
       call z%set_host()
@@ -569,6 +569,7 @@ contains
     class(psb_c_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(in)        :: n
     real(psb_spk_)                :: res
+    integer(psb_ipk_) :: info
 
     if (x%is_host()) call x%sync()
     info = amaxMultiVecDeviceComplex(res,n,x%deviceVect)
@@ -580,6 +581,7 @@ contains
     class(psb_c_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(in)        :: n
     real(psb_spk_)                :: res
+    integer(psb_ipk_) :: info
 
     if (x%is_host()) call x%sync()
     info = asumMultiVecDeviceComplex(res,n,x%deviceVect)
