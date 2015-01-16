@@ -651,7 +651,7 @@ int nrm2MultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
 int amaxMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -666,7 +666,7 @@ int amaxMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 int asumMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -683,7 +683,7 @@ int asumMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 int amaxMultiVecDeviceDouble(double* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -698,7 +698,7 @@ int amaxMultiVecDeviceDouble(double* y_res, int n, void* devMultiVecA)
 int asumMultiVecDeviceDouble(double* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -715,7 +715,7 @@ int asumMultiVecDeviceDouble(double* y_res, int n, void* devMultiVecA)
 int amaxMultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -730,7 +730,7 @@ int amaxMultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA)
 int asumMultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -747,7 +747,7 @@ int asumMultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA)
 int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
@@ -762,7 +762,7 @@ int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
 int asumMultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
 { int i=0;
 #ifdef HAVE_SPGPU
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
   //chiamata alla nuova libreria
