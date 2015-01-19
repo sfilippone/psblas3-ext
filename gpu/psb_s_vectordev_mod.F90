@@ -161,6 +161,8 @@ module psb_s_vectordev_mod
     end function asumMultiVecDeviceFloat
   end interface
 
+ 
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceFloat(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &

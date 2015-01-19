@@ -507,8 +507,8 @@ contains
       end select
       
     class default
-      if (xx%is_dev()) call xx%sync()
-      if (yy%is_dev()) call yy%sync()
+      if (x%is_dev()) call x%sync()
+      if (y%is_dev()) call y%sync()
       if ((beta /= czero).and.(z%is_dev())) call z%sync()
       call z%psb_c_base_vect_type%mlt(alpha,x,y,beta,info)
       call z%set_host()

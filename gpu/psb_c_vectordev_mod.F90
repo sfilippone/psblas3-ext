@@ -161,6 +161,8 @@ module psb_c_vectordev_mod
     end function asumMultiVecDeviceFloatComplex
   end interface
 
+ 
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceFloatComplex(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &

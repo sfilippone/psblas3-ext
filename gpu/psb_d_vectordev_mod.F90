@@ -161,6 +161,8 @@ module psb_d_vectordev_mod
     end function asumMultiVecDeviceDouble
   end interface
 
+ 
+
 !!$  interface 
 !!$    function geinsMultiVecDeviceDouble(n,deviceVecIrl,deviceVecVal,&
 !!$         & dupl,indexbase,deviceVecX) &
