@@ -628,13 +628,13 @@ contains
       nd  = getMultiVecDeviceSize(x%deviceVect)
       if (nd < n) then 
         call x%sync()
-        call x%psb_d_base_vect_type%asb(n,info)      
+        call x%psb_c_base_vect_type%asb(n,info)      
         if (info == psb_success_) call x%sync_space(info)
         call x%set_host()
       end if
     else   !
       if (x%get_nrows()<n) then 
-        call x%psb_d_base_vect_type%asb(n,info)      
+        call x%psb_c_base_vect_type%asb(n,info)      
         if (info == psb_success_) call x%sync_space(info)
         call x%set_host()      
       end if
