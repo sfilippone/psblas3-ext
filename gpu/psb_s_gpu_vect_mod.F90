@@ -507,8 +507,8 @@ contains
       end select
       
     class default
-      if (x%is_dev()) call x%sync()
-      if (y%is_dev()) call y%sync()
+      if (xx%is_dev()) call xx%sync()
+      if (yy%is_dev()) call yy%sync()
       if ((beta /= szero).and.(z%is_dev())) call z%sync()
       call z%psb_s_base_vect_type%mlt(alpha,x,y,beta,info)
       call z%set_host()
@@ -623,46 +623,70 @@ contains
     class(psb_s_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(out)       :: info
     
-    call x%psb_s_base_vect_type%asb(n,info)
-        
-    if (info == 0) then 
-      if (c_associated(x%deviceVect)) then 
-        call freeMultiVecDevice(x%deviceVect)
-        x%deviceVect=c_null_ptr
+    if (x%is_dev()) then 
+      nd  = getMultiVecDeviceSize(x%deviceVect)
+      if (nd < n) then 
+        call x%sync()
+        call x%psb_d_base_vect_type%asb(n,info)      
+        if (info == psb_success_) call x%sync_space(info)
+        call x%set_host()
       end if
-      call x%sync()
-    else
-      info=psb_err_internal_error_
-      call psb_errpush(info,'s_gpu_asb')
+    else   !
+      if (x%get_nrows()<n) then 
+        call x%psb_d_base_vect_type%asb(n,info)      
+        if (info == psb_success_) call x%sync_space(info)
+        call x%set_host()      
+      end if
     end if
+
   end subroutine s_gpu_asb
 
   subroutine s_gpu_sync_space(x,info)
+    use psb_base_mod, only : psb_realloc
     implicit none 
     class(psb_s_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(out)       :: info 
-    integer(psb_ipk_) :: n
+    integer(psb_ipk_) :: nh, nd
     
     info = 0
-    if (x%is_host()) then 
+    if (x%is_dev()) then 
+      ! 
+      if (.not.allocated(x%v)) then 
+        nh = 0
+      else
+        nh    = size(x%v)
+      end if
+      nd  = getMultiVecDeviceSize(x%deviceVect)
+      if (nh < nd ) then 
+        call psb_realloc(nd,x%v,info)
+      end if
+    else  !    if (x%is_host()) then 
+      if (.not.allocated(x%v)) then 
+        nh = 0
+      else
+        nh    = size(x%v)
+      end if
+      if (c_associated(x%deviceVect)) then 
+        nd  = getMultiVecDeviceSize(x%deviceVect)
+        if (nd < nh ) then 
+          call freeMultiVecDevice(x%deviceVect)
+          x%deviceVect=c_null_ptr
+        end if
+      end if
       if (.not.c_associated(x%deviceVect)) then 
-        n    = size(x%v)
-        info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_float)
+        info = FallocMultiVecDevice(x%deviceVect,1,nh,spgpu_type_double)
         if  (info /= 0) then 
-!!$          write(0,*) 'Error from FallocMultiVecDevice',info,n
           if (info == spgpu_outofmem) then 
             info = psb_err_alloc_request_
           end if
         end if
       end if
-    else if (x%is_dev()) then 
-      ! 
-      write(0,*) 'What is going on??? ' 
     end if
     
   end subroutine s_gpu_sync_space
 
   subroutine s_gpu_sync(x)
+    use psb_base_mod, only : psb_realloc
     implicit none 
     class(psb_s_vect_gpu), intent(inout) :: x
     integer(psb_ipk_) :: n,info
@@ -671,17 +695,26 @@ contains
     if (x%is_host()) then 
       if (.not.c_associated(x%deviceVect)) then 
         n    = size(x%v)
-        info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_float)
+        info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_double)
       end if
       if (info == 0) &
            & info = writeMultiVecDevice(x%deviceVect,x%v)
     else if (x%is_dev()) then 
+      n    = getMultiVecDeviceSize(x%deviceVect)
+      if (.not.allocated(x%v)) then 
+!!$        write(0,*) 'Incoherent situation : x%v not allocated'
+        call psb_realloc(n,x%v,info)
+      end if
+      if ((n > size(x%v)).or.(n > x%get_nrows())) then 
+!!$        write(0,*) 'Incoherent situation : sizes',n,size(x%v),x%get_nrows()
+        call psb_realloc(n,x%v,info)
+      end if
       info = readMultiVecDevice(x%deviceVect,x%v)
     end if
     if (info == 0)  call x%set_sync()
     if (info /= 0) then
       info=psb_err_internal_error_
-      call psb_errpush(info,'s_gpu_sync')
+      call psb_errpush(info,'d_gpu_sync')
     end if
     
   end subroutine s_gpu_sync

@@ -160,7 +160,6 @@ module psb_z_vectordev_mod
       type(c_ptr), value    :: deviceVecA
     end function asumMultiVecDeviceDoubleComplex
   end interface
-  
 
 !!$  interface 
 !!$    function geinsMultiVecDeviceDoubleComplex(n,deviceVecIrl,deviceVecVal,&
