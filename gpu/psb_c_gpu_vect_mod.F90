@@ -622,6 +622,7 @@ contains
     integer(psb_ipk_), intent(in)        :: n
     class(psb_c_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(out)       :: info
+    integer(psb_ipk_) :: nd
     
     if (x%is_dev()) then 
       nd  = getMultiVecDeviceSize(x%deviceVect)
