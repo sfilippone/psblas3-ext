@@ -32,7 +32,7 @@
 
 module psb_gpu_env_mod
   use psb_const_mod
-  use psb_penv_mod
+  !use psb_penv_mod
   !use psi_comm_buffers_mod, only : psb_buffer_queue
   use iso_c_binding
 
@@ -73,6 +73,13 @@ module psb_gpu_env_mod
     end function psb_cuda_getDeviceCount
   end interface
 
+  interface 
+    function psb_C_DeviceHasUVA() &
+         & result(res) bind(c,name='DeviceHasUVA')
+      use iso_c_binding   
+      integer(c_int)		:: res
+    end function psb_C_DeviceHasUVA
+  end interface
 
   interface 
     subroutine psb_gpuCreateHandle() &
@@ -170,5 +177,11 @@ contains
     call psb_gpuDestroyHandle()
     call psb_cudaReset()
   end subroutine psb_gpu_exit
+
+  function psb_gpu_DeviceHasUVA() result(res)
+    logical :: res
+    res =  (psb_C_DeviceHasUVA() == 1)
+  end function psb_gpu_DeviceHasUVA
+
 
 end module psb_gpu_env_mod

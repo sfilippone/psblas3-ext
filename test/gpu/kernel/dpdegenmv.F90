@@ -67,6 +67,7 @@ program pdgenmv
   
 #ifdef HAVE_GPU
   type(psb_d_vect_gpu)  :: vmold
+  type(psb_i_vect_gpu)  :: imold
 #endif
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
@@ -199,6 +200,7 @@ program pdgenmv
     write(*,*) 'Unknown format defaulting to HLG'
     agmold => ahlg
   end select
+  call desc_a%cnv(imold)
   call a%cscnv(agpu,info,mold=agmold)
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info

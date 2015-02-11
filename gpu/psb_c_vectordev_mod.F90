@@ -84,7 +84,74 @@ module psb_c_vectordev_mod
     end function readMultiVecDeviceFloatComplexR2
   end interface 
 
-! New gather functions
+    
+
+  interface allocateFloatComplex
+    function allocateFloatComplex(didx,n) &
+         & result(res) bind(c,name='allocateFloatComplex') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: n
+      integer(c_int)  :: res
+    end function allocateFloatComplex
+    function allocateMultiFloatComplex(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiFloatComplex') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: m,n
+      integer(c_int)  :: res
+    end function allocateMultiFloatComplex
+  end interface
+
+  interface writeFloatComplex
+    function writeFloatComplex(didx,hidx,n) &
+         & result(res) bind(c,name='writeFloatComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      complex(c_float_complex)       :: hidx(*)
+      integer(c_int),value :: n
+    end function writeFloatComplex
+    function writeMultiFloatComplex(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiFloatComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      complex(c_float_complex)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function writeMultiFloatComplex
+  end interface
+  
+  interface readFloatComplex
+    function readFloatComplex(didx,hidx,n) &
+         & result(res) bind(c,name='readFloatComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      complex(c_float_complex)       :: hidx(*)
+      integer(c_int),value :: n
+    end function readFloatComplex
+    function readMultiFloatComplex(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiFloatComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      complex(c_float_complex)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function readMultiFloatComplex
+  end interface
+  
+  interface
+    subroutine  freeFloatComplex(didx) &
+         & bind(c,name='freeFloatComplex')
+      use iso_c_binding
+      type(c_ptr), value :: didx
+    end subroutine freeFloatComplex
+  end interface
+  
+
+
+  ! New gather functions
 
   interface 
     function igathMultiVecDeviceFloatComplex(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &

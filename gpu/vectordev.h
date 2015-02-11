@@ -70,11 +70,6 @@ typedef struct MultiVectorDeviceParams
 
 
 
-int allocateIdx(void **, int);
-int writeIdx(void *, int *, int);
-int readIdx(void *, int *, int);
-void freeIdx(void *);
-
 int registerMappedDouble(void *, void **, int, double);
 int unregisterMapped(void *);
 
@@ -157,6 +152,9 @@ int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVe
 				     void *deviceVecB, double complex beta, 
 				     void *deviceVecZ);
 
+
+int igathMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first,
+			      int n, void* deviceIdx, void* host_values, int indexBase);
 
 
 int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int first,

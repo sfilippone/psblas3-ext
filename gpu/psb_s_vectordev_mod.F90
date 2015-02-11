@@ -84,7 +84,74 @@ module psb_s_vectordev_mod
     end function readMultiVecDeviceFloatR2
   end interface 
 
-! New gather functions
+    
+
+  interface allocateFloat
+    function allocateFloat(didx,n) &
+         & result(res) bind(c,name='allocateFloat') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: n
+      integer(c_int)  :: res
+    end function allocateFloat
+    function allocateMultiFloat(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiFloat') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: m,n
+      integer(c_int)  :: res
+    end function allocateMultiFloat
+  end interface
+
+  interface writeFloat
+    function writeFloat(didx,hidx,n) &
+         & result(res) bind(c,name='writeFloat')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      real(c_float)       :: hidx(*)
+      integer(c_int),value :: n
+    end function writeFloat
+    function writeMultiFloat(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiFloat')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      real(c_float)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function writeMultiFloat
+  end interface
+  
+  interface readFloat
+    function readFloat(didx,hidx,n) &
+         & result(res) bind(c,name='readFloat')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      real(c_float)       :: hidx(*)
+      integer(c_int),value :: n
+    end function readFloat
+    function readMultiFloat(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiFloat')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      real(c_float)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function readMultiFloat
+  end interface
+  
+  interface
+    subroutine  freeFloat(didx) &
+         & bind(c,name='freeFloat')
+      use iso_c_binding
+      type(c_ptr), value :: didx
+    end subroutine freeFloat
+  end interface
+  
+
+
+  ! New gather functions
 
   interface 
     function igathMultiVecDeviceFloat(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &

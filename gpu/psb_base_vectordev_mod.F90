@@ -54,69 +54,75 @@ module psb_base_vectordev_mod
     end function FallocMultiVecDevice
   end interface
 
-  interface allocateIdx
-    function allocateIdx(didx,n) &
-         & result(res) bind(c,name='allocateIdx') 
+
+  ! Integer 
+  interface allocateInt
+    function allocateInt(didx,n) &
+         & result(res) bind(c,name='allocateInt') 
       use iso_c_binding
       type(c_ptr) :: didx
       integer(c_int),value :: n
       integer(c_int)  :: res
-    end function allocateIdx
-    function allocateMultiIdx(didx,m,n) &
-         & result(res) bind(c,name='allocateMultiIdx') 
+    end function allocateInt
+    function allocateMultiInt(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiInt') 
       use iso_c_binding
       type(c_ptr) :: didx
       integer(c_int),value :: m,n
       integer(c_int)  :: res
-    end function allocateMultiIdx
+    end function allocateMultiInt
   end interface
 
-  interface writeIdx
-    function writeIdx(didx,hidx,n) &
-         & result(res) bind(c,name='writeIdx')
+  interface writeInt
+    function writeInt(didx,hidx,n) &
+         & result(res) bind(c,name='writeInt')
       use iso_c_binding
       integer(c_int) :: res
       type(c_ptr), value   :: didx
       integer(c_int)       :: hidx(*)
       integer(c_int),value :: n
-    end function writeIdx
-    function writeMultiIdx(didx,hidx,m,n) &
-         & result(res) bind(c,name='writeMultiIdx')
+    end function writeInt
+    function writeMultiInt(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiInt')
       use iso_c_binding
       integer(c_int) :: res
       type(c_ptr), value   :: didx
       integer(c_int)       :: hidx(m,*)
       integer(c_int),value :: m,n
-    end function writeMultiIdx
+    end function writeMultiInt
   end interface
   
-  interface readIdx
-    function readIdx(didx,hidx,n) &
-         & result(res) bind(c,name='readIdx')
+  interface readInt
+    function readInt(didx,hidx,n) &
+         & result(res) bind(c,name='readInt')
       use iso_c_binding
       integer(c_int) :: res
       type(c_ptr), value :: didx
       integer(c_int)       :: hidx(*)
       integer(c_int),value :: n
-    end function readIdx
-    function readMultiIdx(didx,hidx,m,n) &
-         & result(res) bind(c,name='readMultiIdx')
+    end function readInt
+    function readMultiInt(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiInt')
       use iso_c_binding
       integer(c_int) :: res
       type(c_ptr), value :: didx
       integer(c_int)       :: hidx(m,*)
       integer(c_int),value :: m,n
-    end function readMultiIdx
+    end function readMultiInt
   end interface
   
   interface
-    subroutine  freeIdx(didx) &
-         & bind(c,name='freeIdx')
+    subroutine  freeInt(didx) &
+         & bind(c,name='freeInt')
       use iso_c_binding
       type(c_ptr), value :: didx
-    end subroutine freeIdx
+    end subroutine freeInt
   end interface
-  
+
+ 
+
+
+
   interface registerMapped
     function registerMappedInt(buf,d_p,n,dummy) &
          & result(res) bind(c,name='registerMappedInt')

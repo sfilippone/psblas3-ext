@@ -190,6 +190,9 @@ int freeRemoteBuffer(void* buffer)
   }
 }
 
+static int hasUVA=-1;
+
+
 int gpuInit(int dev)
 {
 
@@ -209,6 +212,7 @@ int gpuInit(int dev)
     err = cudaSetDevice(dev);
   else
     err = cudaSetDevice(0);
+  hasUVA=getDeviceHasUVA();
 
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
@@ -220,6 +224,28 @@ int gpuInit(int dev)
   return err;
   
 }
+
+int getDevice()
+{ int count;
+  
+  cudaGetDevice(&count);     
+  return(count);
+}
+
+int getDeviceHasUVA()
+{ int count, dev;
+  struct cudaDeviceProp prop;
+  dev=getDevice();
+  cudaGetDeviceProperties(&prop,dev);
+  count = prop.unifiedAddressing;
+  return(count);
+}
+
+int DeviceHasUVA()
+{ 
+  return(hasUVA == 1);
+}
+  
 
 int getDeviceCount()
 { int count;
@@ -286,6 +312,264 @@ void  psb_gpuSetStream(cudaStream_t stream)
   spgpuSetStream(psb_gpu_handle, stream);
   return ;
 }
+
+
+
+
+
+/* Simple memory tools */ 
+
+int allocateInt(void **d_int, int n)
+{
+  return allocRemoteBuffer((void **)(d_int), n*sizeof(int));
+}
+
+int writeInt(void *d_int, int* h_int, int n)
+{
+  int i,j;
+  int *di;
+  i = writeRemoteBuffer((void*)h_int, (void*)d_int, n*sizeof(int));
+  /* fprintf(stderr,"End of writeInt: "); */
+  /* di = (int *)d_int; */
+  /* for (j=0; j<n; j++) */
+  /*   fprintf(stderr,"%d ",di[j]); */
+  /* fprintf(stderr,"\n"); */
+  //cudaSync();
+  return i;
+}
+
+int readInt(void* d_int, int* h_int, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_int, (void *) d_int, n*sizeof(int));
+  //cudaSync();
+  return(i);
+}
+
+int allocateMultiInt(void **d_int, int m, int n)
+{
+  return allocRemoteBuffer((void **)(d_int), m*n*sizeof(int));
+}
+
+int writeMultiInt(void *d_int, int* h_int, int m, int n)
+{
+  int i,j;
+  int *di;
+  i = writeRemoteBuffer((void*)h_int, (void*)d_int, m*n*sizeof(int));
+  /* fprintf(stderr,"End of writeInt: "); */
+  /* di = (int *)d_int; */
+  /* for (j=0; j<n; j++) */
+  /*   fprintf(stderr,"%d ",di[j]); */
+  /* fprintf(stderr,"\n"); */
+  //cudaSync();
+  return i;
+}
+
+int readMultiInt(void* d_int, int* h_int, int m, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_int, (void *) d_int, m*n*sizeof(int));
+  //cudaSync();
+  return(i);
+}
+
+void freeInt(void *d_int)
+{
+  //printf("Before freeInt\n");
+  freeRemoteBuffer(d_int);
+}
+
+
+
+
+int allocateFloat(void **d_float, int n)
+{
+  return allocRemoteBuffer((void **)(d_float), n*sizeof(float));
+}
+
+int writeFloat(void *d_float, float* h_float, int n)
+{
+  int i;
+
+  i = writeRemoteBuffer((void*)h_float, (void*)d_float, n*sizeof(float));
+
+  return i;
+}
+
+int readFloat(void* d_float, float* h_float, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_float, (void *) d_float, n*sizeof(float));
+
+  return(i);
+}
+
+int allocateMultiFloat(void **d_float, int m, int n)
+{
+  return allocRemoteBuffer((void **)(d_float), m*n*sizeof(float));
+}
+
+int writeMultiFloat(void *d_float, float* h_float, int m, int n)
+{
+  int i,j;
+  i = writeRemoteBuffer((void*)h_float, (void*)d_float, m*n*sizeof(float));
+  return i;
+}
+
+int readMultiFloat(void* d_float, float* h_float, int m, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_float, (void *) d_float, m*n*sizeof(float));
+  //cudaSync();
+  return(i);
+}
+
+void freeFloat(void *d_float)
+{
+  freeRemoteBuffer(d_float);
+}
+
+
+
+int allocateDouble(void **d_double, int n)
+{
+  return allocRemoteBuffer((void **)(d_double), n*sizeof(double));
+}
+
+int writeDouble(void *d_double, double* h_double, int n)
+{
+  int i;
+
+  i = writeRemoteBuffer((void*)h_double, (void*)d_double, n*sizeof(double));
+
+  return i;
+}
+
+int readDouble(void* d_double, double* h_double, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_double, (void *) d_double, n*sizeof(double));
+
+  return(i);
+}
+
+int allocateMultiDouble(void **d_double, int m, int n)
+{
+  return allocRemoteBuffer((void **)(d_double), m*n*sizeof(double));
+}
+
+int writeMultiDouble(void *d_double, double* h_double, int m, int n)
+{
+  int i,j;
+  i = writeRemoteBuffer((void*)h_double, (void*)d_double, m*n*sizeof(double));
+  return i;
+}
+
+int readMultiDouble(void* d_double, double* h_double, int m, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_double, (void *) d_double, m*n*sizeof(double));
+  //cudaSync();
+  return(i);
+}
+
+void freeDouble(void *d_double)
+{
+  freeRemoteBuffer(d_double);
+}
+
+
+
+int allocateFloatComplex(void **d_FloatComplex, int n)
+{
+  return allocRemoteBuffer((void **)(d_FloatComplex), n*sizeof(cuFloatComplex));
+}
+
+int writeFloatComplex(void *d_FloatComplex, cuFloatComplex* h_FloatComplex, int n)
+{
+  int i;
+
+  i = writeRemoteBuffer((void*)h_FloatComplex, (void*)d_FloatComplex, n*sizeof(cuFloatComplex));
+
+  return i;
+}
+
+int readFloatComplex(void* d_FloatComplex, cuFloatComplex* h_FloatComplex, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_FloatComplex, (void *) d_FloatComplex, n*sizeof(cuFloatComplex));
+
+  return(i);
+}
+
+int allocateMultiFloatComplex(void **d_FloatComplex, int m, int n)
+{
+  return allocRemoteBuffer((void **)(d_FloatComplex), m*n*sizeof(cuFloatComplex));
+}
+
+int writeMultiFloatComplex(void *d_FloatComplex, cuFloatComplex* h_FloatComplex, int m, int n)
+{
+  int i,j;
+  i = writeRemoteBuffer((void*)h_FloatComplex, (void*)d_FloatComplex, m*n*sizeof(cuFloatComplex));
+  return i;
+}
+
+int readMultiFloatComplex(void* d_FloatComplex, cuFloatComplex* h_FloatComplex, int m, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_FloatComplex, (void *) d_FloatComplex, m*n*sizeof(cuFloatComplex));
+  //cudaSync();
+  return(i);
+}
+
+void freeFloatComplex(void *d_FloatComplex)
+{
+  freeRemoteBuffer(d_FloatComplex);
+}
+
+
+
+
+int allocateDoubleComplex(void **d_DoubleComplex, int n)
+{
+  return allocRemoteBuffer((void **)(d_DoubleComplex), n*sizeof(cuDoubleComplex));
+}
+
+int writeDoubleComplex(void *d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, int n)
+{
+  int i;
+
+  i = writeRemoteBuffer((void*)h_DoubleComplex, (void*)d_DoubleComplex, n*sizeof(cuDoubleComplex));
+
+  return i;
+}
+
+int readDoubleComplex(void* d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_DoubleComplex, (void *) d_DoubleComplex, n*sizeof(cuDoubleComplex));
+
+  return(i);
+}
+
+int allocateMultiDoubleComplex(void **d_DoubleComplex, int m, int n)
+{
+  return allocRemoteBuffer((void **)(d_DoubleComplex), m*n*sizeof(cuDoubleComplex));
+}
+
+int writeMultiDoubleComplex(void *d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, int m, int n)
+{
+  int i,j;
+  i = writeRemoteBuffer((void*)h_DoubleComplex, (void*)d_DoubleComplex, m*n*sizeof(cuDoubleComplex));
+  return i;
+}
+
+int readMultiDoubleComplex(void* d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, int m, int n)
+{ int i;
+  i = readRemoteBuffer((void *) h_DoubleComplex, (void *) d_DoubleComplex, m*n*sizeof(cuDoubleComplex));
+  //cudaSync();
+  return(i);
+}
+
+void freeDoubleComplex(void *d_DoubleComplex)
+{
+  freeRemoteBuffer(d_DoubleComplex);
+}
+
+
+
+
 
 
 #endif

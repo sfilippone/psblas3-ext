@@ -37,6 +37,7 @@ module psb_d_gpu_vect_mod
   use psb_d_vect_mod
   use psb_i_vect_mod
 #ifdef HAVE_SPGPU
+  use psb_gpu_env_mod
   use psb_i_gpu_vect_mod
   use psb_d_vectordev_mod
 #endif
@@ -49,8 +50,13 @@ module psb_d_gpu_vect_mod
 #ifdef HAVE_SPGPU
     integer     :: state      = is_host
     type(c_ptr) :: deviceVect = c_null_ptr
+    real(c_double), allocatable :: pinned_buffer(:)
+    type(c_ptr) :: d_p_buf = c_null_ptr
     real(c_double), allocatable :: buffer(:)
-    type(c_ptr) :: d_val = c_null_ptr
+    type(c_ptr) :: d_buf = c_null_ptr
+    integer :: d_buf_sz = 0
+    type(c_ptr) :: i_buf = c_null_ptr
+    integer :: i_buf_sz = 0
   contains
     procedure, pass(x) :: get_nrows => d_gpu_get_nrows
     procedure, nopass  :: get_fmt   => d_gpu_get_fmt
@@ -118,35 +124,106 @@ contains
     class(psb_i_base_vect_type) :: idx
     real(psb_dpk_) ::  y(:)
     class(psb_d_vect_gpu) :: x
+    integer ::  info, ni
+
+    info = 0 
 
     select type(ii=> idx) 
-    class is (psb_i_vect_gpu) 
+      class is (psb_i_vect_gpu) 
       if (ii%is_host()) call ii%sync()
       if (x%is_host())  call x%sync()
 
+      if (psb_gpu_DeviceHasUVA()) then 
+!!$        write(*,*) 'Pinned memory version'
+        if (allocated(x%pinned_buffer)) then  
+          if (size(x%pinned_buffer) < n) then 
+            call inner_unregister(x%pinned_buffer)
+            deallocate(x%pinned_buffer, stat=info)
+          end if
+        end if
+
+        if (.not.allocated(x%pinned_buffer)) then
+          allocate(x%pinned_buffer(n),stat=info)
+          if (info == 0) info = inner_register(x%pinned_buffer,x%d_p_buf)        
+          if (info /= 0) &
+               & write(0,*) 'Error from inner_register ',info
+        endif
+        info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
+             & 0, i, n, ii%deviceVect, x%d_p_buf, 1)
+        !call psb_cudaSync()
+        y(1:n) = x%pinned_buffer(1:n)
+
+      else
+!!$        write(*,*) 'Gather/scatter version 1'
+        if (allocated(x%buffer)) then 
+          if (size(x%buffer) < n) then 
+            deallocate(x%buffer, stat=info)
+          end if
+        end if
+
+        if (.not.allocated(x%buffer)) then
+          allocate(x%buffer(n),stat=info)
+        end if
+
+        if (x%d_buf_sz < n) then 
+          if (c_associated(x%d_buf)) then 
+            call freeDouble(x%d_buf)
+          end if
+          info =  allocateDouble(x%d_buf,n)
+          x%d_buf_sz=n
+        end if
+        if (info == 0) &
+             & info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
+             & 0, i, n, ii%deviceVect, x%d_buf, 1)
+        !call psb_cudaSync()
+        if (info == 0) &
+             &  info = readDouble(x%d_buf,y,n)
+        !call psb_cudaSync()
+
+      endif
+
+    class default
+      ! Do not go for brute force, but move the index vector
+      ni = size(ii%v)
+
+      if (x%i_buf_sz < ni) then 
+        if (c_associated(x%i_buf)) then 
+          call freeInt(x%i_buf)
+        end if
+        info =  allocateInt(x%i_buf,ni)
+        x%i_buf_sz=ni
+      end if
       if (allocated(x%buffer)) then 
         if (size(x%buffer) < n) then 
-          call inner_unregister(x%buffer)
           deallocate(x%buffer, stat=info)
         end if
       end if
-      
+
       if (.not.allocated(x%buffer)) then
         allocate(x%buffer(n),stat=info)
-        if (info == 0) info = inner_register(x%buffer,x%d_val)        
-      endif
-      info = igathMultiVecDeviceDouble(x%deviceVect,&
-           & 0, i, n, ii%deviceVect, x%d_val, 1)
-      call psb_cudaSync()
-      y(1:n) = x%buffer(1:n)
-      
-    class default
-      call x%gth(n,ii%v(i:),y)
+      end if
+
+      if (x%d_buf_sz < n) then 
+        if (c_associated(x%d_buf)) then 
+          call freeDouble(x%d_buf)
+        end if
+        info =  allocateDouble(x%d_buf,n)
+        x%d_buf_sz=n
+      end if
+
+      if (info == 0) &
+           & info = writeInt(x%i_buf,ii%v,ni)
+      ! call x%gth(n,ii%v(i:),y)
+      if (info == 0) &
+           & info = igathMultiVecDeviceDouble(x%deviceVect,&
+           & 0, i, n, x%i_buf, x%d_buf, 1)
+      if (info == 0) &
+           &  info = readDouble(x%d_buf,y,n)
+
     end select
 
 
   end subroutine d_gpu_gthzv_x
-
 
 
   subroutine d_gpu_sctb(n,idx,x,beta,y)
@@ -174,6 +251,8 @@ contains
     class(psb_d_vect_gpu) :: y
 
     select type(ii=> idx) 
+#ifdef USE_PINNED_BUFFER_
+      
     class is (psb_i_vect_gpu) 
       if (ii%is_host()) call ii%sync()
       if (y%is_host())  call y%sync()
@@ -187,15 +266,15 @@ contains
       
       if (.not.allocated(y%buffer)) then
         allocate(y%buffer(n),stat=info)
-        if (info == 0) info = inner_register(y%buffer,y%d_val)        
+        if (info == 0) info = inner_register(y%buffer,y%d_buf)        
       endif
       y%buffer(1:n) = x(1:n) 
       info = iscatMultiVecDeviceDouble(y%deviceVect,&
-           & 0, i, n, ii%deviceVect, y%d_val, 1,beta)
+           & 0, i, n, ii%deviceVect, y%d_buf, 1,beta)
 
       call y%set_dev()
       call psb_cudaSync()   
-      
+#endif      
     class default
       call y%sct(n,ii%v(i:),x,beta)
     end select
@@ -732,11 +811,20 @@ contains
       call freeMultiVecDevice(x%deviceVect)
       x%deviceVect=c_null_ptr
     end if
+    if (allocated(x%pinned_buffer)) then 
+      call inner_unregister(x%pinned_buffer)
+      deallocate(x%pinned_buffer, stat=info)
+    end if
     if (allocated(x%buffer)) then 
-      call inner_unregister(x%buffer)
       deallocate(x%buffer, stat=info)
     end if
-
+    if (c_associated(x%d_buf)) &
+         &  call freeDouble(x%d_buf)
+    if (c_associated(x%i_buf)) &
+         &  call freeInt(x%i_buf)
+    x%d_buf_sz=0
+    x%i_buf_sz=0
+    
     if (allocated(x%v)) deallocate(x%v, stat=info)
     call x%set_sync()
   end subroutine d_gpu_free
@@ -750,17 +838,7 @@ contains
     integer(psb_ipk_)        :: info
     
     info = 0
-    if (c_associated(x%deviceVect)) then 
-      call freeMultiVecDevice(x%deviceVect)
-      x%deviceVect=c_null_ptr
-    end if
-    if (allocated(x%buffer)) then 
-      call inner_unregister(x%buffer)
-      deallocate(x%buffer, stat=info)
-    end if
-
-    if (allocated(x%v)) deallocate(x%v, stat=info)
-    call x%set_sync()
+    call x%free(info)
   end subroutine d_gpu_vect_finalize
 #endif
 

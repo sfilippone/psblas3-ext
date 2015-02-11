@@ -59,6 +59,49 @@ void psb_gpuDestroyHandle();
 cudaStream_t psb_gpuGetStream();
 void  psb_gpuSetStream(cudaStream_t stream);
 
+
+int allocateInt(void **, int);
+int allocateMultiInt(void **, int, int);
+int writeInt(void *, int *, int);
+int writeMultiInt(void *, int* , int , int );
+int readInt(void *, int *, int);
+int readMultiInt(void*, int*, int, int );
+void freeInt(void *);
+
+int allocateFloat(void **, int);
+int allocateMultiFloat(void **, int, int);
+int writeFloat(void *, float *, int);
+int writeMultiFloat(void *, float* , int , int );
+int readFloat(void *, float*, int);
+int readMultiFloat(void*, float*, int, int );
+void freeFloat(void *);
+
+int allocateDouble(void **, int);
+int allocateMultiDouble(void **, int, int);
+int writeDouble(void *, double*, int);
+int writeMultiDouble(void *, double* , int , int );
+int readDouble(void *, double*, int);
+int readMultiDouble(void*, double*, int, int );
+void freeDouble(void *);
+
+int allocateFloatComplex(void **, int);
+int allocateMultiFloatComplex(void **, int, int);
+int writeFloatComplex(void *, cuFloatComplex*, int);
+int writeMultiFloatComplex(void *, cuFloatComplex* , int , int );
+int readFloatComplex(void *, cuFloatComplex*, int);
+int readMultiFloatComplex(void*, cuFloatComplex*, int, int );
+void freeFloatComplex(void *);
+
+int allocateDoubleComplex(void **, int);
+int allocateMultiDoubleComplex(void **, int, int);
+int writeDoubleComplex(void *, cuDoubleComplex*, int);
+int writeMultiDoubleComplex(void *, cuDoubleComplex* , int , int );
+int readDoubleComplex(void *, cuDoubleComplex*, int);
+int readMultiDoubleComplex(void*, cuDoubleComplex*, int, int );
+void freeDoubleComplex(void *);
+
+
+
 #endif
 
 #endif

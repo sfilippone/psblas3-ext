@@ -84,7 +84,74 @@ module psb_d_vectordev_mod
     end function readMultiVecDeviceDoubleR2
   end interface 
 
-! New gather functions
+    
+
+  interface allocateDouble
+    function allocateDouble(didx,n) &
+         & result(res) bind(c,name='allocateDouble') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: n
+      integer(c_int)  :: res
+    end function allocateDouble
+    function allocateMultiDouble(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiDouble') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: m,n
+      integer(c_int)  :: res
+    end function allocateMultiDouble
+  end interface
+
+  interface writeDouble
+    function writeDouble(didx,hidx,n) &
+         & result(res) bind(c,name='writeDouble')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      real(c_double)       :: hidx(*)
+      integer(c_int),value :: n
+    end function writeDouble
+    function writeMultiDouble(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiDouble')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      real(c_double)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function writeMultiDouble
+  end interface
+  
+  interface readDouble
+    function readDouble(didx,hidx,n) &
+         & result(res) bind(c,name='readDouble')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      real(c_double)       :: hidx(*)
+      integer(c_int),value :: n
+    end function readDouble
+    function readMultiDouble(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiDouble')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      real(c_double)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function readMultiDouble
+  end interface
+  
+  interface
+    subroutine  freeDouble(didx) &
+         & bind(c,name='freeDouble')
+      use iso_c_binding
+      type(c_ptr), value :: didx
+    end subroutine freeDouble
+  end interface
+  
+
+
+  ! New gather functions
 
   interface 
     function igathMultiVecDeviceDouble(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
@@ -98,6 +165,20 @@ module psb_d_vectordev_mod
       type(c_ptr),value   :: hostVec
       integer(c_int),value:: indexBase
     end function igathMultiVecDeviceDouble
+  end interface
+
+  interface 
+    function igathMultiVecDeviceDoubleVecIdx(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
+	& result(res) bind(c,name='igathMultiVecDeviceDoubleVecIdx')
+      use iso_c_binding
+      integer(c_int)      :: res
+      type(c_ptr), value  :: deviceVec
+      integer(c_int),value:: vectorId
+      integer(c_int),value:: first, n
+      type(c_ptr),value	  :: idx
+      type(c_ptr),value   :: hostVec
+      integer(c_int),value:: indexBase
+    end function igathMultiVecDeviceDoubleVecIdx
   end interface
 
 

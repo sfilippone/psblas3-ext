@@ -143,65 +143,6 @@ int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *
   return SPGPU_SUCCESS; // Success
 }
 
-int allocateIdx(void **d_idx, int n)
-{
-  return allocRemoteBuffer((void **)(d_idx), n*sizeof(int));
-}
-
-int writeIdx(void *d_idx, int* h_idx, int n)
-{
-  int i,j;
-  int *di;
-  i = writeRemoteBuffer((void*)h_idx, (void*)d_idx, n*sizeof(int));
-  /* fprintf(stderr,"End of writeIdx: "); */
-  /* di = (int *)d_idx; */
-  /* for (j=0; j<n; j++) */
-  /*   fprintf(stderr,"%d ",di[j]); */
-  /* fprintf(stderr,"\n"); */
-  //cudaSync();
-  return i;
-}
-
-int readIdx(void* d_idx, int* h_idx, int n)
-{ int i;
-  i = readRemoteBuffer((void *) h_idx, (void *) d_idx, n*sizeof(int));
-  //cudaSync();
-  return(i);
-}
-
-int allocateMultiIdx(void **d_idx, int m, int n)
-{
-  return allocRemoteBuffer((void **)(d_idx), m*n*sizeof(int));
-}
-
-int writeMultiIdx(void *d_idx, int* h_idx, int m, int n)
-{
-  int i,j;
-  int *di;
-  i = writeRemoteBuffer((void*)h_idx, (void*)d_idx, m*n*sizeof(int));
-  /* fprintf(stderr,"End of writeIdx: "); */
-  /* di = (int *)d_idx; */
-  /* for (j=0; j<n; j++) */
-  /*   fprintf(stderr,"%d ",di[j]); */
-  /* fprintf(stderr,"\n"); */
-  //cudaSync();
-  return i;
-}
-
-int readMultiIdx(void* d_idx, int* h_idx, int m, int n)
-{ int i;
-  i = readRemoteBuffer((void *) h_idx, (void *) d_idx, m*n*sizeof(int));
-  //cudaSync();
-  return(i);
-}
-
-void freeIdx(void *d_idx)
-{
-  //printf("Before freeIdx\n");
-  freeRemoteBuffer(d_idx);
-}
-
-
 int registerMappedInt(void  *buff, void **d_p, int n, int dummy)
 {
   return registerMappedMemory(buff,d_p,n*sizeof(int));
@@ -1222,8 +1163,23 @@ int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int first,
   i=0; 
   idx = (int *) indexes;
   idx = &(idx[first-indexBase]);
-  spgpuSgath(handle,(double *)host_values, n, idx,
-  	     indexBase, (double *) devVec->v_+vectorId*devVec->pitch_);
+  spgpuSgath(handle,(float *)host_values, n, idx,
+  	     indexBase, (float *) devVec->v_+vectorId*devVec->pitch_);
+  return(i);
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+
+int igathMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first,
+			      int n, void* deviceIdx, void* host_values, int indexBase)
+{
+  int i, *idx;
+#ifdef HAVE_SPGPU
+  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
+  i= igathMultiVecDeviceDouble(deviceVec, vectorId, first,
+			       n, (void*) devIdx->v_,  host_values, indexBase);
   return(i);
 #else
   return SPGPU_UNSUPPORTED;
@@ -1261,8 +1217,8 @@ int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first,
   i=0; 
   idx = (int *) indexes;
   idx = &(idx[first-indexBase]);
-  spgpuCgath(handle,(double *)host_values, n, idx,
-  	     indexBase, (double *) devVec->v_+vectorId*devVec->pitch_);
+  spgpuCgath(handle,(cuFloatComplex *)host_values, n, idx,
+  	     indexBase, (cuFloatComplex *) devVec->v_+vectorId*devVec->pitch_);
   return(i);
 #else
   return SPGPU_UNSUPPORTED;
@@ -1281,8 +1237,8 @@ int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first,
   i=0; 
   idx = (int *) indexes;
   idx = &(idx[first-indexBase]);
-  spgpuZgath(handle,(double *)host_values, n, idx,
-  	     indexBase, (double *) devVec->v_+vectorId*devVec->pitch_);
+  spgpuZgath(handle,(cuDoubleComplex *)host_values, n, idx,
+  	     indexBase, (cuDoubleComplex *) devVec->v_+vectorId*devVec->pitch_);
   return(i);
 #else
   return SPGPU_UNSUPPORTED;
@@ -1369,4 +1325,6 @@ int iscatMultiVecDeviceDoubleComplex(void *deviceVec, int vectorId, int first, i
 }
 
 
+
 #endif
+

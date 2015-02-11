@@ -84,7 +84,74 @@ module psb_z_vectordev_mod
     end function readMultiVecDeviceDoubleComplexR2
   end interface 
 
-! New gather functions
+    
+
+  interface allocateDoubleComplex
+    function allocateDoubleComplex(didx,n) &
+         & result(res) bind(c,name='allocateDoubleComplex') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: n
+      integer(c_int)  :: res
+    end function allocateDoubleComplex
+    function allocateMultiDoubleComplex(didx,m,n) &
+         & result(res) bind(c,name='allocateMultiDoubleComplex') 
+      use iso_c_binding
+      type(c_ptr) :: didx
+      integer(c_int),value :: m,n
+      integer(c_int)  :: res
+    end function allocateMultiDoubleComplex
+  end interface
+
+  interface writeDoubleComplex
+    function writeDoubleComplex(didx,hidx,n) &
+         & result(res) bind(c,name='writeDoubleComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      complex(c_double_complex)       :: hidx(*)
+      integer(c_int),value :: n
+    end function writeDoubleComplex
+    function writeMultiDoubleComplex(didx,hidx,m,n) &
+         & result(res) bind(c,name='writeMultiDoubleComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value   :: didx
+      complex(c_double_complex)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function writeMultiDoubleComplex
+  end interface
+  
+  interface readDoubleComplex
+    function readDoubleComplex(didx,hidx,n) &
+         & result(res) bind(c,name='readDoubleComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      complex(c_double_complex)       :: hidx(*)
+      integer(c_int),value :: n
+    end function readDoubleComplex
+    function readMultiDoubleComplex(didx,hidx,m,n) &
+         & result(res) bind(c,name='readMultiDoubleComplex')
+      use iso_c_binding
+      integer(c_int) :: res
+      type(c_ptr), value :: didx
+      complex(c_double_complex)       :: hidx(m,*)
+      integer(c_int),value :: m,n
+    end function readMultiDoubleComplex
+  end interface
+  
+  interface
+    subroutine  freeDoubleComplex(didx) &
+         & bind(c,name='freeDoubleComplex')
+      use iso_c_binding
+      type(c_ptr), value :: didx
+    end subroutine freeDoubleComplex
+  end interface
+  
+
+
+  ! New gather functions
 
   interface 
     function igathMultiVecDeviceDoubleComplex(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
