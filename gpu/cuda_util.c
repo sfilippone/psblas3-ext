@@ -294,7 +294,7 @@ spgpuHandle_t psb_gpuGetHandle()
 void psb_gpuCreateHandle()
 {
   if (!psb_gpu_handle)
-    spgpuCreate(&psb_gpu_handle, 0);
+    spgpuCreate(&psb_gpu_handle, getDevice());
 }
 
 void psb_gpuDestroyHandle()
