@@ -33,61 +33,35 @@
 #pragma once
 #if defined(HAVE_SPGPU)
 //#include "utils.h"
+#include "vectordev.h"
 #include "cuda_runtime.h"
-//#include "common.h"
-#include "cintrf.h"
-#include <complex.h>
-
-struct MultiVectDevice
-{
-  // number of vectors
-  int count_;
-
-  //number of elements for a single vector
-  int size_;
-
-  //pithc in number of elements
-  int pitch_;
-
-  // Vectors in device memory (single allocation)
-  void *v_;
-};
-
-typedef struct MultiVectorDeviceParams
-{			
-	// number on vectors
-	unsigned int count; //1 for a simple vector
-
-	// The resulting allocation will be pitch*s*(size of the elementType)
-	unsigned int elementType;
-	
-	// Pitch (in number of elements)
-	unsigned int pitch;
-
-	// Size of a single vector (in number of elements).
-	unsigned int size; 
-} MultiVectorDeviceParams;
+#include "core.h"
 
 
+int registerMappedDouble(void *, void **, int, double);
+int writeMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
+int writeMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
+int readMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
+int readMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
+int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
+int asumMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
+int dotMultiVecDeviceDouble(double* y_res, int n, void* devVecA, void* devVecB);
+int geinsMultiVecDeviceDouble(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
 
-int unregisterMapped(void *);
-int registerMappedInt(void  *buff, void **d_p, int n, int dummy);
+int axpbyMultiVecDeviceDouble(int n, double alpha, void* devVecX, double beta, void* devVecY);
+int axyMultiVecDeviceDouble(int n, double alpha, void *deviceVecA, void *deviceVecB);
+int axybzMultiVecDeviceDouble(int n, double alpha, void *deviceVecA,
+			      void *deviceVecB, double beta, void *deviceVecZ);
 
-MultiVectorDeviceParams getMultiVectorDeviceParams(unsigned int count, unsigned int size, 
-						   unsigned int elementType);
-
-int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, 
-			 unsigned int size, unsigned int elementType);
-void freeMultiVecDevice(void* deviceVec);
-int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
-int getMultiVecDeviceSize(void* deviceVec);
-int getMultiVecDeviceCount(void* deviceVec);
-int getMultiVecDevicePitch(void* deviceVec);
-
-
-int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
-int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
+int igathMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first,
+			      int n, void* deviceIdx, void* host_values, int indexBase);
+int igathMultiVecDeviceDouble(void* deviceVec, int vectorId, int first,
+			      int n, void* indexes, void* host_values, int indexBase);
+int iscatMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
+			      void* host_values, int indexBase, double beta);
+int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int first, int n, void *indexes,
+			      void* host_values, int indexBase, double beta);
 
 #endif

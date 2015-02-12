@@ -37,57 +37,33 @@
 //#include "common.h"
 #include "cintrf.h"
 #include <complex.h>
+#include "cuComplex.h"
+#include "vectordev.h"
+#include "cuda_runtime.h"
+#include "core.h"
 
-struct MultiVectDevice
-{
-  // number of vectors
-  int count_;
-
-  //number of elements for a single vector
-  int size_;
-
-  //pithc in number of elements
-  int pitch_;
-
-  // Vectors in device memory (single allocation)
-  void *v_;
-};
-
-typedef struct MultiVectorDeviceParams
-{			
-	// number on vectors
-	unsigned int count; //1 for a simple vector
-
-	// The resulting allocation will be pitch*s*(size of the elementType)
-	unsigned int elementType;
-	
-	// Pitch (in number of elements)
-	unsigned int pitch;
-
-	// Size of a single vector (in number of elements).
-	unsigned int size; 
-} MultiVectorDeviceParams;
-
-
-
-int unregisterMapped(void *);
-int registerMappedInt(void  *buff, void **d_p, int n, int dummy);
-
-MultiVectorDeviceParams getMultiVectorDeviceParams(unsigned int count, unsigned int size, 
-						   unsigned int elementType);
-
-int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, 
-			 unsigned int size, unsigned int elementType);
-void freeMultiVecDevice(void* deviceVec);
-int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
-int getMultiVecDeviceSize(void* deviceVec);
-int getMultiVecDeviceCount(void* deviceVec);
-int getMultiVecDevicePitch(void* deviceVec);
-
-
-int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
-int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
+int registerMappedDoubleComplex(void *, void **, int, cuDoubleComplex);
+int writeMultiVecDeviceDoubleComplex(void* deviceVec, cuDoubleComplex* hostVec);
+int writeMultiVecDeviceDoubleComplexR2(void* deviceVec, cuDoubleComplex* hostVec, int ld);
+int readMultiVecDeviceDoubleComplex(void* deviceVec, double complex* hostVec);
+int readMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, double complex* hostMultiVec, int ld);
+int nrm2MultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA);
+int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
+int asumMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
+int dotMultiVecDeviceDoubleComplex(double complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
+int axpbyMultiVecDeviceDoubleComplex(int n, double complex alpha, void* devMultiVecX, 
+				     double complex beta, void* devMultiVecY);
+int axyMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA, void *deviceVecB);
+int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA,
+				     void *deviceVecB, double complex beta, 
+				     void *deviceVecZ);
+int igathMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first,
+				    int n, void* indexes, void* host_values, int indexBase);
+int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first,
+				    int n, void* indexes, void* host_values, int indexBase);
+int iscatMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				    void* host_values, int indexBase, double complex beta);
+int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				    void* host_values, int indexBase, double complex beta);
 
 #endif

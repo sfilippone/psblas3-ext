@@ -167,6 +167,20 @@ module psb_z_vectordev_mod
     end function igathMultiVecDeviceDoubleComplex
   end interface
 
+  interface 
+    function igathMultiVecDeviceDoubleComplexVecIdx(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
+	& result(res) bind(c,name='igathMultiVecDeviceDoubleComplexVecIdx')
+      use iso_c_binding
+      integer(c_int)      :: res
+      type(c_ptr), value  :: deviceVec
+      integer(c_int),value:: vectorId
+      integer(c_int),value:: first, n
+      type(c_ptr),value	  :: idx
+      type(c_ptr),value   :: hostVec
+      integer(c_int),value:: indexBase
+    end function igathMultiVecDeviceDoubleComplexVecIdx
+  end interface
+
 
   interface 
     function iscatMultiVecDeviceDoubleComplex(deviceVec, vectorId, first, n, idx, hostVec, indexBase, beta) &
@@ -181,6 +195,22 @@ module psb_z_vectordev_mod
       integer(c_int),value   :: indexBase
       complex(c_double_complex),value :: beta
     end function iscatMultiVecDeviceDoubleComplex
+  end interface
+
+
+  interface 
+    function iscatMultiVecDeviceDoubleComplexVecIdx(deviceVec, vectorId, first, n, idx, hostVec, indexBase, beta) &
+	& result(res) bind(c,name='iscatMultiVecDeviceDoubleComplexVecIdx')
+      use iso_c_binding
+      integer(c_int)         :: res
+      type(c_ptr), value     :: deviceVec
+      integer(c_int),value   :: vectorId
+      integer(c_int),value   :: first, n
+      type(c_ptr), value     :: idx
+      type(c_ptr), value     :: hostVec
+      integer(c_int),value   :: indexBase
+      complex(c_double_complex),value :: beta
+    end function iscatMultiVecDeviceDoubleComplexVecIdx
   end interface
 
   interface dotMultiVecDevice

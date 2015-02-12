@@ -39,7 +39,8 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 	psb_d_diag_mat_mod.o\
 	psb_d_hdiag_mat_mod.o
 
-COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o cuda_util.o fcusparse.o 
+COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o \
+	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 
 
 OBJS=$(COBJS) $(FOBJS)
 
@@ -54,7 +55,7 @@ copy: cmp ilib
 
 hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
 psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o
-psb_i_gpu_vect_mod.o : psb_vectordev_mod.o
+psb_i_gpu_vect_mod.o : psb_vectordev_mod.o psb_gpu_env_mod.o
 cusparse_mod.o:  s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o 
 s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o : base_cusparse_mod.o  
 psb_d_hlg_mat_mod.o: hlldev_mod.o psb_d_gpu_vect_mod.o 
@@ -75,10 +76,14 @@ psb_c_csrg_mat_mod.o psb_c_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
 psb_z_csrg_mat_mod.o psb_z_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
 psb_vectordev_mod.o: psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev_mod.o psb_z_vectordev_mod.o psb_i_vectordev_mod.o
  psb_i_vectordev_mod.o psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev_mod.o psb_z_vectordev_mod.o: psb_base_vectordev_mod.o
-vectordev.o: cuda_util.o  
+vectordev.o: cuda_util.o   vectordev.h
 elldev.o: elldev.c
 fcusparse.h elldev.c: elldev.h vectordev.h
 fcusparse.o: fcusparse.h
+svectordev.o:  svectordev.h vectordev.h
+dvectordev.o:  dvectordev.h vectordev.h
+cvectordev.o:  cvectordev.h vectordev.h
+zvectordev.o:  zvectordev.h vectordev.h
 
 psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 	psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\

@@ -32,62 +32,34 @@
 
 #pragma once
 #if defined(HAVE_SPGPU)
-//#include "utils.h"
+#include "cuComplex.h"
+#include "vectordev.h"
 #include "cuda_runtime.h"
-//#include "common.h"
-#include "cintrf.h"
-#include <complex.h>
+#include "core.h"
 
-struct MultiVectDevice
-{
-  // number of vectors
-  int count_;
+int registerMappedFloatComplex(void *, void **, int, cuFloatComplex);
 
-  //number of elements for a single vector
-  int size_;
-
-  //pithc in number of elements
-  int pitch_;
-
-  // Vectors in device memory (single allocation)
-  void *v_;
-};
-
-typedef struct MultiVectorDeviceParams
-{			
-	// number on vectors
-	unsigned int count; //1 for a simple vector
-
-	// The resulting allocation will be pitch*s*(size of the elementType)
-	unsigned int elementType;
-	
-	// Pitch (in number of elements)
-	unsigned int pitch;
-
-	// Size of a single vector (in number of elements).
-	unsigned int size; 
-} MultiVectorDeviceParams;
-
-
-
-int unregisterMapped(void *);
-int registerMappedInt(void  *buff, void **d_p, int n, int dummy);
-
-MultiVectorDeviceParams getMultiVectorDeviceParams(unsigned int count, unsigned int size, 
-						   unsigned int elementType);
-
-int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, 
-			 unsigned int size, unsigned int elementType);
-void freeMultiVecDevice(void* deviceVec);
-int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
-int getMultiVecDeviceSize(void* deviceVec);
-int getMultiVecDeviceCount(void* deviceVec);
-int getMultiVecDevicePitch(void* deviceVec);
-
-
-int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
-int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
-int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
+int writeMultiVecDeviceFloatComplex(void* deviceVec, cuFloatComplex* hostVec);
+int writeMultiVecDeviceFloatComplexR2(void* deviceVec, cuFloatComplex* hostVec, int ld);
+int readMultiVecDeviceFloatComplex(void* deviceVec, float complex* hostVec);
+int readMultiVecDeviceFloatComplexR2(void* deviceMultiVec, float complex* hostMultiVec, int ld);
+int nrm2MultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA);
+int amaxMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
+int asumMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
+int dotMultiVecDeviceFloatComplex(float complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
+int axpbyMultiVecDeviceFloatComplex(int n, float complex alpha, void* devMultiVecX, 
+				    float complex beta, void* devMultiVecY);
+int axyMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA, void *deviceVecB);
+int axybzMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA,
+				    void *deviceVecB, float complex beta, 
+				    void *deviceVecZ);
+int igathMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int first,
+				    int n, void* indexes, void* host_values, int indexBase);
+int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first,
+				    int n, void* indexes, void* host_values, int indexBase);
+int iscatMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				    void* host_values, int indexBase, float complex beta);
+int iscatMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
+				    void* host_values, int indexBase, float complex beta);
 
 #endif
