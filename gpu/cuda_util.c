@@ -201,9 +201,7 @@ int gpuInit(int dev)
   if ((err=cudaSetDeviceFlags(cudaDeviceMapHost))!=cudaSuccess) 
     fprintf(stderr,"Error On SetDeviceFlags: %d '%s'\n",err,cudaGetErrorString(err));
   err = cudaGetDeviceCount(&count);
-  if (err == cudaSuccess)
-    return SPGPU_SUCCESS;	
-  else {
+  if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
@@ -214,9 +212,7 @@ int gpuInit(int dev)
     err = cudaSetDevice(0);
   hasUVA=getDeviceHasUVA();
 
-  if (err == cudaSuccess)
-    return SPGPU_SUCCESS;	
-  else {
+  if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
@@ -251,9 +247,7 @@ int getDeviceCount()
 { int count;
   cudaError_t err;
   err = cudaGetDeviceCount(&count);
-  if (err == cudaSuccess)
-    return SPGPU_SUCCESS;	
-  else {
+  if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error getDeviceCount: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
