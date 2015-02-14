@@ -74,6 +74,14 @@ module psb_gpu_env_mod
   end interface
 
   interface 
+    function psb_cuda_getDevice() &
+         & result(res) bind(c,name='getDevice')
+      use iso_c_binding   
+      integer(c_int)		:: res
+    end function psb_cuda_getDevice
+  end interface
+
+  interface 
     function psb_C_DeviceHasUVA() &
          & result(res) bind(c,name='DeviceHasUVA')
       use iso_c_binding   
