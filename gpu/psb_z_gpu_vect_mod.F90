@@ -151,7 +151,7 @@ contains
         endif
         info = igathMultiVecDeviceDoubleComplexVecIdx(x%deviceVect,&
              & 0, i, n, ii%deviceVect, x%d_p_buf, 1)
-        !call psb_cudaSync()
+        call psb_cudaSync()
         y(1:n) = x%pinned_buffer(1:n)
 
       else
@@ -257,7 +257,7 @@ contains
       if (ii%is_host()) call ii%sync()
       if (y%is_host())  call y%sync()
 
-      if (psb_gpu_DeviceHasUVA()) then 
+      if (.false..and.psb_gpu_DeviceHasUVA()) then 
 !!$        write(*,*) 'Pinned memory version'
         if (allocated(y%pinned_buffer)) then  
           if (size(y%pinned_buffer) < n) then 
@@ -331,10 +331,10 @@ contains
       end if
 
       if (info == 0) &
-           & info = writeInt(y%i_buf,ii%v,ni)
+           & info = writeInt(y%i_buf,ii%v(i:i+n-1),n)
       info = writeDoubleComplex(y%d_buf,x,n)
       info = iscatMultiVecDeviceDoubleComplex(y%deviceVect,&
-           & 0, i, n, y%i_buf, y%d_buf, 1,beta)
+           & 0, 1, n, y%i_buf, y%d_buf, 1,beta)
 
 
     end select

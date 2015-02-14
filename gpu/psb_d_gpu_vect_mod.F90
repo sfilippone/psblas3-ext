@@ -273,9 +273,9 @@ contains
                & write(0,*) 'Error from inner_register ',info
         endif
         y%buffer(1:n) = x(1:n) 
+        call psb_cudaSync()   
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
              & 0, i, n, ii%deviceVect, y%d_p_buf, 1,beta)
-        call psb_cudaSync()   
       else
         
         if (allocated(y%buffer)) then 
