@@ -107,7 +107,7 @@ program pdgenmv
   call psb_info(ictxt,iam,np)
 
 #ifdef HAVE_GPU
-  call psb_gpu_init(ictxt)
+  call psb_gpu_init(ictxt, iam)
 #endif
 #ifdef HAVE_RSB
   call psb_rsb_init()
@@ -225,10 +225,11 @@ program pdgenmv
   call psb_amx(ictxt,t2)
 
 #ifdef HAVE_GPU
+  write(*,*) iam,' runnin on device: ', psb_cuda_getDevice(),' of', psb_cuda_getDeviceCount()
   ! FIXME: cache flush needed here
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
-
+  
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
   do i=1,ntests 
@@ -284,6 +285,7 @@ program pdgenmv
   call bg%sync()
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
+  
   call psb_geaxpby(-done,bg,+done,bv,desc_a,info)
   eps = psb_geamax(bv,desc_a,info)
 
@@ -291,6 +293,12 @@ program pdgenmv
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
+  if (dump) then 
+    write(fname,'(a,i3.3,a,i3.3,a)')'XCPU-out-',iam,'-',np,'.mtx'
+    call mm_array_write(xc1(1:nr),'Local part CPU',info,filename=fname)
+    write(fname,'(a,i3.3,a,i3.3,a)')'XGPU-out-',iam,'-',np,'.mtx'
+    call mm_array_write(xc2(1:nr),'Local part GPU',info,filename=fname)
+  end if
 #endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
