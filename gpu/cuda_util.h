@@ -50,6 +50,8 @@ int readRemoteBuffer(void* hostDest, void* buffer, int count);
 int freeRemoteBuffer(void* buffer);
 int gpuInit(int dev);
 int getDeviceCount();
+int getDevice();
+int setDevice(int dev);
 void cudaSync();
 void cudaReset();
 
