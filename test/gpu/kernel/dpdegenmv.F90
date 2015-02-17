@@ -95,7 +95,7 @@ program pdgenmv
 #endif
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
-  logical, parameter :: dump=.false.
+  logical, parameter :: dump=.true.
   integer            :: info, i, nr
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
@@ -214,7 +214,12 @@ program pdgenmv
 #endif
   call xv%set(done)
   nr       = desc_a%get_local_rows() 
-
+  allocate(xc1(nr))
+  do i=1, nr
+    xc1(i) = (6*done*i)/nr-4.5*done
+  end do
+  call xv%set(xc1)
+  
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   do i=1,ntests 
@@ -225,6 +230,7 @@ program pdgenmv
   call psb_amx(ictxt,t2)
 
 #ifdef HAVE_GPU
+  call xg%set(xc1)
   write(*,*) iam,' runnin on device: ', psb_cuda_getDevice(),' of', psb_cuda_getDeviceCount()
   ! FIXME: cache flush needed here
   xc1 = bv%get_vect()

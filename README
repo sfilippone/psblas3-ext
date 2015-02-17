@@ -49,18 +49,14 @@ make install
 
 Note: we have only tested with GNU Fortran compiler. 
 Note: CUDA nvcc typically lags behind the latest  versions of GCC/GNU
-      Fortran; so the SPGPU library has to be compiled with  
-      an old  version of gcc whereas our preferred version is  4.8.2
-      or later.   
-      Mixing SPGPU CUDA code  compiled with 4.6 and the rest with
-      another version has worked fine so far: YMMV.  
+      Fortran; currently nvcc supports GCC 4.8 so this is the preferred choice.
+      Mixing SPGPU CUDA code  compiled with and older version and the rest with
+      e.g. 4.9 has  worked fine so far: YMMV.  
 
 
 TODO
 
-The support for MPI communications is very basic and not fully tested;
-we are currently working on other ideas that show promises of very
-good performance but are not complete yet. 
+Improve MPI support.
 
 
 WHAT IS NOT HERE
