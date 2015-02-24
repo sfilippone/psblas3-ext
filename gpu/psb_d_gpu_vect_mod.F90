@@ -151,7 +151,7 @@ contains
         endif
         info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
              & 0, i, n, ii%deviceVect, x%d_p_buf, 1)
-        !call psb_cudaSync()
+        call psb_cudaSync()
         y(1:n) = x%pinned_buffer(1:n)
 
       else
@@ -257,8 +257,8 @@ contains
       if (ii%is_host()) call ii%sync()
       if (y%is_host())  call y%sync()
       
-      ! Temporary workaround, to be investigated 
-      if (.false..and.psb_gpu_DeviceHasUVA()) then 
+      ! 
+      if (psb_gpu_DeviceHasUVA()) then 
 !!$        write(*,*) 'Pinned memory version'
         if (allocated(y%pinned_buffer)) then  
           if (size(y%pinned_buffer) < n) then 
@@ -273,10 +273,10 @@ contains
           if (info /= 0) &
                & write(0,*) 'Error from inner_register ',info
         endif
-        y%buffer(1:n) = x(1:n) 
+        y%pinned_buffer(1:n) = x(1:n) 
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
              & 0, i, n, ii%deviceVect, y%d_p_buf, 1,beta)
-        call psb_cudaSync()   
+        !call psb_cudaSync()   
       else
         
         if (allocated(y%buffer)) then 
