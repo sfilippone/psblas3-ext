@@ -135,7 +135,6 @@ contains
       if (x%is_host())  call x%sync()
 
       if (psb_gpu_DeviceHasUVA()) then 
-!!$        write(*,*) 'Pinned memory version'
         if (allocated(x%pinned_buffer)) then  
           if (size(x%pinned_buffer) < n) then 
             call inner_unregister(x%pinned_buffer)
@@ -155,7 +154,6 @@ contains
         y(1:n) = x%pinned_buffer(1:n)
 
       else
-!!$        write(*,*) 'Gather/scatter version 1'
         if (allocated(x%buffer)) then 
           if (size(x%buffer) < n) then 
             deallocate(x%buffer, stat=info)
@@ -176,10 +174,8 @@ contains
         if (info == 0) &
              & info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
              & 0, i, n, ii%deviceVect, x%d_buf, 1)
-        !call psb_cudaSync()
         if (info == 0) &
              &  info = readDouble(x%d_buf,y,n)
-        !call psb_cudaSync()
 
       endif
 
@@ -214,7 +210,6 @@ contains
 
       if (info == 0) &
            & info = writeInt(x%i_buf,ii%v,ni)
-      ! call x%gth(n,ii%v(i:),y)
       if (info == 0) &
            & info = igathMultiVecDeviceDouble(x%deviceVect,&
            & 0, i, n, x%i_buf, x%d_buf, 1)
@@ -259,7 +254,6 @@ contains
       
       ! 
       if (psb_gpu_DeviceHasUVA()) then 
-!!$        write(*,*) 'Pinned memory version'
         if (allocated(y%pinned_buffer)) then  
           if (size(y%pinned_buffer) < n) then 
             call inner_unregister(y%pinned_buffer)
@@ -276,7 +270,7 @@ contains
         y%pinned_buffer(1:n) = x(1:n) 
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
              & 0, i, n, ii%deviceVect, y%d_p_buf, 1,beta)
-        !call psb_cudaSync()   
+        call psb_cudaSync()   
       else
         
         if (allocated(y%buffer)) then 
