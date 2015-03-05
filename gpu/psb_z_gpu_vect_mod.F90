@@ -135,6 +135,10 @@ contains
       if (x%is_host())  call x%sync()
 
       if (psb_gpu_DeviceHasUVA()) then 
+        !
+        ! Only need a sync in this branch; in the others
+        ! cudamemCpy acts as a sync point.
+        !
         if (allocated(x%pinned_buffer)) then  
           if (size(x%pinned_buffer) < n) then 
             call inner_unregister(x%pinned_buffer)
@@ -217,7 +221,7 @@ contains
            &  info = readDoubleComplex(x%d_buf,y,n)
 
     end select
-
+    
   end subroutine z_gpu_gthzv_x
 
 
@@ -270,7 +274,6 @@ contains
         y%pinned_buffer(1:n) = x(1:n) 
         info = iscatMultiVecDeviceDoubleComplexVecIdx(y%deviceVect,&
              & 0, i, n, ii%deviceVect, y%d_p_buf, 1,beta)
-        call psb_cudaSync()   
       else
         
         if (allocated(y%buffer)) then 
@@ -297,9 +300,8 @@ contains
       end if
       
     class default
-      !call y%sct(n,ii%v(i:),x,beta)
-            ni = size(ii%v)
-
+      ni = size(ii%v)
+      
       if (y%i_buf_sz < ni) then 
         if (c_associated(y%i_buf)) then 
           call freeInt(y%i_buf)
@@ -333,7 +335,11 @@ contains
 
 
     end select
-    
+    !
+    !  Need a sync here to make sure we are not reallocating
+    !  the buffers before iscatMulti has finished.
+    !
+    call psb_cudaSync()       
     call y%set_dev()
 
   end subroutine z_gpu_sctb_x
