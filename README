@@ -50,7 +50,7 @@ make install
 Note: we have only tested with GNU Fortran compiler. 
 Note: CUDA nvcc typically lags behind the latest  versions of GCC/GNU
       Fortran; currently nvcc supports GCC 4.8 so this is the preferred choice.
-      Mixing SPGPU CUDA code  compiled with and older version and the rest with
+      Mixing SPGPU CUDA code  compiled with an older version and the rest with
       e.g. 4.9 has  worked fine so far: YMMV.  
 
 
