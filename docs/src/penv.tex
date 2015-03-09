@@ -1,0 +1,103 @@
+
+\section{GPU Environment Routines}
+\label{sec:gpuenv}
+
+\subsection*{psb\_gpu\_init --- Initializes PSBLAS-GPU
+  environment}
+\addcontentsline{toc}{subsection}{psb\_gpu\_init}
+
+\begin{verbatim}
+call psb_gpu_init(icontxt [, device])
+\end{verbatim}
+
+This subroutine initializes the PSBLAS-GPU  environment. 
+\begin{description}
+\item[Type:] Synchronous.
+\item[\bf  On Entry ]
+\item[device] ID of GPU device to attach to.\\
+Scope: {\bf local}.\\
+Type: {\bf optional}.\\
+Intent: {\bf in}.\\
+Specified as: an integer value. \
+Default: use \verb|mod(iam,ngpu)| where \verb|iam| is the calling
+process index and \verb|ngpu| is the total number of GPU devices
+available on the current node. 
+\end{description}
+
+
+{\par\noindent\large\bfseries Notes}
+\begin{enumerate}
+\item A call to this routine must precede any other PSBLAS-GPU call. 
+\end{enumerate}
+
+\subsection*{psb\_gpu\_exit --- Exit from  PSBLAS-GPU
+  environment}
+\addcontentsline{toc}{subsection}{psb\_gpu\_exit}
+
+\begin{verbatim}
+call psb_gpu_exit(icontxt)
+\end{verbatim}
+
+This subroutine exits from the  PSBLAS parallel virtual  machine.
+\begin{description}
+\item[Type:] Synchronous.
+\item[\bf  On Entry ]
+\item[icontxt] the communication context identifying the virtual
+  parallel machine.\\
+Scope: {\bf global}.\\
+Type: {\bf required}.\\
+Intent: {\bf in}.\\
+Specified as: an integer variable.
+\end{description}
+
+
+
+
+\subsection*{psb\_gpu\_DeviceSync ---  Synchronize GPU device}
+\addcontentsline{toc}{subsection}{psb\_gpu\_DeviceSync}
+
+\begin{verbatim}
+call psb_gpu_DeviceSync()
+\end{verbatim}
+
+This subroutine ensures that all previosly invoked kernels, i.e. all
+invocation of GPU-side code, have completed.
+
+
+\subsection*{psb\_gpu\_getDeviceCount }
+\addcontentsline{toc}{subsection}{psb\_gpu\_getDeviceCount}
+
+\begin{verbatim}
+ngpus =  psb_gpu_getDeviceCount()
+\end{verbatim}
+
+Get number of devices available on current computing node. 
+
+\subsection*{psb\_gpu\_getDevice }
+\addcontentsline{toc}{subsection}{psb\_gpu\_getDevice}
+
+\begin{verbatim}
+ngpus =  psb_gpu_getDevice()
+\end{verbatim}
+
+Get  device in use by current process. 
+
+\subsection*{psb\_gpu\_setDevice }
+\addcontentsline{toc}{subsection}{psb\_gpu\_setDevice}
+
+\begin{verbatim}
+info = psb_gpu_setDevice(dev)
+\end{verbatim}
+
+Set  device to be used  by current process. 
+
+\subsection*{psb\_gpu\_DeviceHasUVA }
+\addcontentsline{toc}{subsection}{psb\_gpu\_DeviceHasUVA}
+
+\begin{verbatim}
+hasUva = psb_gpu_DeviceHasUVA()
+\end{verbatim}
+
+Returns true if device currently in use supports UVA (Unified Virtual Addressing).
+
+

@@ -95,13 +95,13 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
            endif
         enddo
         
-        !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
-        allocate(a%hdia(dm)%data(hack,nd))
+        call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+        !allocate(a%hdia(dm)%data(hack,nd))
         if (info /= 0) goto 9999
         a%hdia(dm)%data = dzero
         
-        !call psb_realloc(nd,a%offset(i)%off,info)
-        allocate(a%offset(dm)%off(nd))
+        call psb_realloc(nd,a%offset(i)%off,info)
+        !allocate(a%offset(dm)%off(nd))
         if (info /= 0) goto 9999
         a%offset(dm)%off = izero
         
@@ -135,13 +135,13 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
     endif
  enddo
  
- !call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
- allocate(a%hdia(dm)%data(hack,nd))
+ call psb_realloc(a%hack,nd,a%hdia(i)%data,info)
+ !allocate(a%hdia(dm)%data(hack,nd))
  if (info /= 0) goto 9999
  a%hdia(dm)%data = dzero
  
- !call psb_realloc(nd,a%offset(i)%off,info)
- allocate(a%offset(dm)%off(nd))
+ call psb_realloc(nd,a%offset(i)%off,info)
+ !allocate(a%offset(dm)%off(nd))
  if (info /= 0) goto 9999
  a%offset(dm)%off = izero
  
