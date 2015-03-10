@@ -41,7 +41,8 @@ INSTALLING
 
 ./configure --prefix=/path/to/install \
             --with-psblas=/path/to/PSBLAS/install \
-	    --with-cuda=/CUDA/install --with-spgpu=/SPGPU/install \
+	    --with-cuda=/CUDA/install \
+	    --with-spgpu=/SPGPU/install \
 	    --with-librsb=/LIBRSB/install
 
 make;
