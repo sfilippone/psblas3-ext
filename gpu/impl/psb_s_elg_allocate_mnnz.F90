@@ -75,7 +75,7 @@ subroutine  psb_s_elg_allocate_mnnz(m,n,a,nz)
   endif
 
 #ifdef HAVE_SPGPU
-  gpu_parms = FgetEllDeviceParams(m,nz_,n,spgpu_type_float,1)
+  gpu_parms = FgetEllDeviceParams(m,nz_,nz_*m,n,spgpu_type_float,1)
   ld  = gpu_parms%pitch
   nz_ = gpu_parms%maxRowSize
 #else
@@ -89,6 +89,7 @@ subroutine  psb_s_elg_allocate_mnnz(m,n,a,nz)
   if (info == psb_success_) then 
     a%irn   = 0
     a%idiag = 0
+    a%nzt = 0
     call a%set_nrows(m)
     call a%set_ncols(n)
     call a%set_bld()
