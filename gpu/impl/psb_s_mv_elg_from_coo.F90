@@ -80,7 +80,7 @@ subroutine psb_s_mv_elg_from_coo(a,b,info)
     ! Second: copy the column indices.
     call psb_realloc(nr,a%idiag,info) 
 #ifdef HAVE_SPGPU
-    gpu_parms = FgetEllDeviceParams(nr,nzm,nc,spgpu_type_double,1)
+    gpu_parms = FgetEllDeviceParams(nr,nzm,nza,nc,spgpu_type_double,1)
     ld  = gpu_parms%pitch
     nzm = gpu_parms%maxRowSize
 #else
@@ -114,7 +114,7 @@ subroutine psb_s_mv_elg_from_coo(a,b,info)
         a%val(i,j) = dzero
       end do
     end do
-
+    a%nzt = nza
   else 
     ! If b is not sorted, the only way is to copy.
     ! But do it with the base method for ELL. 
