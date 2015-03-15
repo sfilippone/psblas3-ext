@@ -45,7 +45,7 @@ subroutine psb_d_elg_to_gpu(a,info,nzrm)
   integer(psb_ipk_), intent(out)             :: info
   integer(psb_ipk_), intent(in), optional    :: nzrm
 
-  integer(psb_ipk_)  :: m, nzm, n, pitch,maxrowsize
+  integer(psb_ipk_)  :: m, nzm, n, pitch,maxrowsize, nzt
 #ifdef HAVE_SPGPU
   type(elldev_parms) :: gpu_parms
 #endif
@@ -59,8 +59,9 @@ subroutine psb_d_elg_to_gpu(a,info,nzrm)
   nzm = size(a%val,2)
   n   = a%get_ncols()
   if (present(nzrm)) nzm = max(nzm,nzrm)
+  nzt = a%get_nzeros()
   
-  gpu_parms = FgetEllDeviceParams(m,nzm,n,spgpu_type_double,1)
+  gpu_parms = FgetEllDeviceParams(m,nzm,nzt,n,spgpu_type_double,1)
   
   if (c_associated(a%deviceMat)) then 
     pitch      = getEllDevicePitch(a%deviceMat)
@@ -74,7 +75,7 @@ subroutine psb_d_elg_to_gpu(a,info,nzrm)
     if (c_associated(a%deviceMat)) then 
       call freeEllDevice(a%deviceMat)
     endif
-    info       = FallocEllDevice(a%deviceMat,m,nzm,n,spgpu_type_double,1)
+    info       = FallocEllDevice(a%deviceMat,m,nzm,nzt,n,spgpu_type_double,1)
     pitch      = getEllDevicePitch(a%deviceMat)
     maxrowsize = getEllDeviceMaxRowSize(a%deviceMat)
   end if

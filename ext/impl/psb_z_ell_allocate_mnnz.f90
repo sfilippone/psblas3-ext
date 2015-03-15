@@ -72,6 +72,7 @@ subroutine  psb_z_ell_allocate_mnnz(m,n,a,nz)
   if (info == psb_success_) then 
     a%irn   = 0
     a%idiag = 0
+    a%nzt   = -1
     call a%set_nrows(m)
     call a%set_ncols(n)
     call a%set_bld()

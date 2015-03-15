@@ -61,7 +61,8 @@ struct EllDevice
   int rPPitch;
 
   int maxRowSize;
-
+  int avgRowSize;
+  
   //allocation size (in elements)
   int allocsize;
 
@@ -86,56 +87,46 @@ typedef struct EllDeviceParams
 	unsigned int columns; 
 	
 	// Largest row size
-	unsigned int maxRowSize;
+        unsigned int maxRowSize;
+        unsigned int avgRowSize;
 	
 	// First index (e.g 0 or 1)
 	unsigned int firstIndex;
 } EllDeviceParams;
 
 int FallocEllDevice(void** deviceMat, unsigned int rows, unsigned int maxRowSize, 
+		    unsigned int nnzeros,
 		    unsigned int columns, unsigned int elementType, 
 		    unsigned int firstIndex);
 int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params);
 void freeEllDevice(void* remoteMatrix);
+
 int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
 int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn);
+int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
+int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+
 int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
 int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn);
+int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
+int readEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+
+int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
+		       float beta, void* deviceY);
+int spmvEllDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
+			double beta, void* deviceY);
+int spmvEllDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,
+			      float complex beta, void* deviceY);
+int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX,
+			       double complex beta, void* deviceY);
+
 
 int getEllDevicePitch(void* deviceMat);
 
 // sparse Ell matrix-vector product
 //int spmvEllDeviceFloat(void *deviceMat, float* alpha, void* deviceX, float* beta, void* deviceY);
 //int spmvEllDeviceDouble(void *deviceMat, double* alpha, void* deviceX, double* beta, void* deviceY);
-/*struct FloatEllDevice
-{
-  // Compressed matrix
-  float *cM;
 
-  // row pointers (same size of cM)
-  int *rP;
-
-  // row size
-  int *rS;
-
-  //matrix size (uncompressed)
-  int rows;
-  int columns;
-
-  int pitch; //old
-
-  int cMPitch;
-  
-  int rPPitch;
-
-  int maxRowSize;
-
-  //allocation size (in elements)
-  int allocsize;
-
-  //(i.e. 0 for C, 1 for Fortran)
-  int baseIndex;
-}*/
 #else
 #define CINTRF_UNSUPPORTED   -1
 #endif

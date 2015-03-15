@@ -32,7 +32,12 @@
 #include "elldev.h"
 #if defined(HAVE_SPGPU)
 
-EllDeviceParams getEllDeviceParams(unsigned int rows, unsigned int maxRowSize, unsigned int columns, unsigned int elementType, unsigned int firstIndex)
+#define PASS_RS  0
+
+EllDeviceParams getEllDeviceParams(unsigned int rows, unsigned int maxRowSize,
+				   unsigned int nnzeros, 
+				   unsigned int columns, unsigned int elementType,
+				   unsigned int firstIndex)
 {
   EllDeviceParams params;
 
@@ -49,6 +54,7 @@ EllDeviceParams getEllDeviceParams(unsigned int rows, unsigned int maxRowSize, u
 	
   params.rows = rows;
   params.maxRowSize = maxRowSize;
+  params.avgRowSize = (nnzeros+rows-1)/rows;
   params.columns = columns;
   params.firstIndex = firstIndex;
 
@@ -67,13 +73,13 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
   tmp->rPPitch = tmp->cMPitch;
   tmp->pitch= tmp->cMPitch;
   tmp->maxRowSize = params->maxRowSize;
+  tmp->avgRowSize = params->avgRowSize;
   tmp->allocsize = (int)tmp->maxRowSize * tmp->pitch;
   //tmp->allocsize = (int)params->maxRowSize * tmp->cMPitch;
   allocRemoteBuffer((void **)&(tmp->rS), tmp->rows*sizeof(int));
   allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
   tmp->columns = params->columns;
   tmp->baseIndex = params->firstIndex;
-
   if (params->elementType == SPGPU_TYPE_FLOAT)
     allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(float));
   else if (params->elementType == SPGPU_TYPE_DOUBLE)
@@ -84,6 +90,9 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
     allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(cuDoubleComplex));
   else
     return SPGPU_UNSUPPORTED; // Unsupported params
+  //fprintf(stderr,"From allocEllDevice: %d %d %d %p %p %p\n",tmp->maxRowSize,
+  //	  tmp->avgRowSize,tmp->allocsize,tmp->rS,tmp->rP,tmp->cM);
+
   return SPGPU_SUCCESS;
 }
 
@@ -101,13 +110,14 @@ void freeEllDevice(void* remoteMatrix)
 
 //new
 int FallocEllDevice(void** deviceMat,unsigned int rows, unsigned int maxRowSize, 
+		    unsigned int nnzeros,
 		    unsigned int columns, unsigned int elementType, 
 		    unsigned int firstIndex)
 { int i;
 #ifdef HAVE_SPGPU
   EllDeviceParams p;
 
-  p = getEllDeviceParams(rows, maxRowSize, columns, elementType, firstIndex);
+  p = getEllDeviceParams(rows, maxRowSize, nnzeros, columns, elementType, firstIndex);
   i = allocEllDevice(deviceMat, &p);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","FallocEllDevice",i);
@@ -119,66 +129,25 @@ int FallocEllDevice(void** deviceMat,unsigned int rows, unsigned int maxRowSize,
 }
 
 void sspmdmm_gpu(float *z,int s, int vPitch, float *y, float alpha, float* cM, int* rP, int* rS, 
-		 int n, int pitch, float *x, float beta, int firstIndex)
+		 int avgRowSize, int maxRowSize, int rows, int pitch, float *x, float beta, int firstIndex)
 {
   int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
 
   for (i=0; i<s; i++)
     {
-      spgpuSellspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, rS, 
-		     NULL, 0, n, (float*)x, beta, firstIndex);
+      if (PASS_RS) {
+	spgpuSellspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, rS, 
+		       NULL, avgRowSize, maxRowSize, rows, (float*)x, beta, firstIndex);
+      } else {
+	spgpuSellspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, NULL, 
+		       NULL, avgRowSize, maxRowSize, rows, (float*)x, beta, firstIndex);
+      }
       z += vPitch;
       y += vPitch;
       x += vPitch;		
     }
 }
-
-void
-dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, int* rP, int* rS, int n, int pitch, double *x, double beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP, pitch, pitch, rS, 
-		     NULL, 200, n, (double*)x, beta, firstIndex);
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-
-void
-cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y, cuFloatComplex alpha, cuFloatComplex* cM, int* rP, int* rS, int n, int pitch, cuFloatComplex *x, cuFloatComplex beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
-		     pitch, pitch, rS, NULL, 0, n, (cuFloatComplex *) x, beta, firstIndex);
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-
-void
-zspmdmm_gpu (cuDoubleComplex *z, int s, int vPitch, cuDoubleComplex *y, cuDoubleComplex alpha, cuDoubleComplex* cM, int* rP, int* rS, int n, int pitch, cuDoubleComplex *x, cuDoubleComplex beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
-		     pitch, pitch, rS, NULL, 0, n, (cuDoubleComplex *) x, beta, firstIndex);
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-
 //new
 int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
 		       float beta, void* deviceY)
@@ -198,11 +167,37 @@ int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
 		 devMat->rPPitch, devMat->rS, devMat->rows, 
 		 (float*)x->v_, beta, devMat->baseIndex);*/
   sspmdmm_gpu ( (float *)y->v_,y->count_, y->pitch_, (float *)y->v_, alpha, (float *)devMat->cM, devMat->rP, devMat->rS, 
-	       devMat->rows, devMat->pitch, (float *)x->v_, beta, devMat->baseIndex);
+		devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
+		(float *)x->v_, beta, devMat->baseIndex);
   return(i);
 #else
   return SPGPU_UNSUPPORTED;
 #endif
+}
+
+
+void
+dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, int* rP,
+	     int* rS, int avgRowSize, int maxRowSize, int rows, int pitch, 
+	     double *x, double beta, int firstIndex)
+{
+  int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  for (i=0; i<s; i++)
+    {
+      if (PASS_RS) {
+	spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP,
+		       pitch, pitch, rS,
+		       NULL,  avgRowSize, maxRowSize, rows, (double*)x, beta, firstIndex);
+      } else {
+	spgpuDellspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP,
+		       pitch, pitch, NULL,
+		       NULL,  avgRowSize, maxRowSize, rows, (double*)x, beta, firstIndex);
+      } 
+      z += vPitch;
+      y += vPitch;
+      x += vPitch;		
+    }
 }
 
 //new
@@ -216,13 +211,35 @@ int spmvEllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 #ifdef HAVE_SPGPU
   /*spgpuDellspmv (handle, (double*) y->v_, (double*)y->v_, alpha, (double*) devMat->cM, devMat->rP, devMat->cMPitch, devMat->rPPitch, devMat->rS, devMat->rows, (double*)x->v_, beta, devMat->baseIndex);*/ 
   dspmdmm_gpu ((double *)y->v_, y->count_, y->pitch_, (double *)y->v_, alpha, (double *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->rows, devMat->pitch, (double *)x->v_, beta,
-	       devMat->baseIndex);
+	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
+	       (double *)x->v_, beta, devMat->baseIndex);
   
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
+}
+
+void
+cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y, cuFloatComplex alpha, cuFloatComplex* cM,
+	     int* rP, int* rS, int avgRowSize, int maxRowSize, int rows, int pitch,
+	     cuFloatComplex *x, cuFloatComplex beta, int firstIndex)
+{
+  int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  for (i=0; i<s; i++)
+    {
+      if (PASS_RS) {
+	spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
+		       pitch, pitch, rS, NULL, avgRowSize, maxRowSize, rows, (cuFloatComplex *) x, beta, firstIndex);
+      } else {
+	spgpuCellspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
+		       pitch, pitch, NULL, NULL, avgRowSize, maxRowSize, rows, (cuFloatComplex *) x, beta, firstIndex);
+      }
+      z += vPitch;
+      y += vPitch;
+      x += vPitch;		
+    }
 }
 
 int spmvEllDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,
@@ -236,13 +253,35 @@ int spmvEllDeviceFloatComplex(void *deviceMat, float complex alpha, void* device
   cuFloatComplex a = make_cuFloatComplex(crealf(alpha),cimagf(alpha));
   cuFloatComplex b = make_cuFloatComplex(crealf(beta),cimagf(beta));
   cspmdmm_gpu ((cuFloatComplex *)y->v_, y->count_, y->pitch_, (cuFloatComplex *)y->v_, a, (cuFloatComplex *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->rows, devMat->pitch, (cuFloatComplex *)x->v_, b,
-	       devMat->baseIndex);
+	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
+	       (cuFloatComplex *)x->v_, b, devMat->baseIndex);
   
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
+}
+
+void
+zspmdmm_gpu (cuDoubleComplex *z, int s, int vPitch, cuDoubleComplex *y, cuDoubleComplex alpha, cuDoubleComplex* cM,
+	     int* rP, int* rS, int avgRowSize, int maxRowSize, int rows, int pitch,
+	     cuDoubleComplex *x, cuDoubleComplex beta, int firstIndex)
+{
+  int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  for (i=0; i<s; i++)
+    {
+      if (PASS_RS) {
+	spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
+		       pitch, pitch, rS, NULL,  avgRowSize, maxRowSize, rows, (cuDoubleComplex *) x, beta, firstIndex);
+      } else {
+	spgpuZellspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
+		       pitch, pitch, NULL, NULL,  avgRowSize, maxRowSize, rows, (cuDoubleComplex *) x, beta, firstIndex);
+      }
+      z += vPitch;
+      y += vPitch;
+      x += vPitch;		
+    }
 }
 
 int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX,
@@ -256,8 +295,8 @@ int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
   cuDoubleComplex a = make_cuDoubleComplex(creal(alpha),cimag(alpha));
   cuDoubleComplex b = make_cuDoubleComplex(creal(beta),cimag(beta));
   zspmdmm_gpu ((cuDoubleComplex *)y->v_, y->count_, y->pitch_, (cuDoubleComplex *)y->v_, a, (cuDoubleComplex *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->rows, devMat->pitch, (cuDoubleComplex *)x->v_, b,
-	       devMat->baseIndex);
+	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows,
+	       devMat->pitch, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
   
   return SPGPU_SUCCESS;
 #else
@@ -289,13 +328,13 @@ int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* ir
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
-  i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
 
-  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceDouble",i);
-  }*/
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;

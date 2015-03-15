@@ -101,6 +101,7 @@ subroutine psb_d_cp_ell_from_coo(a,b,info)
       a%val(i,j) = dzero
     end do
   end do
+  a%nzt = sum(a%irn(1:a%get_nrows()))
 
 
   call tmp%free()

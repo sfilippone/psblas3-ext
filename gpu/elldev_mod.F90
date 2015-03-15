@@ -40,29 +40,30 @@ module elldev_mod
     integer(c_int) :: rows
     integer(c_int) :: columns
     integer(c_int) :: maxRowSize
+    integer(c_int) :: avgRowSize
     integer(c_int) :: firstIndex
   end type elldev_parms
 
 #ifdef HAVE_SPGPU  
 
   interface 
-    function FgetEllDeviceParams(rows, maxRowSize, columns, elementType, firstIndex) &
+    function FgetEllDeviceParams(rows, maxRowSize, nnzeros, columns, elementType, firstIndex) &
          & result(res) bind(c,name='getEllDeviceParams')
       use iso_c_binding
       import :: elldev_parms
       type(elldev_parms)    :: res
-      integer(c_int), value :: rows,maxRowSize,columns,elementType,firstIndex
+      integer(c_int), value :: rows,maxRowSize,nnzeros,columns,elementType,firstIndex
     end function FgetEllDeviceParams
   end interface
   
 
   interface 
-    function FallocEllDevice(deviceMat,rows,maxRowSize,columns,&
+    function FallocEllDevice(deviceMat,rows,maxRowSize,nnzeros,columns,&
          & elementType,firstIndex) &
          & result(res) bind(c,name='FallocEllDevice')
       use iso_c_binding
       integer(c_int)        :: res
-      integer(c_int), value :: rows,maxRowSize,columns,elementType,firstIndex
+      integer(c_int), value :: rows,maxRowSize,nnzeros,columns,elementType,firstIndex
       type(c_ptr)           :: deviceMat
     end function FallocEllDevice
   end interface

@@ -51,6 +51,7 @@ module psb_s_ell_mat_mod
     !  5. Within a row, the indices are sorted for use of SV. 
     !     
     
+    integer(psb_ipk_) :: nzt
     integer(psb_ipk_), allocatable :: irn(:), ja(:,:), idiag(:)
     real(psb_spk_), allocatable :: val(:,:)
 
@@ -453,7 +454,7 @@ contains
     implicit none 
     class(psb_s_ell_sparse_mat), intent(in) :: a
     integer(psb_ipk_) :: res
-    res = sum(a%irn(1:a%get_nrows()))
+    res = a%nzt
   end function s_ell_get_nzeros
 
   function s_ell_get_size(a) result(res)

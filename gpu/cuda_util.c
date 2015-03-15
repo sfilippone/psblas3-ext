@@ -161,7 +161,7 @@ int writeRemoteBuffer(void* hostSrc, void* buffer, int count)
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
   else {
-    fprintf(stderr,"CUDA Error writeRemoteBuffer: %s\n", cudaGetErrorString(err));
+    fprintf(stderr,"CUDA Error writeRemoteBuffer: %s: %p %p %d\n", cudaGetErrorString(err),buffer,hostSrc,count);
     return SPGPU_UNSPECIFIED;
   }
 }

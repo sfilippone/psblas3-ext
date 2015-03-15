@@ -96,6 +96,7 @@ subroutine psb_c_mv_ell_from_coo(a,b,info)
         a%val(i,j) = dzero
       end do
     end do
+    a%nzt = sum(a%irn(1:a%get_nrows()))
 
   else 
     ! If b is not sorted, the only way is to copy. 
