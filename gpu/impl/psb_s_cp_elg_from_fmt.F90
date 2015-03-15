@@ -65,8 +65,9 @@ subroutine psb_s_cp_elg_from_fmt(a,b,info)
     nzm = size(b%ja,2)  
     m   = b%get_nrows()
     nc  = b%get_ncols()
+    nza = b%get_nzeros()
 #ifdef HAVE_SPGPU
-    gpu_parms = FgetEllDeviceParams(m,nzm,nc,spgpu_type_double,1)
+    gpu_parms = FgetEllDeviceParams(m,nzm,nza,nc,spgpu_type_double,1)
     ld  = gpu_parms%pitch
     nzm = gpu_parms%maxRowSize
 #else
@@ -85,6 +86,7 @@ subroutine psb_s_cp_elg_from_fmt(a,b,info)
     if (info == 0) then 
       a%val(1:m,1:nzm) = b%val(1:m,1:nzm)
     end if
+    a%nzt = nza
 #ifdef HAVE_SPGPU
     call a%to_gpu(info)
 #endif
