@@ -51,6 +51,7 @@ struct HllDevice
   int *hackOffs;
 
   int rows;
+  int avgNzr;
   int hackOffsLength;
 
   int hackSize; //must be multiple of 32
@@ -76,6 +77,7 @@ typedef struct HllDeviceParams
   // Number of rows.
   // Used to allocate rS array
   unsigned int rows;
+  unsigned int avgNzr;
   //unsigned int hackOffsLength;
   
   // Number of columns.
@@ -88,9 +90,10 @@ typedef struct HllDeviceParams
   unsigned int firstIndex;
 
 } HllDeviceParams;
-HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsigned int allocsize, 
+HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsigned int nzeros,
+				   unsigned int allocsize, 
 				   unsigned int elementType, unsigned int firstIndex);
-int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows, 
+int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  unsigned int nzeros,
 		    unsigned int allocsize, unsigned int elementType, unsigned int firstIndex);
 int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params);
 void freeHllDevice(void* remoteMatrix);

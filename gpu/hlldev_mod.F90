@@ -38,6 +38,7 @@ module hlldev_mod
     integer(c_int) :: element_type
     integer(c_int) :: hackSize
     integer(c_int) :: rows
+    integer(c_int) :: avgNzr
     integer(c_int) :: allocsize
     integer(c_int) :: firstIndex
   end type hlldev_parms
@@ -45,23 +46,23 @@ module hlldev_mod
 #ifdef HAVE_SPGPU  
 
   interface 
-    function FgetHllDeviceParams(hksize, rows, allocsize, elementType, firstIndex) &
+    function FgetHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex) &
          & result(res) bind(c,name='getHllDeviceParams')
       use iso_c_binding
       import :: hlldev_parms
       type(hlldev_parms)    :: res
-      integer(c_int), value :: hksize,rows,allocsize,elementType,firstIndex
+      integer(c_int), value :: hksize,rows,nzeros,allocsize,elementType,firstIndex
     end function FgetHllDeviceParams
   end interface
   
 
   interface 
-    function FallocHllDevice(deviceMat,hksize,rows, allocsize, &
+    function FallocHllDevice(deviceMat,hksize,rows, nzeros,allocsize, &
          & elementType,firstIndex) &
          & result(res) bind(c,name='FallocHllDevice')
       use iso_c_binding
       integer(c_int)        :: res
-      integer(c_int), value :: hksize,rows,allocsize,elementType,firstIndex
+      integer(c_int), value :: hksize,rows,nzeros,allocsize,elementType,firstIndex
       type(c_ptr)           :: deviceMat
     end function FallocHllDevice
   end interface

@@ -57,6 +57,7 @@ subroutine psb_s_mv_hll_from_fmt(a,b,info)
     call move_alloc(b%ja,    a%ja)
     call move_alloc(b%val,   a%val)
     a%hksz = b%hksz
+    a%nzt  = b%nzt
     call b%free()
 
   class default

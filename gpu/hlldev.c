@@ -32,7 +32,8 @@
 #include "hlldev.h"
 #if defined(HAVE_SPGPU)
 //new
-HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsigned int allocsize, unsigned int elementType, unsigned int firstIndex)
+HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows,  unsigned int nzeros, 
+				   unsigned int allocsize, unsigned int elementType, unsigned int firstIndex)
 {
   HllDeviceParams params;
 
@@ -40,7 +41,8 @@ HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsig
   params.hackSize = hksize;
   //numero di elementi di val
   params.allocsize = allocsize;
-  params.rows = rows;
+  params.rows  = rows;
+  params.avgNzr = (nzeros+rows-1)/rows;
   params.firstIndex = firstIndex;
 
   return params;
@@ -57,8 +59,9 @@ int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
 
   tmp->allocsize = params->allocsize;
 
-  tmp->rows = params->rows;
-
+  tmp->rows   = params->rows;
+  tmp->avgNzr = params->avgNzr; 
+  //fprintf(stderr,"Allocating HLG with %d avgNzr\n",params->avgNzr);
   tmp->hackOffsLength = (int)(tmp->rows+tmp->hackSize-1)/tmp->hackSize;
 
   //printf("hackOffsLength %d\n",tmp->hackOffsLength);
@@ -117,12 +120,14 @@ void freeHllDevice(void* remoteMatrix)
 }
 
 //new
-int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows, unsigned int allocsize, unsigned int elementType, unsigned int firstIndex)
+int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  unsigned int nzeros,
+		    unsigned int allocsize, 
+		    unsigned int elementType, unsigned int firstIndex)
 { int i;
 #ifdef HAVE_SPGPU
   HllDeviceParams p;
 
-  p = getHllDeviceParams(hksize, rows, allocsize, elementType, firstIndex);
+  p = getHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex);
   i = allocHllDevice(deviceMat, &p);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","FallocEllDevice",i);
@@ -154,7 +159,7 @@ int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
 
   spgpuShellspmv (handle, (float *)y->v_, (float *)y->v_, alpha, (float *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  0, devMat->rows, (float *)x->v_, beta, devMat->baseIndex);
+		  devMat->avgNzr, devMat->rows, (float *)x->v_, beta, devMat->baseIndex);
 
   return SPGPU_SUCCESS;
 #else
@@ -183,12 +188,12 @@ int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 
   spgpuDhellspmv (handle, (double *)y->v_, (double *)y->v_, alpha, (double*)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  0, devMat->rows, (double *)x->v_, beta, devMat->baseIndex);
+		  devMat->avgNzr, devMat->rows, (double *)x->v_, beta, devMat->baseIndex);
   //cudaSync();
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
-#endif
+#endif 
 }
 
 int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX, 
@@ -213,8 +218,8 @@ int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* device
 
   spgpuChellspmv (handle, (cuFloatComplex *)y->v_, (cuFloatComplex *)y->v_, a, (cuFloatComplex *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  0, devMat->rows, (cuFloatComplex *)x->v_, b, devMat->baseIndex);
-
+		  devMat->avgNzr, devMat->rows, (cuFloatComplex *)x->v_, b, devMat->baseIndex);
+  
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
@@ -240,7 +245,7 @@ int spmvHllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
 
   spgpuZhellspmv (handle, (cuDoubleComplex *)y->v_, (cuDoubleComplex *)y->v_, a, (cuDoubleComplex *)devMat->cM, 
 		  devMat->rP,devMat->hackSize,devMat->hackOffs, devMat->rS, NULL,
-		  0,devMat->rows, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
+		  devMat->avgNzr,devMat->rows, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
 
   return SPGPU_SUCCESS;
 #else

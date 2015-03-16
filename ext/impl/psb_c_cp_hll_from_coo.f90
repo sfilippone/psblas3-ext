@@ -71,6 +71,7 @@ subroutine psb_c_cp_hll_from_coo(a,b,info)
     a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
   end do
 
+  a%nzt = nza
   ! Second. Figure out the block offsets. 
   call a%set_hksz(psb_hksz_def_)
   hksz  = a%get_hksz()

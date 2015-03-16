@@ -56,7 +56,7 @@ module psb_d_hll_mat_mod
     !
     !
     !     
-    integer(psb_ipk_) :: hksz
+    integer(psb_ipk_) :: hksz, nzt
     integer(psb_ipk_), allocatable :: irn(:), ja(:), idiag(:), hkoffs(:)
     real(psb_dpk_), allocatable :: val(:)
 
@@ -446,7 +446,7 @@ contains
     implicit none 
     class(psb_d_hll_sparse_mat), intent(in) :: a
     integer(psb_ipk_)                       :: res
-    res = sum(a%irn(1:a%get_nrows()))
+    res = a%nzt
   end function d_hll_get_nzeros
 
   function d_hll_get_size(a) result(res)

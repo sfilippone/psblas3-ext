@@ -58,6 +58,7 @@ subroutine psb_z_cp_hll_from_fmt(a,b,info)
     if (info == 0) call psb_safe_cpy( b%ja ,   a%ja  ,  info)
     if (info == 0) call psb_safe_cpy( b%val,   a%val ,  info)
     if (info == 0) a%hksz = b%hksz
+    if (info == 0) a%nzt  = b%nzt
   class default
     call b%cp_to_coo(tmp,info)
     if (info == psb_success_) call a%mv_from_coo(tmp,info)

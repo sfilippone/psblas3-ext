@@ -46,10 +46,7 @@ subroutine psb_z_hlg_to_gpu(a,info,nzrm)
   integer(psb_ipk_), intent(out)             :: info
   integer(psb_ipk_), intent(in), optional    :: nzrm
 
-  integer(psb_ipk_) :: m, nzm, n, pitch,maxrowsize, allocsize
-#ifdef HAVE_SPGPU
-  type(hlldev_parms) :: gpu_parms
-#endif
+  integer(psb_ipk_) :: m, nzm, nza, n, pitch,maxrowsize, allocsize
 
   info = 0
 
@@ -58,11 +55,11 @@ subroutine psb_z_hlg_to_gpu(a,info,nzrm)
   
   n   = a%get_nrows()
   allocsize = a%get_size()
-  gpu_parms = FgethllDeviceParams(a%hksz,n,allocsize,spgpu_type_complex_double,1)
+  nza = a%get_nzeros()
   if (c_associated(a%deviceMat)) then 
      call freehllDevice(a%deviceMat)
   endif
-  info       = FallochllDevice(a%deviceMat,a%hksz,n,allocsize,spgpu_type_complex_double,1)
+  info       = FallochllDevice(a%deviceMat,a%hksz,n,nza,allocsize,spgpu_type_complex_double,1)
   if (info == 0)  info = &
        & writehllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn)
 !  if (info /= 0) goto 9999
