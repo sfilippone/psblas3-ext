@@ -11,7 +11,8 @@ library. The extensions provide additional storage formats beyond the
   computations on multicore parallel machines. 
 \end{itemize}
 The infrastructure laid out in the base library to allow for these
-extensions is detailed in the references~\cite{CaFiRo:14,Sparse03}. 
+extensions is detailed in the references~\cite{CaFiRo:2014,Sparse03};
+the GPU-specific data formats are described in~\cite{OurTechRep}. 
 
 
 \subsection{Application structure}
@@ -44,7 +45,6 @@ program my_gpu_test
   type(psb_d_vect_gpu)       :: vmold
   type(psb_d_elg_sparse_mat) :: aelg
 
-  ......  
 
   ! My own home-grown matrix generator
   call gen_matrix(ictxt,idim,desc_a,a,x,info)
@@ -58,7 +58,8 @@ program my_gpu_test
   call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
 \end{lstlisting}
 A full example of this strategy can be seen in the
-\verb|test/ext/kernel| subdirectory, where we provide a sample program
+\verb|test/ext/kernel| and \verb|test/gpu/kernel| subdirectories,
+where we provide  sample programs 
 to test the speed of the sparse matrix-vector product with the various
 data structures included in the library. 
 

@@ -387,6 +387,10 @@ transferred to/from the main memory will be the scalars \verb|alpha|
 and \verb|beta|, and the return code \verb|info|.  
 
 \begin{description}
+\item[Vectors:] The data type \verb|psb_T_vect_gpu| provides a
+  GPU-enabled extension of the inner type \verb|psb_T_base_vect_type|,
+  and must be used together with the other inner matrix type to make
+  full use of the GPU computational capabilities;
 \item[CSR:] The data type \verb|psb_T_csrg_sparse_mat| provides an
   interface to the GPU version of CSR available in the NVIDIA CuSPARSE
   library;
