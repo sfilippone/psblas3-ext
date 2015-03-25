@@ -116,6 +116,7 @@ int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params, double *da
   return ret;
 }
 
+
 void freeHdiagDevice(void* remoteMatrix)
 {
   struct HdiagDevice *devMat = (struct HdiagDevice *) remoteMatrix;  
@@ -143,6 +144,7 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
   return SPGPU_UNSUPPORTED;
 #endif
 }
+
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
 { int i=0,fo,fa;
@@ -186,6 +188,24 @@ int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
   return SPGPU_UNSUPPORTED;
 #endif
 }
+
+long long int sizeofHdiagDeviceDouble(void* deviceMat)
+{ int i=0,fo,fa;
+  int *hoff=NULL,*hackoff=NULL;
+  long long int memsize=0;
+#ifdef HAVE_SPGPU
+  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
+  
+  
+  memsize += (devMat->hackCount+1)*sizeof(int);
+  memsize += devMat->allocationHeight*sizeof(int);
+  memsize += devMat->allocationHeight*devMat->hackSize*sizeof(double);
+  
+#endif
+  return(memsize);
+}
+
+
 
 int readHdiagDeviceDouble(void* deviceMat, double* a, int* off)
 { int i;

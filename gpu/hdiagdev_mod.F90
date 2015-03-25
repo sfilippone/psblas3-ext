@@ -80,6 +80,15 @@ module hdiagdev_mod
   end interface
 
 
+  interface 
+    function sizeofHdiagDeviceDouble(deviceMat) &
+         & result(res) bind(c,name='sizeofHdiagDeviceDouble') 
+      use iso_c_binding
+      integer(c_long_long) :: res
+      type(c_ptr), value  :: deviceMat
+    end function sizeofHdiagDeviceDouble
+  end interface
+
   interface writeHdiagDevice
  
     function writeHdiagDeviceFloat(deviceMat,val,ja,ldj,irn) &

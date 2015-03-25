@@ -37,12 +37,6 @@ module psb_d_hdiag_mat_mod
   use psb_d_dia_mat_mod
   type, extends(psb_d_dia_sparse_mat) :: psb_d_hdiag_sparse_mat
     !
-    ! ITPACK/HLL format, extended.
-    ! We are adding here the routines to create a copy of the data
-    ! into the GPU. 
-    ! If HAVE_SPGPU is undefined this is just
-    ! a copy of HLL, indistinguishable.
-    ! 
 #ifdef HAVE_SPGPU
     type(c_ptr) :: deviceMat = c_null_ptr
     integer(psb_ipk_) :: hackSize = 32
@@ -82,7 +76,7 @@ module psb_d_hdiag_mat_mod
   private :: d_hdiag_get_nzeros, d_hdiag_free,  d_hdiag_get_fmt, &
        & d_hdiag_get_size, d_hdiag_sizeof, d_hdiag_get_nz_row
 
-
+      
   interface 
     subroutine psb_d_hdiag_vect_mv(alpha,a,x,beta,y,info,trans) 
       import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_d_base_vect_type, psb_ipk_
@@ -235,18 +229,19 @@ contains
 
   
   function d_hdiag_sizeof(a) result(res)
+    use hdiagdev_mod
     implicit none 
     class(psb_d_hdiag_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
 
-    res = 8 
-    res = res + psb_sizeof_dp  * size(a%data)
-    res = res + psb_sizeof_int * size(a%offset)
+! !$    res = 8 
+! !$    res = res + psb_sizeof_dp  * size(a%data)
+! !$    res = res + psb_sizeof_int * size(a%offset)
 
     ! Should we account for the shadow data structure
     ! on the GPU device side? 
     ! res = 2*res
-      
+    res = sizeofHdiagDeviceDouble(a%deviceMat)
   end function d_hdiag_sizeof
 
   function d_hdiag_get_fmt() result(res)

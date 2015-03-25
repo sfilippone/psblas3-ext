@@ -44,18 +44,40 @@ program my_gpu_test
   real(psb_dpk_), allocatable :: xtmp(:)
   type(psb_d_vect_gpu)       :: vmold
   type(psb_d_elg_sparse_mat) :: aelg
+  integer            :: ictxt, iam, np
 
 
+  call psb_init(ictxt)
+  call psb_info(ictxt,iam,np)
+  call psb_gpu_init(ictxt, iam)
+
+  
   ! My own home-grown matrix generator
   call gen_matrix(ictxt,idim,desc_a,a,x,info)
-  
+  if (info /= 0) goto 9999
+
   call a%cscnv(agpu,info,mold=aelg)
+  if (info /= 0) goto 9999
   xtmp = x%get_vect() 
   call xg%bld(xtmp,mold=vmold)
   call bg%bld(size(xtmp),mold=vmold)
   
   ! Do sparse MV
   call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
+
+ 
+9999 cotinue
+  if (info == 0) then 
+     write(*,*) '42'
+  else
+     write(*,*) 'Something went wrong ',info
+  end if
+  
+  
+  call psb_gpu_exit()
+  call psb_exit(ictxt)
+  stop
+end program my_gpu_test
 \end{lstlisting}
 A full example of this strategy can be seen in the
 \verb|test/ext/kernel| and \verb|test/gpu/kernel| subdirectories,

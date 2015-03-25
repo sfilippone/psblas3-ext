@@ -52,8 +52,20 @@ int gpuInit(int dev);
 int getDeviceCount();
 int getDevice();
 int setDevice(int dev);
+int getGPUMultiProcessors();
+int getGPUMemoryBusWidth();
+int getGPUMemoryClockRate();
+int getGPUWarpSize();
+int getGPUMaxThreadsPerBlock();
+int getGPUMaxThreadsPerMP();
+int getGPUMaxRegistersPerBlock();
+void cpyGPUNameString(char *cstring);
+
+
 void cudaSync();
 void cudaReset();
+void gpuClose();
+
 
 spgpuHandle_t psb_gpuGetHandle(); 
 void psb_gpuCreateHandle();

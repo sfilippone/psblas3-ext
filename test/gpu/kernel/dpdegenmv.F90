@@ -77,6 +77,7 @@ program pdgenmv
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
   integer, parameter :: ntests=200, ngpu=50
+  type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_hll_sparse_mat), target   :: ahll
@@ -119,7 +120,7 @@ program pdgenmv
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
-  name='pde90'
+  name='pdegenmv-gpu'
   call psb_set_errverbosity(2)
   !
   ! Hello world
@@ -128,6 +129,10 @@ program pdgenmv
     write(*,*) 'Welcome to PSBLAS version: ',psb_version_string_
     write(*,*) 'This is the ',trim(name),' sample program'
   end if
+#ifdef HAVE_GPU
+  write(*,*) 'Process ',iam,' running on device: ', psb_cuda_getDevice(),' out of', psb_cuda_getDeviceCount()
+  write(*,*) 'Process ',iam,' device ', psb_cuda_getDevice(),' is a: ', trim(psb_gpu_DeviceName())  
+#endif
   !
   !  get parameters
   !
@@ -167,6 +172,8 @@ program pdgenmv
     acmold => ahdia
   case('CSR')
     acmold => acsr
+  case('COO')
+    acmold => acoo
 #ifdef HAVE_RSB
   case('RSB')
     acmold => arsb
@@ -201,7 +208,8 @@ program pdgenmv
     agmold => ahlg
   end select
   call desc_a%cnv(imold)
-  call a%cscnv(agpu,info,mold=agmold)
+  call a%cscnv(agpu,info)
+  call agpu%cscnv(info,mold=agmold)
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
     call psb_error()
@@ -231,7 +239,7 @@ program pdgenmv
 
 #ifdef HAVE_GPU
   call xg%set(xc1)
-  write(*,*) iam,' runnin on device: ', psb_cuda_getDevice(),' of', psb_cuda_getDeviceCount()
+
   ! FIXME: cache flush needed here
   xc1 = bv%get_vect()
   xc2 = bg%get_vect()
@@ -367,10 +375,12 @@ program pdgenmv
          & annz*(psb_sizeof_dp + psb_sizeof_int)
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
-    write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth
+    write(psb_out_unit,'("MBYTES/S sust. effective bandwidth  (CPU)  : ",F20.3)') bdwdth
 #ifdef HAVE_GPU
     bdwdth = ngpu*ntests*nbytes/(gt2*1.d6)
-    write(psb_out_unit,'("MBYTES/S                  (GPU)  : ",F20.3)') bdwdth
+    write(psb_out_unit,'("MBYTES/S sust. effective bandwidth  (GPU)  : ",F20.3)') bdwdth
+    bdwdth = psb_gpu_MemoryPeakBandwidth()
+    write(psb_out_unit,'("MBYTES/S peak bandwidth             (GPU)  : ",F20.3)') bdwdth
 #endif
     write(psb_out_unit,'("Storage type for DESC_A: ",a)') desc_a%indxmap%get_fmt()
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
@@ -390,7 +400,7 @@ program pdgenmv
     call psb_errpush(info,name,a_err=ch_err)
     goto 9999
   end if
-
+  call psb_gpu_exit()
   call psb_exit(ictxt)
   stop
 
@@ -411,8 +421,11 @@ contains
     call psb_info(ictxt, iam, np)
 
     if (iam == 0) then
+      write(*,*) 'CPU side format?'
       read(psb_inp_unit,*) acfmt
+      write(*,*) 'GPU side format?'
       read(psb_inp_unit,*) agfmt
+      write(*,*) 'Size of discretization cube?'
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)

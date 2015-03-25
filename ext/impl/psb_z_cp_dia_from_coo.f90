@@ -42,7 +42,7 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
   !locals
   type(psb_z_coo_sparse_mat) :: tmp
   integer(psb_ipk_)              :: ndiag,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:), pres(:) 
+  integer(psb_ipk_),allocatable  :: d(:), pres(:), std(:)
   integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
@@ -64,22 +64,21 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
   allocate(d(ndiag),pres(ndiag),stat=info)
   if (info /= 0) goto 9999
 
-  d=0
-  pres=0
+  d    = 0
+  pres = 0
 
+  dm  = 0
+  nd  = 0
+  nzd = 0
   do i=1,nza
     k = nr+tmp%ja(i)-tmp%ia(i)
     d(k) = d(k) + 1 
-  enddo
-  dm = nr
-  nd=0
-  nzd = 0
-  do i=1,ndiag
-    nzd = max(nzd,d(i))
-    if (d(i)>0) then
-      pres(i)=1
-      nd = nd + 1 
-    endif
+    nzd = max(nzd,d(k))
+    if (pres(k) == 0) then 
+      pres(k) = 1
+      if (k<=nr) dm = dm + 1 
+      nd = nd + 1
+    end if
   enddo
   
   call psb_realloc(nzd,nd,a%data,info) 
@@ -101,7 +100,6 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
      end if
   end do
 
-  dm = sum(pres(1:nr))
   
   do i=1,size(tmp%ia)
      if(tmp%ia(i)>tmp%ja(i)) then

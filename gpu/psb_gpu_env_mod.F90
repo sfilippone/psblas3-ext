@@ -89,14 +89,7 @@ module psb_gpu_env_mod
       integer(c_int)		:: res
     end function psb_cuda_setDevice
   end interface
-
-  interface 
-    function psb_C_DeviceHasUVA() &
-         & result(res) bind(c,name='DeviceHasUVA')
-      use iso_c_binding   
-      integer(c_int)		:: res
-    end function psb_C_DeviceHasUVA
-  end interface
+  
 
   interface 
     subroutine psb_gpuCreateHandle() &
@@ -133,8 +126,62 @@ module psb_gpu_env_mod
       use iso_c_binding   
     end subroutine psb_cudaReset
   end interface
+
+  interface 
+    subroutine psb_gpuClose() &
+         & bind(c,name='gpuClose')
+      use iso_c_binding   
+    end subroutine psb_gpuClose
+  end interface
 #endif
 
+  interface 
+    function psb_C_DeviceHasUVA() &
+         & result(res) bind(c,name='DeviceHasUVA')
+      use iso_c_binding   
+      integer(c_int)		:: res
+    end function psb_C_DeviceHasUVA
+  end interface
+
+  interface 
+    function psb_C_get_MultiProcessors() &
+         & result(res) bind(c,name='getGPUMultiProcessors')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_MultiProcessors
+    function psb_C_get_MemoryBusWidth() &
+         & result(res) bind(c,name='getGPUMemoryBusWidth')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_MemoryBusWidth
+    function psb_C_get_MemoryClockRate() &
+         & result(res) bind(c,name='getGPUMemoryClockRate')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_MemoryClockRate
+    function psb_C_get_WarpSize() &
+         & result(res) bind(c,name='getGPUWarpSize')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_WarpSize
+    function psb_C_get_MaxThreadsPerMP() &
+         & result(res) bind(c,name='getGPUMaxThreadsPerMP')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_MaxThreadsPerMP
+    function psb_C_get_MaxRegistersPerBlock() &
+         & result(res) bind(c,name='getGPUMaxRegistersPerBlock')
+      use iso_c_binding
+      integer(c_int) :: res
+    end function psb_C_get_MaxRegistersPerBlock
+  end interface
+  interface 
+    subroutine psb_C_cpy_NameString(cstring) &
+         & bind(c,name='cpyGPUNameString')
+      use iso_c_binding
+      character(c_char) :: cstring(*) 
+    end subroutine psb_C_cpy_NameString
+  end interface
 contains
   ! !!!!!!!!!!!!!!!!!!!!!!
   !
@@ -192,6 +239,7 @@ contains
 
   subroutine psb_gpu_exit()
     call psb_gpuDestroyHandle()
+    call psb_gpuClose()
     call psb_cudaReset()
   end subroutine psb_gpu_exit
 
@@ -200,5 +248,70 @@ contains
     res =  (psb_C_DeviceHasUVA() == 1)
   end function psb_gpu_DeviceHasUVA
 
+  function psb_gpu_MultiProcessors() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_MultiProcessors()
+  end function psb_gpu_MultiProcessors
+
+  function psb_gpu_MaxRegistersPerBlock() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_MaxRegistersPerBlock()
+  end function psb_gpu_MaxRegistersPerBlock
+
+  function psb_gpu_MaxThreadsPerMP() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_MaxThreadsPerMP()
+  end function psb_gpu_MaxThreadsPerMP
+
+  function psb_gpu_WarpSize() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_WarpSize()
+  end function psb_gpu_WarpSize
+
+  function psb_gpu_MemoryClockRate() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_MemoryClockRate()
+  end function psb_gpu_MemoryClockRate
+
+  function psb_gpu_MemoryBusWidth() result(res)     
+    integer(psb_ipk_) :: res
+    res =  psb_C_get_MemoryBusWidth()
+  end function psb_gpu_MemoryBusWidth
+
+  function psb_gpu_MemoryPeakBandwidth() result(res)     
+    real(psb_dpk_) :: res
+    ! Formula here: 2*ClockRate(KHz)*BusWidth(bit)
+    ! normalization: bit/byte, KHz/MHz
+    ! output: MBytes/s
+    res =  2.d0*0.125d0*1.d-3*psb_C_get_MemoryBusWidth()*psb_C_get_MemoryClockRate()
+  end function psb_gpu_MemoryPeakBandwidth
+
+  function psb_gpu_DeviceName() result(res)     
+    character(len=256) :: res
+    character :: cstring(256)
+    call psb_C_cpy_NameString(cstring)
+    call stringc2f(cstring,res)
+  end function psb_gpu_DeviceName
+
+
+  subroutine stringc2f(cstring,fstring)
+    character(c_char)        :: cstring(*)
+    character(len=*)         :: fstring
+    integer :: i
+    
+    i = 1
+    do 
+      if (cstring(i) == c_null_char) exit
+      if (i > len(fstring)) exit
+      fstring(i:i) = cstring(i)
+      i = i + 1 
+    end do
+    do 
+      if (i > len(fstring)) exit
+      fstring(i:i) = " "
+      i = i + 1 
+    end do
+    return
+  end subroutine stringc2f
 
 end module psb_gpu_env_mod

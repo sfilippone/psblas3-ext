@@ -95,6 +95,7 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols,
 		      double *data,unsigned int elementType);
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n);
+long long int sizeofHdiagDeviceDouble(void* deviceMat);
 #else
 #define CINTRF_UNSUPPORTED   -1
 #endif

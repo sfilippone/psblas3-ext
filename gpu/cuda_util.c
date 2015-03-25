@@ -191,12 +191,12 @@ int freeRemoteBuffer(void* buffer)
 }
 
 static int hasUVA=-1;
-
+static struct cudaDeviceProp *prop=NULL;
 
 int gpuInit(int dev)
 {
 
-  int count,err;
+  int count,err;  
   
   if ((err=cudaSetDeviceFlags(cudaDeviceMapHost))!=cudaSuccess) 
     fprintf(stderr,"Error On SetDeviceFlags: %d '%s'\n",err,cudaGetErrorString(err));
@@ -205,10 +205,21 @@ int gpuInit(int dev)
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
+  if ((prop=(struct cudaDeviceProp *) malloc(sizeof(struct cudaDeviceProp)))==NULL) 
+        return SPGPU_UNSPECIFIED;
+
+  cudaGetDeviceProperties(prop,dev);
   hasUVA=getDeviceHasUVA();
 
   return err;
   
+}
+
+void gpuClose()
+{
+  free(prop);
+  prop=NULL; 
+  hasUVA=-1;
 }
 
 
@@ -242,12 +253,67 @@ int getDevice()
 }
 
 int getDeviceHasUVA()
-{ int count, dev;
-  struct cudaDeviceProp prop;
-  dev=getDevice();
-  cudaGetDeviceProperties(&prop,dev);
-  count = prop.unifiedAddressing;
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->unifiedAddressing;
   return(count);
+}
+
+int getGPUMultiProcessors()
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->multiProcessorCount;
+  return(count);
+}
+
+
+int getGPUMemoryBusWidth()
+{ int count=0;
+#if CUDART_VERSION >= 5000
+  if (prop!=NULL) 
+    count = prop->memoryBusWidth;
+#endif
+  return(count);
+}
+int getGPUMemoryClockRate()
+{ int count=0;
+#if CUDART_VERSION >= 5000
+  if (prop!=NULL) 
+    count = prop->memoryClockRate;
+#endif
+  return(count);
+}
+int getGPUWarpSize()
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->warpSize;
+  return(count);
+}
+int getGPUMaxThreadsPerBlock()
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->maxThreadsPerBlock;
+  return(count);
+}
+int getGPUMaxThreadsPerMP()
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->maxThreadsPerMultiProcessor;
+  return(count);
+}
+int getGPUMaxRegistersPerBlock()
+{ int count=0;
+  if (prop!=NULL) 
+    count = prop->regsPerBlock;
+  return(count);
+}
+
+void cpyGPUNameString(char *cstring)
+{
+  *cstring='\0';
+  if (prop!=NULL) 
+    strcpy(cstring,prop->name);
+
 }
 
 int DeviceHasUVA()
