@@ -43,7 +43,7 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
   type(psb_d_coo_sparse_mat) :: tmp
   integer(psb_ipk_)              :: ndiag,dm,nd
   integer(psb_ipk_),allocatable  :: d(:), pres(:)
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nzd,ir,ic
+  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
 
@@ -69,11 +69,11 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
 
   dm  = 0
   nd  = 0
-  nzd = 0
+  nrd = 0
   do i=1,nza
     k = nr+tmp%ja(i)-tmp%ia(i)
     d(k) = d(k) + 1 
-    nzd = max(nzd,d(k))
+    nrd = max(nrd,d(k))
     if (pres(k) == 0) then 
       pres(k) = 1
       if (k<=nr) dm = dm + 1 
@@ -81,13 +81,9 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
     end if
   enddo
 
-  call psb_realloc(nzd,nd,a%data,info) 
-  if (info /= 0) goto 9999
-  a%data = dzero
   call psb_realloc(nd,a%offset,info)
   if (info /= 0) goto 9999
 
-  a%nzeros = nza
 
   k = 1
   do i=1,ndiag
@@ -97,6 +93,11 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
       k    = k+1
     end if
   end do
+
+  call psb_realloc(nrd,nd,a%data,info) 
+  if (info /= 0) goto 9999
+  a%data = dzero
+  a%nzeros = nza
   
   do i=1,nza
     ir = tmp%ia(i)
