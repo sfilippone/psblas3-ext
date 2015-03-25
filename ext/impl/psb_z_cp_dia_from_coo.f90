@@ -41,8 +41,8 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
 
   !locals
   type(psb_z_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:),pres(:) 
+  integer(psb_ipk_)              :: ndiag,dm,nd
+  integer(psb_ipk_),allocatable  :: d(:), pres(:) 
   integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
@@ -60,11 +60,9 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
   ! If it is sorted then we can lessen memory impact 
   a%psb_z_base_sparse_mat = tmp%psb_z_base_sparse_mat
 
-  mi = maxval(tmp%ia)
-  mj = maxval(tmp%ja)
-
   ndiag = nr+nc-1
-  allocate(d(ndiag),pres(ndiag))
+  allocate(d(ndiag),pres(ndiag),stat=info)
+  if (info /= 0) goto 9999
 
   d=0
   pres=0
