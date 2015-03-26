@@ -33,7 +33,8 @@
 module psb_d_dia_mat_mod
 
   use psb_d_base_mat_mod
-
+  use psi_ext_util_mod
+  
   type, extends(psb_d_base_sparse_mat) :: psb_d_dia_sparse_mat
     !
     ! DIA format, extended.

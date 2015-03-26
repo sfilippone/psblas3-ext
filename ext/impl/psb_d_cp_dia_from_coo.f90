@@ -41,8 +41,8 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
 
   !locals
   type(psb_d_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:), pres(:)
+  integer(psb_ipk_)              :: ndiag,nd
+  integer(psb_ipk_),allocatable  :: d(:)
   integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
@@ -61,54 +61,33 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
   a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
 
   ndiag = nr+nc-1
-  allocate(d(ndiag),pres(ndiag),stat=info)
+  allocate(d(ndiag),stat=info)
+  if (info /= 0) goto 9999
+  call psb_realloc(ndiag,a%offset,info)
   if (info /= 0) goto 9999
 
-  d    = 0
-  pres = 0
-
-  dm  = 0
-  nd  = 0
-  nrd = 0
-  do i=1,nza
-    k = nr+tmp%ja(i)-tmp%ia(i)
-    d(k) = d(k) + 1 
-    nrd = max(nrd,d(k))
-    if (pres(k) == 0) then 
-      pres(k) = 1
-      if (k<=nr) dm = dm + 1 
-      nd = nd + 1
-    end if
-  enddo
+  call psi_diacnt_from_coo(nr,nc,nza,tmp%ia,tmp%ja,nrd,nd,d,info,initd=.true.)
+  call psi_offset_from_d(nr,nc,d,a%offset,info)
 
   call psb_realloc(nd,a%offset,info)
   if (info /= 0) goto 9999
-
-
-  k = 1
-  do i=1,ndiag
-    if (d(i)/=0) then
-      a%offset(k)=i-nr
-      d(i) = k
-      k    = k+1
-    end if
-  end do
-
   call psb_realloc(nrd,nd,a%data,info) 
   if (info /= 0) goto 9999
-  a%data = dzero
   a%nzeros = nza
-  
-  do i=1,nza
-    ir = tmp%ia(i)
-    k  = tmp%ja(i) - tmp%ia(i)
-    ic = d(nr+k)
-    a%data(ir,ic) = tmp%val(i);
-  enddo
 
-  deallocate(d,pres)
+  call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,d,a%data,info,initd=.true.)
 
-  call tmp%free
+  do i=1,nd
+    k=a%offset(i)+nr
+    d(k) = 0
+  end do
+  if (any(d(1:ndiag)/=0)) then
+    write(*,*) 'Check from dia_from_coo: some entries in D not zeroed on exitr'
+  end if
+  deallocate(d,stat=info)
+  if (info /= 0) goto 9999
+
+  call tmp%free()
 
 
   return
