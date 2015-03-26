@@ -43,7 +43,7 @@ program d_file_spmv
   character(len=200) :: mtrx_file
 
   ! sparse matrices
-  type(psb_dspmat_type) :: a, aux_a, agpu
+  type(psb_dspmat_type) :: a, aux_a, agpu, atmp
 
   ! dense matrices
   real(psb_dpk_), allocatable, target :: aux_b(:,:), d(:)
@@ -267,9 +267,10 @@ program d_file_spmv
 
 #ifdef HAVE_GPU
   call a%cscnv(agpu,info,mold=acoo)
+  call a%cscnv(info,mold=acoo)
   call psb_barrier(ictxt)
   t1 = psb_wtime()
-  call agpu%cscnv(a,info,mold=acmold)
+  call a%cscnv(info,mold=acmold)
   tcnvcsr = psb_wtime()-t1
   call psb_amx(ictxt,tcnvcsr)
   call psb_barrier(ictxt)

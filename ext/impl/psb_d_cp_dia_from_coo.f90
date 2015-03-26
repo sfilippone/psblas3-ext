@@ -41,59 +41,80 @@ subroutine psb_d_cp_dia_from_coo(a,b,info)
 
   !locals
   type(psb_d_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,nd
-  integer(psb_ipk_),allocatable  :: d(:)
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
-  integer(psb_ipk_)              :: debug_level, debug_unit
-  character(len=20)              :: name
+!!$  integer(psb_ipk_)              :: ndiag,nd
+!!$  integer(psb_ipk_),allocatable  :: d(:)
+!!$  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
+!!$  integer(psb_ipk_)              :: debug_level, debug_unit
+!!$  character(len=20)              :: name
 
   info = psb_success_
-  ! This is to have fix_coo called behind the scenes
-  call b%cp_to_coo(tmp,info)
-  if (info /= psb_success_) return
-  if (.not.tmp%is_sorted()) call tmp%fix(info)
-  if (info /= psb_success_) return
-
-  nr  = tmp%get_nrows()
-  nc  = tmp%get_ncols()
-  nza = tmp%get_nzeros()
-  ! If it is sorted then we can lessen memory impact 
-  a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
-
-  ndiag = nr+nc-1
-  allocate(d(ndiag),stat=info)
-  if (info /= 0) goto 9999
-  call psb_realloc(ndiag,a%offset,info)
-  if (info /= 0) goto 9999
-
-  call psi_diacnt_from_coo(nr,nc,nza,tmp%ia,tmp%ja,nrd,nd,d,info,initd=.true.)
-  call psi_offset_from_d(nr,nc,d,a%offset,info)
-
-  call psb_realloc(nd,a%offset,info)
-  if (info /= 0) goto 9999
-  call psb_realloc(nrd,nd,a%data,info) 
-  if (info /= 0) goto 9999
-  a%nzeros = nza
-
-  call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,d,a%data,info,initd=.true.)
-
-  do i=1,nd
-    k=a%offset(i)+nr
-    d(k) = 0
-  end do
-  if (any(d(1:ndiag)/=0)) then
-    write(*,*) 'Check from dia_from_coo: some entries in D not zeroed on exitr'
+  if (b%is_by_rows()) then 
+    call inner_dia_from_coo(a,b,info) 
+  else
+    ! This is to have fix_coo called behind the scenes 
+    call b%cp_to_coo(tmp,info)
+    if (info /= psb_success_) return
+    if (.not.tmp%is_sorted()) call tmp%fix(info)
+    if (info /= psb_success_) return
+    call inner_dia_from_coo(a,tmp,info) 
+    call tmp%free()
   end if
-  deallocate(d,stat=info)
+  
   if (info /= 0) goto 9999
-
-  call tmp%free()
-
 
   return
 
 9999 continue
   info = psb_err_alloc_dealloc_
   return
+
+contains
+
+  subroutine inner_dia_from_coo(a,tmp,info) 
+    implicit none 
+    class(psb_d_dia_sparse_mat), intent(inout) :: a
+    class(psb_d_coo_sparse_mat), intent(in)    :: tmp
+    integer(psb_ipk_), intent(out)             :: info
+    
+    !locals
+    integer(psb_ipk_)              :: ndiag,nd
+    integer(psb_ipk_),allocatable  :: d(:)
+    integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
+
+    info = psb_success_
+    nr  = tmp%get_nrows()
+    nc  = tmp%get_ncols()
+    nza = tmp%get_nzeros()
+    ! If it is sorted then we can lessen memory impact 
+    a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
+    
+    ndiag = nr+nc-1
+    allocate(d(ndiag),stat=info)
+    if (info /= 0) return
+    call psb_realloc(ndiag,a%offset,info)
+    if (info /= 0) return
+    
+    call psi_diacnt_from_coo(nr,nc,nza,tmp%ia,tmp%ja,nrd,nd,d,info,initd=.true.)
+    call psi_offset_from_d(nr,nc,d,a%offset,info)
+    
+    call psb_realloc(nd,a%offset,info)
+    if (info /= 0) return
+    call psb_realloc(nrd,nd,a%data,info) 
+    if (info /= 0) return
+    a%nzeros = nza
+    
+    call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,d,a%data,info,initd=.true.)
+    
+    do i=1,nd
+      k=a%offset(i)+nr
+      d(k) = 0
+    end do
+    if (any(d(1:ndiag)/=0)) then
+      write(*,*) 'Check from dia_from_coo: some entries in D not zeroed on exitr'
+    end if
+    deallocate(d,stat=info)
+    if (info /= 0) return
+
+  end subroutine inner_dia_from_coo
 
 end subroutine psb_d_cp_dia_from_coo

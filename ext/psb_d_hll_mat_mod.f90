@@ -406,7 +406,15 @@ module psb_d_hll_mat_mod
     end subroutine psb_d_hll_scals
   end interface
   
-
+  interface  psi_convert_hll_from_coo
+    subroutine psi_d_convert_hll_from_coo(a,tmp,info)
+      import :: psb_d_hll_sparse_mat, psb_ipk_, psb_d_coo_sparse_mat
+      implicit none 
+      class(psb_d_hll_sparse_mat), intent(inout) :: a
+      class(psb_d_coo_sparse_mat), intent(in)    :: tmp
+      integer(psb_ipk_), intent(out)             :: info
+    end subroutine psi_d_convert_hll_from_coo
+  end interface
 
 contains 
 

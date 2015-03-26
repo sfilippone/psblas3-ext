@@ -30,42 +30,21 @@
 !!$ 
   
 
-subroutine psb_c_cp_hll_from_coo(a,b,info) 
+module psi_d_ext_util_mod
+
+  use psb_base_mod, only : psb_ipk_, psb_dpk_
+
+  interface psi_xtr_dia_from_coo
+    subroutine psi_d_xtr_dia_from_coo(nr,nz,ia,ja,val,d,data,info,initd)    
+      import  :: psb_ipk_, psb_dpk_
+      implicit none 
+      integer(psb_ipk_), intent(in)  :: nr, nz, ia(:), ja(:), d(:)
+      real(psb_dpk_),    intent(in)  :: val(:)
+      real(psb_dpk_),    intent(out) :: data(:,:)
+      integer(psb_ipk_), intent(out) :: info
+      logical, intent(in), optional  :: initd
+      
+    end subroutine psi_d_xtr_dia_from_coo
+  end interface
   
-  use psb_base_mod
-  use psb_c_hll_mat_mod, psb_protect_name => psb_c_cp_hll_from_coo
-  implicit none 
-
-  class(psb_c_hll_sparse_mat), intent(inout) :: a
-  class(psb_c_coo_sparse_mat), intent(in)    :: b
-  integer(psb_ipk_), intent(out)             :: info
-
-  !locals
-  type(psb_c_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)   :: debug_level, debug_unit
-  character(len=20)   :: name='hll_from_coo'
-
-  info = psb_success_
-  debug_unit  = psb_get_debug_unit()
-  debug_level = psb_get_debug_level()
-  if (b%is_by_rows()) then 
-    call  psi_convert_hll_from_coo(a,b,info)
-  else
-    ! This is to guarantee tmp%is_by_rows()
-    call b%cp_to_coo(tmp,info)
-    call tmp%fix(info)
-    
-    if (info /= psb_success_) return
-    call psi_convert_hll_from_coo(a,tmp,info)
-    
-    call tmp%free()
-  end if
-  if (info /= 0) goto 9999
-
-  return
-
-9999 continue
-  info = psb_err_alloc_dealloc_
-  return
-
-end subroutine psb_c_cp_hll_from_coo
+end module psi_d_ext_util_mod

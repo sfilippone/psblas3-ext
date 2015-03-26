@@ -43,9 +43,8 @@ subroutine psb_s_mv_hll_from_coo(a,b,info)
   !locals
 
   info = psb_success_
-
-  ! If b is not sorted, the only way is to copy. 
-  call a%cp_from_coo(b,info)
+  call b%fix(info) 
+  call psi_convert_hll_from_coo(a,b,info)
   if (info /= 0) goto 9999
   call b%free()
 
@@ -54,6 +53,5 @@ subroutine psb_s_mv_hll_from_coo(a,b,info)
 9999 continue
   info = psb_err_alloc_dealloc_
   return
-
 
 end subroutine psb_s_mv_hll_from_coo

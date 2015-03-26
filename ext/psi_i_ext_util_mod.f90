@@ -30,23 +30,20 @@
 !!$ 
   
 
-module psi_dia_util_mod
+module psi_i_ext_util_mod
 
-  use psb_base_mod, only : psb_ipk_, psb_dpk_
+  use psb_base_mod, only : psb_ipk_
 
-  interface psi_xtr_dia_from_coo
-    module procedure psi_d_xtr_dia_from_coo
-  end interface psi_xtr_dia_from_coo
 
 contains
   
-  subroutine psi_diacnt_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,offset,info, initd) 
+  subroutine psi_diacnt_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,info, initd) 
     use psb_base_mod, only : psb_ipk_, psb_success_
     
     implicit none 
     
     integer(psb_ipk_), intent(in)   :: nr, nc, nz, ia(:), ja(:)
-    integer(psb_ipk_), intent(out)  :: nrd, nd, d(:), offset(:)
+    integer(psb_ipk_), intent(out)  :: nrd, nd, d(:)
     integer(psb_ipk_), intent(out)  :: info
     logical, intent(in), optional   :: initd
     
@@ -70,6 +67,26 @@ contains
       nrd = max(nrd,d(k))
     enddo
     
+    return
+  end subroutine psi_diacnt_from_coo
+  
+  subroutine psi_offset_from_d(nr,nc,d,offset,info) 
+    use psb_base_mod, only : psb_ipk_, psb_success_
+    
+    implicit none 
+    
+    integer(psb_ipk_), intent(in)    :: nr, nc
+    integer(psb_ipk_), intent(inout) :: d(:)
+    integer(psb_ipk_), intent(out)   :: offset(:)
+    integer(psb_ipk_), intent(out)   :: info
+    
+    !locals
+    integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag
+    character(len=20)              :: name
+    
+    info = psb_success_
+    
+    ndiag = nr+nc-1  
     k = 1
     do i=1,ndiag
       if (d(i)/=0) then
@@ -80,41 +97,7 @@ contains
     end do
     
     return
-  end subroutine psi_diacnt_from_coo
+  end subroutine psi_offset_from_d
   
   
-  
-  subroutine psi_d_xtr_dia_from_coo(nr,nz,ia,ja,val,d,data,info,initd)    
-    use psb_base_mod, only : psb_ipk_, psb_success_, psb_dpk_, dzero
-    
-    implicit none 
-
-    integer(psb_ipk_), intent(in)  :: nr, nz, ia(:), ja(:), d(:)
-    real(psb_dpk_),    intent(in)  :: val(:)
-    real(psb_dpk_),    intent(out) :: data(:,:)
-    integer(psb_ipk_), intent(out) :: info
-    logical, intent(in), optional  :: initd
-    
-    !locals
-    logical                        :: initd_
-
-    integer(psb_ipk_) :: i,ir,ic,k
-
-    info = psb_success_
-    info = psb_success_
-    initd_ = .true.
-    if (present(initd)) initd_ = initd
-    if (initd_) data(:,:) = dzero
-    
-    do i=1,nz
-      ir = ia(i)
-      k  = ja(i) - ir
-      ic = d(nr+k)
-      data(ir,ic) = val(i)
-    enddo
-    
-    
-  end subroutine psi_d_xtr_dia_from_coo
-  
-  
-end module psi_dia_util_mod
+end module psi_i_ext_util_mod

@@ -26,7 +26,10 @@ FOBJS=  psb_d_ell_mat_mod.o psb_d_hll_mat_mod.o \
 	psb_s_dia_mat_mod.o psb_s_hdia_mat_mod.o \
 	psb_c_dia_mat_mod.o psb_c_hdia_mat_mod.o \
 	psb_z_dia_mat_mod.o psb_z_hdia_mat_mod.o \
-	psi_ext_util_mod.o psb_ext_mod.o
+	psi_ext_util_mod.o psi_i_ext_util_mod.o \
+	psi_s_ext_util_mod.o psi_c_ext_util_mod.o \
+	psi_d_ext_util_mod.o psi_z_ext_util_mod.o \
+	psb_ext_mod.o
 
 COBJS= 
 
@@ -49,6 +52,9 @@ psb_ext_mod.o: psb_d_dia_mat_mod.o  \
 	psb_z_hll_mat_mod.o psb_z_ell_mat_mod.o \
 	psb_d_hdia_mat_mod.o
 #	psb_d_rsb_mat_mod.o psb_d_hdia_mat_mod.o 
+psi_ext_util_mod.o: psi_i_ext_util_mod.o \
+	psi_s_ext_util_mod.o psi_c_ext_util_mod.o \
+	psi_d_ext_util_mod.o psi_z_ext_util_mod.o 
 
 psb_d_dia_mat_mod.o: psi_ext_util_mod.o
 ilib: cmp 
