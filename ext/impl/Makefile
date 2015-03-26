@@ -381,7 +381,11 @@ psi_z_convert_hll_from_coo.o \
 psi_s_xtr_dia_from_coo.o \
 psi_c_xtr_dia_from_coo.o \
 psi_d_xtr_dia_from_coo.o \
-psi_z_xtr_dia_from_coo.o 
+psi_z_xtr_dia_from_coo.o \
+psi_s_convert_dia_from_coo.o \
+psi_c_convert_dia_from_coo.o \
+psi_d_convert_dia_from_coo.o \
+psi_z_convert_dia_from_coo.o 
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

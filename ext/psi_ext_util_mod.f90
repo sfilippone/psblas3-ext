@@ -33,6 +33,9 @@
 module psi_ext_util_mod
 
   use psi_i_ext_util_mod
+  use psi_s_ext_util_mod
+  use psi_c_ext_util_mod
   use psi_d_ext_util_mod
+  use psi_z_ext_util_mod
   
 end module psi_ext_util_mod

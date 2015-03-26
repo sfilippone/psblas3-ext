@@ -33,8 +33,7 @@
 module psb_d_dia_mat_mod
 
   use psb_d_base_mat_mod
-  use psi_ext_util_mod
-  
+
   type, extends(psb_d_base_sparse_mat) :: psb_d_dia_sparse_mat
     !
     ! DIA format, extended.
@@ -391,6 +390,15 @@ module psb_d_dia_mat_mod
     end subroutine psb_d_dia_scals
   end interface
   
+  interface  psi_convert_dia_from_coo
+    subroutine psi_d_convert_dia_from_coo(a,tmp,info)
+      import :: psb_d_dia_sparse_mat, psb_ipk_, psb_d_coo_sparse_mat
+      implicit none 
+      class(psb_d_dia_sparse_mat), intent(inout) :: a
+      class(psb_d_coo_sparse_mat), intent(in)    :: tmp
+      integer(psb_ipk_), intent(out)             :: info
+    end subroutine psi_d_convert_dia_from_coo
+  end interface
 
 
 contains 

@@ -30,7 +30,7 @@
 !!$ 
 
 subroutine psb_s_cp_dia_from_coo(a,b,info) 
-  
+
   use psb_base_mod
   use psb_s_dia_mat_mod, psb_protect_name => psb_s_cp_dia_from_coo
   implicit none 
@@ -41,79 +41,30 @@ subroutine psb_s_cp_dia_from_coo(a,b,info)
 
   !locals
   type(psb_s_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:), pres(:)
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nzd,ir,ic
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
 
   info = psb_success_
-  ! This is to have fix_coo called behind the scenes
-  call b%cp_to_coo(tmp,info)
-  if (info /= psb_success_) return
-  if (.not.tmp%is_sorted()) call tmp%fix(info)
-  if (info /= psb_success_) return
+  if (b%is_by_rows()) then 
+    call  psi_convert_dia_from_coo(a,b,info)
+  else
+    ! This is to guarantee tmp%is_by_rows()
+    call b%cp_to_coo(tmp,info)
+    call tmp%fix(info)
 
-  nr  = tmp%get_nrows()
-  nc  = tmp%get_ncols()
-  nza = tmp%get_nzeros()
-  ! If it is sorted then we can lessen memory impact 
-  a%psb_s_base_sparse_mat = tmp%psb_s_base_sparse_mat
+    if (info /= psb_success_) return
+    call psi_convert_dia_from_coo(a,tmp,info)
 
-  ndiag = nr+nc-1
-  allocate(d(ndiag),pres(ndiag),stat=info)
+    call tmp%free()
+  end if
   if (info /= 0) goto 9999
-
-  d    = 0
-  pres = 0
-
-  dm  = 0
-  nd  = 0
-  nzd = 0
-  do i=1,nza
-    k = nr+tmp%ja(i)-tmp%ia(i)
-    d(k) = d(k) + 1 
-    nzd = max(nzd,d(k))
-    if (pres(k) == 0) then 
-      pres(k) = 1
-      if (k<=nr) dm = dm + 1 
-      nd = nd + 1
-    end if
-  enddo
-  
-  call psb_realloc(nzd,nd,a%data,info) 
-  if (info /= 0) goto 9999
-  a%data = szero
-  call psb_realloc(nd,a%offset,info)
-  if (info /= 0) goto 9999
-
-  a%nzeros = nza
-
-  k = 1
-  do i=1,ndiag
-    if (d(i)/=0) then
-      a%offset(k)=i-nr
-      d(i) = k
-      k    = k+1
-    end if
-  end do
-  
-  do i=1,nza
-    ir = tmp%ia(i)
-    k  = tmp%ja(i) - tmp%ia(i)
-    ic = d(nr+k)
-    a%data(ir,ic) = tmp%val(i);
-  enddo
-
-  deallocate(d,pres)
-
-  call tmp%free
-
 
   return
 
 9999 continue
   info = psb_err_alloc_dealloc_
   return
+
+
 
 end subroutine psb_s_cp_dia_from_coo
