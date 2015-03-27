@@ -31,8 +31,8 @@ subroutine psi_s_convert_dia_from_coo(a,tmp,info)
   call psb_realloc(ndiag,a%offset,info)
   if (info /= 0) return
   
-  call psi_diacnt_from_coo(nr,nc,nza,tmp%ia,tmp%ja,nrd,nd,d,info,initd=.true.)
-  call psi_offset_from_d(nr,nc,d,a%offset,info)
+  call psi_dia_offset_from_coo(nr,nc,nza,tmp%ia,tmp%ja, &
+       & nrd,nd,d,a%offset,info,initd=.true.,cleard=.false.) 
   
   call psb_realloc(nd,a%offset,info)
   if (info /= 0) return
@@ -40,15 +40,9 @@ subroutine psi_s_convert_dia_from_coo(a,tmp,info)
   if (info /= 0) return
   a%nzeros = nza
   
-  call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,d,a%data,info,initd=.true.)
+  call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,&
+       & d,a%data,info,initdata=.true.)
   
-  do i=1,nd
-    k=a%offset(i)+nr
-    d(k) = 0
-  end do
-  if (any(d(1:ndiag)/=0)) then
-    write(*,*) 'Check from dia_from_coo: some entries in D not zeroed on exitr'
-  end if
   deallocate(d,stat=info)
   if (info /= 0) return
   

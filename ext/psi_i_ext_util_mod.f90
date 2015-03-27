@@ -42,10 +42,11 @@ contains
     
     implicit none 
     
-    integer(psb_ipk_), intent(in)   :: nr, nc, nz, ia(:), ja(:)
-    integer(psb_ipk_), intent(out)  :: nrd, nd, d(:)
-    integer(psb_ipk_), intent(out)  :: info
-    logical, intent(in), optional   :: initd
+    integer(psb_ipk_), intent(in)    :: nr, nc, nz, ia(:), ja(:)
+    integer(psb_ipk_), intent(out)   :: nrd, nd
+    integer(psb_ipk_), intent(inout) :: d(:)
+    integer(psb_ipk_), intent(out)   :: info
+    logical, intent(in), optional    :: initd
     
     !locals
     integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag
@@ -99,5 +100,67 @@ contains
     return
   end subroutine psi_offset_from_d
   
+
+  
+  subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,offset,info,initd,cleard) 
+    use psb_base_mod
+    
+    implicit none 
+    
+    integer(psb_ipk_), intent(in)   :: nr, nc, nz, ia(:), ja(:)
+    integer(psb_ipk_), intent(inout) :: d(:)
+    integer(psb_ipk_), intent(out)   :: offset(:)
+    integer(psb_ipk_), intent(out)  :: nrd, nd
+    integer(psb_ipk_), intent(out)  :: info
+    logical, intent(in), optional   :: initd,cleard
+    
+    type(psb_int_heap)             :: heap
+    integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag, id
+    logical                        :: initd_, cleard_
+    character(len=20)              :: name
+    
+    info = psb_success_
+    initd_ = .true.
+    if (present(initd)) initd_ = initd
+    cleard_ = .false.
+    if (present(cleard)) cleard_ = cleard
+
+    if (initd_) d(:) = 0 
+    
+    ndiag = nr+nc-1  
+    if (size(d)<ndiag) then 
+      info = -8
+      return
+    end if
+    nrd   = 0
+    call psb_init_heap(heap,info)
+    if (info /= psb_success_) return
+
+    do i=1,nz
+      k = nr+ja(i)-ia(i)
+      if (d(k) == 0) call psb_insert_heap(k,heap,info)
+      d(k) = d(k) + 1 
+      nrd = max(nrd,d(k))
+    enddo
+    nd  = psb_howmany_heap(heap)
+    if (size(offset)<nd) then 
+      info = -9 
+      return
+    end if
+    if (cleard_) then 
+      do i=1, nd
+        call psb_heap_get_first(id,heap,info)
+        offset(i) = id - nr
+        d(id) = 0
+      end do
+    else
+      do i=1, nd
+        call psb_heap_get_first(id,heap,info)
+        offset(i) = id - nr
+        d(id) = i 
+      end do
+    end if
+    
+  end subroutine psi_dia_offset_from_coo
   
 end module psi_i_ext_util_mod

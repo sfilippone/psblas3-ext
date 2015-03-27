@@ -29,7 +29,7 @@
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
   
-subroutine psi_z_xtr_dia_from_coo(nr,nz,ia,ja,val,d,data,info,initd)    
+subroutine psi_z_xtr_dia_from_coo(nr,nz,ia,ja,val,d,data,info,initdata)    
   use psb_base_mod, only : psb_ipk_, psb_success_, psb_dpk_, zzero
 
   implicit none 
@@ -38,18 +38,18 @@ subroutine psi_z_xtr_dia_from_coo(nr,nz,ia,ja,val,d,data,info,initd)
   complex(psb_dpk_),    intent(in)  :: val(:)
   complex(psb_dpk_),    intent(out) :: data(:,:)
   integer(psb_ipk_), intent(out) :: info
-  logical, intent(in), optional  :: initd
+  logical, intent(in), optional  :: initdata
 
   !locals
-  logical                        :: initd_
+  logical                        :: initdata_
 
   integer(psb_ipk_) :: i,ir,ic,k
 
   info = psb_success_
   info = psb_success_
-  initd_ = .true.
-  if (present(initd)) initd_ = initd
-  if (initd_) data(:,:) = zzero
+  initdata_ = .true.
+  if (present(initdata)) initdata_ = initdata
+  if (initdata_) data(:,:) = zzero
 
   do i=1,nz
     ir = ia(i)
