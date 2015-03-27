@@ -58,19 +58,19 @@ psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mo
 psb_i_gpu_vect_mod.o : psb_vectordev_mod.o psb_gpu_env_mod.o
 cusparse_mod.o:  s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o 
 s_cusparse_mod.o  d_cusparse_mod.o  c_cusparse_mod.o  z_cusparse_mod.o : base_cusparse_mod.o  
-psb_d_hlg_mat_mod.o: hlldev_mod.o psb_d_gpu_vect_mod.o 
+psb_d_hlg_mat_mod.o: hlldev_mod.o psb_d_gpu_vect_mod.o  psb_gpu_env_mod.o
 psb_d_elg_mat_mod.o: elldev_mod.o psb_d_gpu_vect_mod.o
 psb_d_diag_mat_mod.o: diagdev_mod.o psb_d_gpu_vect_mod.o
 psb_d_hdiag_mat_mod.o: hdiagdev_mod.o psb_d_gpu_vect_mod.o 
-psb_s_hlg_mat_mod.o: hlldev_mod.o psb_s_gpu_vect_mod.o 
+psb_s_hlg_mat_mod.o: hlldev_mod.o psb_s_gpu_vect_mod.o  psb_gpu_env_mod.o
 psb_s_elg_mat_mod.o: elldev_mod.o psb_s_gpu_vect_mod.o 
 psb_s_diag_mat_mod.o: diagdev_mod.o psb_s_gpu_vect_mod.o
 psb_s_hdiag_mat_mod.o: hdiagdev_mod.o psb_s_gpu_vect_mod.o 
 psb_s_csrg_mat_mod.o psb_s_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
 psb_d_csrg_mat_mod.o psb_d_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
-psb_z_hlg_mat_mod.o: hlldev_mod.o psb_z_gpu_vect_mod.o 
+psb_z_hlg_mat_mod.o: hlldev_mod.o psb_z_gpu_vect_mod.o  psb_gpu_env_mod.o
 psb_z_elg_mat_mod.o: elldev_mod.o psb_z_gpu_vect_mod.o 
-psb_c_hlg_mat_mod.o: hlldev_mod.o psb_c_gpu_vect_mod.o 
+psb_c_hlg_mat_mod.o: hlldev_mod.o psb_c_gpu_vect_mod.o  psb_gpu_env_mod.o
 psb_c_elg_mat_mod.o: elldev_mod.o psb_c_gpu_vect_mod.o 
 psb_c_csrg_mat_mod.o psb_c_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o
 psb_z_csrg_mat_mod.o psb_z_hybg_mat_mod.o: cusparse_mod.o psb_vectordev_mod.o

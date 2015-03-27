@@ -33,8 +33,7 @@
 module psb_d_hll_mat_mod
 
   use psb_d_base_mat_mod
-
-  integer(psb_ipk_), parameter :: psb_hksz_def_ = 32
+  use psi_ext_util_mod
 
   type, extends(psb_d_base_sparse_mat) :: psb_d_hll_sparse_mat
     !
@@ -407,10 +406,11 @@ module psb_d_hll_mat_mod
   end interface
   
   interface  psi_convert_hll_from_coo
-    subroutine psi_d_convert_hll_from_coo(a,tmp,info)
+    subroutine psi_d_convert_hll_from_coo(a,hksz,tmp,info)
       import :: psb_d_hll_sparse_mat, psb_ipk_, psb_d_coo_sparse_mat
       implicit none 
       class(psb_d_hll_sparse_mat), intent(inout) :: a
+      integer(psb_ipk_), intent(in)             :: hksz
       class(psb_d_coo_sparse_mat), intent(in)    :: tmp
       integer(psb_ipk_), intent(out)             :: info
     end subroutine psi_d_convert_hll_from_coo

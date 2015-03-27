@@ -57,6 +57,7 @@ psi_ext_util_mod.o: psi_i_ext_util_mod.o \
 	psi_d_ext_util_mod.o psi_z_ext_util_mod.o 
 
 psb_d_dia_mat_mod.o: psi_ext_util_mod.o
+psb_s_hll_mat_mod.o psb_c_hll_mat_mod.o psb_d_hll_mat_mod.o psb_z_hll_mat_mod.o: psi_ext_util_mod.o
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
 

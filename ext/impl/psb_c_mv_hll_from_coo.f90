@@ -39,12 +39,13 @@ subroutine psb_c_mv_hll_from_coo(a,b,info)
   class(psb_c_hll_sparse_mat), intent(inout) :: a
   class(psb_c_coo_sparse_mat), intent(inout) :: b
   integer, intent(out)                        :: info
-
+  
   !locals
-
+  integer(psb_ipk_) :: hksz
   info = psb_success_
-  call b%fix(info) 
-  call psi_convert_hll_from_coo(a,b,info)
+  if (.not.b%is_by_rows()) call b%fix(info) 
+  hksz = psi_get_hksz()
+  call psi_convert_hll_from_coo(a,hksz,b,info)
   if (info /= 0) goto 9999
   call b%free()
 

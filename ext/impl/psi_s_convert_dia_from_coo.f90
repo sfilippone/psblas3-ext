@@ -41,7 +41,7 @@ subroutine psi_s_convert_dia_from_coo(a,tmp,info)
   a%nzeros = nza
   
   call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,&
-       & d,a%data,info,initdata=.true.)
+       & d,nrd,nd,a%data,info,initdata=.true.)
   
   deallocate(d,stat=info)
   if (info /= 0) return

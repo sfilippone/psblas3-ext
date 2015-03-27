@@ -33,9 +33,22 @@
 module psi_i_ext_util_mod
 
   use psb_base_mod, only : psb_ipk_
-
+  integer(psb_ipk_), parameter     :: psb_hksz_def_ = 32
+  integer(psb_ipk_), private, save :: psb_hksz      = psb_hksz_def_ 
 
 contains
+
+  function psi_get_hksz() result(res)
+    implicit none 
+    integer(psb_ipk_) :: res
+    res = psb_hksz
+  end function psi_get_hksz
+
+  subroutine  psi_set_hksz(size) 
+    implicit none 
+    integer(psb_ipk_), intent(in) :: size
+    if (size > 0) psb_hksz = size
+  end subroutine psi_set_hksz
   
   subroutine psi_diacnt_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,info, initd) 
     use psb_base_mod, only : psb_ipk_, psb_success_

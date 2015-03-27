@@ -30,18 +30,19 @@
 !!$ 
   
 
-subroutine psi_s_convert_hll_from_coo(a,tmp,info)
+subroutine psi_s_convert_hll_from_coo(a,hksz,tmp,info)
   use psb_base_mod
   use psb_s_hll_mat_mod, psb_protect_name => psi_s_convert_hll_from_coo
 
   implicit none 
   class(psb_s_hll_sparse_mat), intent(inout) :: a
   class(psb_s_coo_sparse_mat), intent(in)    :: tmp
+  integer(psb_ipk_), intent(in)               :: hksz
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
   Integer(Psb_ipk_)   :: nza, nr, i,j,irw, idl,err_act, nc, isz,irs
-  integer(psb_ipk_)   :: nzm, ir, ic, k, hksz, hk, mxrwl, noffs, kc
+  integer(psb_ipk_)   :: nzm, ir, ic, k, hk, mxrwl, noffs, kc
 
 
   if (.not.tmp%is_by_rows()) then 
@@ -66,8 +67,7 @@ subroutine psi_s_convert_hll_from_coo(a,tmp,info)
 
   a%nzt = nza
   ! Second. Figure out the block offsets. 
-  call a%set_hksz(psb_hksz_def_)
-  hksz  = a%get_hksz()
+  call a%set_hksz(hksz)
   noffs = (nr+hksz-1)/hksz
   call psb_realloc(noffs+1,a%hkoffs,info) 
   if (info /= 0) return

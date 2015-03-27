@@ -36,6 +36,7 @@ subroutine psb_c_mv_hlg_from_coo(a,b,info)
 #ifdef HAVE_SPGPU
   use hlldev_mod
   use psb_vectordev_mod
+  use psb_gpu_env_mod
   use psb_c_hlg_mat_mod, psb_protect_name => psb_c_mv_hlg_from_coo
 #else 
   use psb_c_hlg_mat_mod
@@ -47,22 +48,15 @@ subroutine psb_c_mv_hlg_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  Integer(Psb_ipk_)  :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic, ld
-#ifdef HAVE_SPGPU
-  type(hlldev_parms) :: gpu_parms
-#endif
-
+  integer(psb_ipk_) :: hksz
   info = psb_success_
-
-  call b%fix(info)
-  if (info /= psb_success_) return
-
-  nr  = b%get_nrows()
-  nc  = b%get_ncols()
-  nza = b%get_nzeros()
-  ! If b is not sorted, the only way is to copy.
-  ! But do it with the base method for hll. 
-  call a%psb_c_hll_sparse_mat%cp_from_coo(b,info)
+  if (.not.b%is_by_rows()) call b%fix(info) 
+#ifdef HAVE_SPGPU
+  hksz = psb_gpu_WarpSize()
+#else 
+  hksz = psi_get_hksz()
+#endif
+  call psi_convert_hll_from_coo(a%psb_c_hll_sparse_mat,hksz,b,info)
   if (info /= 0) goto 9999
   call b%free()
 
@@ -76,6 +70,5 @@ subroutine psb_c_mv_hlg_from_coo(a,b,info)
 9999 continue
   info = psb_err_alloc_dealloc_
   return
-
 
 end subroutine psb_c_mv_hlg_from_coo

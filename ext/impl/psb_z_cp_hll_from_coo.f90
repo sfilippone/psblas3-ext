@@ -42,21 +42,22 @@ subroutine psb_z_cp_hll_from_coo(a,b,info)
 
   !locals
   type(psb_z_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)   :: debug_level, debug_unit
+  integer(psb_ipk_)   :: debug_level, debug_unit, hksz
   character(len=20)   :: name='hll_from_coo'
 
   info = psb_success_
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
+  hksz = psi_get_hksz()
   if (b%is_by_rows()) then 
-    call  psi_convert_hll_from_coo(a,b,info)
+    call  psi_convert_hll_from_coo(a,hksz,b,info)
   else
     ! This is to guarantee tmp%is_by_rows()
     call b%cp_to_coo(tmp,info)
     call tmp%fix(info)
     
     if (info /= psb_success_) return
-    call psi_convert_hll_from_coo(a,tmp,info)
+    call psi_convert_hll_from_coo(a,hksz,tmp,info)
     
     call tmp%free()
   end if

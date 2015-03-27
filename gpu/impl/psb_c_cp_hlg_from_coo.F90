@@ -36,6 +36,7 @@ subroutine psb_c_cp_hlg_from_coo(a,b,info)
 #ifdef HAVE_SPGPU
   use hlldev_mod
   use psb_vectordev_mod
+  use psb_gpu_env_mod
   use psb_c_hlg_mat_mod, psb_protect_name => psb_c_cp_hlg_from_coo
 #else 
   use psb_c_hlg_mat_mod
@@ -46,11 +47,35 @@ subroutine psb_c_cp_hlg_from_coo(a,b,info)
   class(psb_c_coo_sparse_mat), intent(in)    :: b
   integer(psb_ipk_), intent(out)             :: info
 
-  info = psb_success_
+  !locals
+  type(psb_c_coo_sparse_mat) :: tmp
+  integer(psb_ipk_)   :: debug_level, debug_unit, hksz
+  character(len=20)   :: name='hll_from_coo'
 
-  call a%psb_c_hll_sparse_mat%cp_from_coo(b,info)
+  info = psb_success_
+  debug_unit  = psb_get_debug_unit()
+  debug_level = psb_get_debug_level()
 #ifdef HAVE_SPGPU
-  if (info == 0) call a%to_gpu(info)
+  hksz = psb_gpu_WarpSize()
+#else
+  hksz = psi_get_hksz()
+#endif
+  if (b%is_by_rows()) then 
+    call  psi_convert_hll_from_coo(a%psb_c_hll_sparse_mat,hksz,b,info)
+  else
+    ! This is to guarantee tmp%is_by_rows()
+    call b%cp_to_coo(tmp,info)
+    call tmp%fix(info)
+    
+    if (info /= psb_success_) return
+    call psi_convert_hll_from_coo(a%psb_c_hll_sparse_mat,hksz,tmp,info)
+    
+    call tmp%free()
+  end if
+  if (info /= 0) goto 9999
+
+#ifdef HAVE_SPGPU
+  call a%to_gpu(info)
 #endif
   if (info /= 0) goto 9999
 
