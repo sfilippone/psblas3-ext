@@ -45,15 +45,20 @@ subroutine psb_d_mv_hybg_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)              :: info
 
   !locals
+  logical, parameter :: timings=.false.
+  real(psb_dpk_) :: t0,t1,t2
   info = psb_success_
-
+  
+  if (timings) t0=psb_wtime()
   call a%psb_d_csr_sparse_mat%mv_from_coo(b,info) 
   if (info /= 0) goto 9999
+  if (timings) t1=psb_wtime()
 #ifdef HAVE_SPGPU
   call a%to_gpu(info)
-  if (info /= 0) goto 9999
 #endif
-
+  if (info /= 0) goto 9999
+  if (timings) t2=psb_wtime()
+  if (timings) write(*,*) 'mv_hybg_from_coo', t2-t0,t1-t0,t2-t1
   return
 
 9999 continue

@@ -51,7 +51,12 @@ subroutine psb_s_mv_hlg_from_fmt(a,b,info)
 
   info = psb_success_
 
-  call b%mv_to_coo(tmp,info)
-  if (info == psb_success_) call a%mv_from_coo(tmp,info)
+  select type(b)
+  type is (psb_s_coo_sparse_mat)
+    call a%mv_from_coo(b,info) 
+  class default
+    call b%mv_to_coo(tmp,info)
+    if (info == psb_success_) call a%mv_from_coo(tmp,info)
+  end select
 
 end subroutine psb_s_mv_hlg_from_fmt

@@ -46,10 +46,15 @@ subroutine psb_s_cp_hybg_from_fmt(a,b,info)
 
   info = psb_success_
 
-  call a%psb_s_csr_sparse_mat%cp_from_fmt(b,info) 
-  if (info /= 0) return
+  select type(b)
+  type is (psb_s_coo_sparse_mat)
+    call a%cp_from_coo(b,info) 
+  class default
+    call a%psb_s_csr_sparse_mat%cp_from_fmt(b,info) 
+    if (info /= 0) return
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
+    call a%to_gpu(info)
 #endif
+  end select
 
 end subroutine psb_s_cp_hybg_from_fmt

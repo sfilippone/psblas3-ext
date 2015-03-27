@@ -49,10 +49,15 @@ subroutine psb_s_mv_csrg_from_fmt(a,b,info)
 
   info = psb_success_
 
-  call a%psb_s_csr_sparse_mat%mv_from_fmt(b,info) 
-  if (info /= 0) return
+  select type(b)
+  type is (psb_s_coo_sparse_mat)
+    call a%mv_from_coo(b,info) 
+  class default
+    call a%psb_s_csr_sparse_mat%mv_from_fmt(b,info) 
+    if (info /= 0) return
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
+    call a%to_gpu(info)
 #endif
+  end select
 
 end subroutine psb_s_mv_csrg_from_fmt

@@ -48,10 +48,15 @@ subroutine psb_z_cp_hlg_from_fmt(a,b,info)
 
   info = psb_success_
 
-  call a%psb_z_hll_sparse_mat%cp_from_fmt(b,info)
+  select type(b)
+  type is (psb_z_coo_sparse_mat)
+    call a%cp_from_coo(b,info) 
+  class default
+    call a%psb_z_hll_sparse_mat%cp_from_fmt(b,info)
 #ifdef HAVE_SPGPU
-  if (info == 0) call a%to_gpu(info)
+    if (info == 0) call a%to_gpu(info)
 #endif
+  end select
   if (info /= 0) goto 9999
 
   return
