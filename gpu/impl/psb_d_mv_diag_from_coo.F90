@@ -52,8 +52,8 @@ subroutine psb_d_mv_diag_from_coo(a,b,info)
 
   info = psb_success_
 
-  call b%fix(info)
-  if (info /= psb_success_) return
+  if (.not.b%is_by_rows()) call b%fix(info)
+  if (info /= psb_success_) goto 9999
  
   call a%cp_from_coo(b,info)
   if (info /= 0) goto 9999

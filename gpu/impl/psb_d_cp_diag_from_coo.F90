@@ -47,123 +47,13 @@ subroutine psb_d_cp_diag_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  type(psb_d_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:),pres(:) 
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd
-  integer(psb_ipk_)              :: debug_level, debug_unit
-  character(len=20)              :: name
-#ifdef HAVE_SPGPU
-  type(diagdev_parms) :: gpu_parms
-#endif
   info = psb_success_
-  ! This is to have fix_coo called behind the scenes
-  
-  ! call b%cp_to_coo(tmp,info)
-
-!   call tmp%fix(info)
-!   if (info /= psb_success_) return
-
-!   nr  = tmp%get_nrows()
-!   nc  = tmp%get_ncols()
-!   nza = tmp%get_nzeros()
-!   ! If it is sorted then we can lessen memory impact 
-!   a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
-
-!   mi = maxval(tmp%ia)
-!   mj = maxval(tmp%ja)
-
-!   ndiag = nr+nc-1
-!   allocate(d(ndiag),pres(ndiag))
-
-!   d=0
-!   pres=0
-
-!   do i=1,nza
-!     k = nr+tmp%ja(i)-tmp%ia(i)
-!     d(k) = d(k) + 1 
-!   enddo
-!   dm = nr
-!   nd=0
-!   nzd = 0
-!   do i=1,ndiag
-!     nzd = max(nzd,d(i))
-!     if (d(i)>0) then
-!       pres(i)=1
-!       nd = nd + 1 
-!     endif
-!   enddo
-  
-!   call psb_realloc(nzd,nd,a%data,info) 
-!   if (info /= 0) goto 9999
-!   a%data = dzero
-!   call psb_realloc(nd,a%offset,info)
-!   if (info /= 0) goto 9999
-
-!   a%offset = 0
-
-!   a%nzeros = nza
-
-!   k=1
-
-!   do i=1,size(d)
-!      if(d(i)/=0) then
-!         a%offset(k)=i-nr
-!         k=k+1
-!      end if
-!   end do
-
-!   dm = sum(pres(1:nr))
-  
-!   do i=1,size(tmp%ia)
-!      if(tmp%ia(i)>tmp%ja(i)) then
-!         nc = tmp%ja(i) - tmp%ia(i)
-!         do j=1,size(a%offset)
-!            if (a%offset(j)==nc) then
-!               nc = j
-!               exit
-!            endif
-!         end do
-!         nr = tmp%ia(i)
-!      elseif(tmp%ia(i)<tmp%ja(i)) then
-!         nc = tmp%ja(i)-tmp%ia(i)
-!         do j=1,size(a%offset)
-!            if(a%offset(j)==nc)then
-!               nc = j
-!               exit
-!            endif
-!         enddo
-!         nr = tmp%ia(i)!+a%offset(nc)
-!      else
-!         nc = dm
-!         nr = tmp%ia(i)
-!      end if
-!      a%data(nr,nc) = tmp%val(i);
-!   enddo
-
-!   deallocate(d,pres)
-
-!   call tmp%free
-
-! #ifdef HAVE_SPGPU
-!   nr = size(a%data,1)
-!   nc = size(a%data,2)
-!   gpu_parms = FgetDiagDeviceParams(nr,nc,spgpu_type_double,1)
-! #endif
-
   call a%psb_d_dia_sparse_mat%cp_from_coo(b,info)
 
 #ifdef HAVE_SPGPU
   call a%to_gpu(info)
   if (info /= 0) goto 9999
 #endif
-
-!!$  write(0,*) 'End of cp_diag_from_coo', size(a%offset)
-!!$  write(0,*) '   DIAGS', (a%offset)
-!!$  write(0,*)   '   DATA'
-!!$  do i=1,nr
-!!$    write(0,*) '       ', a%data(i,:) 
-!!$  end do
 
   return
 

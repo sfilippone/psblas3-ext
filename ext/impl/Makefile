@@ -94,6 +94,7 @@ psb_c_hll_reinit.o \
 psb_c_hll_rowsum.o \
 psb_c_hll_scal.o \
 psb_c_hll_scals.o \
+psb_c_mv_dia_from_coo.o \
 psb_c_mv_ell_from_coo.o \
 psb_c_mv_ell_from_fmt.o \
 psb_c_mv_ell_to_coo.o \
@@ -184,6 +185,7 @@ psb_d_hll_reinit.o \
 psb_d_hll_rowsum.o \
 psb_d_hll_scal.o \
 psb_d_hll_scals.o \
+psb_d_mv_dia_from_coo.o \
 psb_d_mv_ell_from_coo.o \
 psb_d_mv_ell_from_fmt.o \
 psb_d_mv_ell_to_coo.o \
@@ -274,6 +276,7 @@ psb_s_hll_reinit.o \
 psb_s_hll_rowsum.o \
 psb_s_hll_scal.o \
 psb_s_hll_scals.o \
+psb_s_mv_dia_from_coo.o \
 psb_s_mv_ell_from_coo.o \
 psb_s_mv_ell_from_fmt.o \
 psb_s_mv_ell_to_coo.o \
@@ -364,6 +367,7 @@ psb_z_hll_reinit.o \
 psb_z_hll_rowsum.o \
 psb_z_hll_scal.o \
 psb_z_hll_scals.o \
+psb_z_mv_dia_from_coo.o \
 psb_z_mv_ell_from_coo.o \
 psb_z_mv_ell_from_fmt.o \
 psb_z_mv_ell_to_coo.o \

@@ -64,7 +64,7 @@ module psb_d_dia_mat_mod
     procedure, pass(a) :: cp_to_coo    => psb_d_cp_dia_to_coo
     procedure, pass(a) :: cp_from_coo  => psb_d_cp_dia_from_coo
     ! procedure, pass(a) :: mv_to_coo    => psb_d_mv_dia_to_coo
-    ! procedure, pass(a) :: mv_from_coo  => psb_d_mv_dia_from_coo
+    procedure, pass(a) :: mv_from_coo  => psb_d_mv_dia_from_coo
     ! procedure, pass(a) :: mv_to_fmt    => psb_d_mv_dia_to_fmt
     ! procedure, pass(a) :: mv_from_fmt  => psb_d_mv_dia_from_fmt
     ! procedure, pass(a) :: csput_a      => psb_d_dia_csput_a

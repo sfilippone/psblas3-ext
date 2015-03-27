@@ -475,6 +475,19 @@ else
   cat conftest.$ac_ext >&AC_FD_CC
   pac_cv_psblas_minor="unknown";
 fi
+cat > conftest.$ac_ext <<EOF
+           program test
+	       use psb_base_mod
+               print *,psb_patchlevel_
+           end program test
+EOF
+if AC_TRY_EVAL(ac_link) && test -s conftest${ac_exeext}; then
+ pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  echo "configure: failed program was:" >&AC_FD_CC
+  cat conftest.$ac_ext >&AC_FD_CC
+  pac_cv_psblas_patchlevel="unknown";
+fi
 rm -f conftest*
 AC_MSG_RESULT([Done])
 ]

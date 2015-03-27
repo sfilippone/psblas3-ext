@@ -7740,6 +7740,23 @@ else
   cat conftest.$ac_ext >&5
   pac_cv_psblas_minor="unknown";
 fi
+cat > conftest.$ac_ext <<EOF
+           program test
+	       use psb_base_mod
+               print *,psb_patchlevel_
+           end program test
+EOF
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && test -s conftest${ac_exeext}; then
+ pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  pac_cv_psblas_patchlevel="unknown";
+fi
 rm -f conftest*
 { $as_echo "$as_me:$LINENO: result: Done" >&5
 $as_echo "Done" >&6; }
@@ -7755,13 +7772,21 @@ if test "x$pac_cv_psblas_minor" == "xunknown"; then
 $as_echo "$as_me: error: PSBLAS version minor \"$pac_cv_psblas_minor\"." >&2;}
    { (exit 1); exit 1; }; }
 fi
-if (( $pac_cv_psblas_major < 3 )) || ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 3 )) ) ; then
-  { { $as_echo "$as_me:$LINENO: error: I need at least PSBLAS version 3.3." >&5
-$as_echo "$as_me: error: I need at least PSBLAS version 3.3." >&2;}
+if test "x$pac_cv_psblas_patchlevel" == "xunknown"; then
+   { { $as_echo "$as_me:$LINENO: error: PSBLAS patchlevel \"$pac_cv_psblas_patchlevel\"." >&5
+$as_echo "$as_me: error: PSBLAS patchlevel \"$pac_cv_psblas_patchlevel\"." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if (( $pac_cv_psblas_major < 3 )) ||
+    ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 3 )) ) ||
+    ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor == 3 )) &&
+      (( $pac_cv_psblas_patchlevel < 1 ))   )  ; then
+  { { $as_echo "$as_me:$LINENO: error: I need at least PSBLAS version 3.3.1" >&5
+$as_echo "$as_me: error: I need at least PSBLAS version 3.3.1" >&2;}
    { (exit 1); exit 1; }; }
 else
-  { $as_echo "$as_me:$LINENO: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor." >&5
-$as_echo "$as_me: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor." >&6;}
+  { $as_echo "$as_me:$LINENO: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel." >&5
+$as_echo "$as_me: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel." >&6;}
 fi
 
 
