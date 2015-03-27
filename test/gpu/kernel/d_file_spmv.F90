@@ -87,7 +87,7 @@ program d_file_spmv
   ! other variables
   integer            :: i,info,j,nrt, ns, nr, ipart
   integer            :: internal, m,ii,nnzero
-  real(psb_dpk_) :: t1, t2, tprec, flops
+  real(psb_dpk_) :: t0,t1, t2, tprec, flops
   real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth, tcnvcsr,tcnvgpu
   integer :: nrhs, nrow, n_row, dim, nv, ne
   integer, allocatable :: ivg(:), ipv(:)
@@ -133,7 +133,7 @@ program d_file_spmv
   call psb_bcast(ictxt,agfmt)
   call psb_bcast(ictxt,ipart)
   call psb_barrier(ictxt)
-  t1 = psb_wtime()  
+  t0 = psb_wtime()  
   ! read the input matrix to be processed and (possibly) the rhs 
   nrhs = 1
 
@@ -257,35 +257,43 @@ program d_file_spmv
          & desc_a,b_col_glob,bv,info,parts=part_block)
   end if
 
+  call a%cscnv(info,mold=acoo)
+
   call psb_geall(x_col,desc_a,info)
   ns = size(x_col)
   do i=1, ns
     x_col(i) = 1.0 + (1.0*i)/ns
   end do
-  call psb_geasb(x_col,desc_a,info)
-  t2 = psb_wtime() - t1
-
-#ifdef HAVE_GPU
-  call a%cscnv(agpu,info,mold=acoo)
-  call a%cscnv(info,mold=acoo)
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   call a%cscnv(info,mold=acmold)
   tcnvcsr = psb_wtime()-t1
   call psb_amx(ictxt,tcnvcsr)
+  ns = size(x_col)
+  do i=1, ns
+    x_col(i) = 1.0 + (1.0*i)/ns
+  end do
+  call psb_geasb(x_col,desc_a,info)
+  call xv%bld(x_col)
+  call psb_geasb(bv,desc_a,info,scratch=.true.)
+
+#ifdef HAVE_GPU
+  
+  call a%cscnv(agpu,info,mold=acoo)
+  ns = size(x_col)
+  do i=1, ns
+    x_col(i) = 1.0 + (1.0*i)/ns
+  end do
+  call xg%bld(x_col,mold=vmold)
+  call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   call agpu%cscnv(info,mold=agmold)
   tcnvgpu = psb_wtime()-t1
   call psb_amx(ictxt,tcnvgpu)
-  
-  call xg%bld(x_col,mold=vmold)
-  call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
 #endif
 
-  call a%cscnv(info,mold=acmold)
-  call xv%bld(x_col)
-  call psb_geasb(bv,desc_a,info,scratch=.true.)
+  t2 = psb_wtime() - t0
 
   call psb_amx(ictxt, t2)
 
