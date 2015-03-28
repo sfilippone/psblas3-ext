@@ -35,10 +35,10 @@ module psi_d_ext_util_mod
   use psb_base_mod, only : psb_ipk_, psb_dpk_
 
   interface psi_xtr_dia_from_coo
-    subroutine psi_d_xtr_dia_from_coo(nr,nz,ia,ja,val,d,nrd,ncd,data,info,initdata)    
+    subroutine psi_d_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,initdata)
       import  :: psb_ipk_, psb_dpk_
       implicit none 
-      integer(psb_ipk_), intent(in)  :: nr, nz, nrd, ncd, ia(:), ja(:), d(:)
+      integer(psb_ipk_), intent(in)  :: nr, nc, nz, nrd, ncd, ia(:), ja(:), d(:)
       real(psb_dpk_),    intent(in)  :: val(:)
       real(psb_dpk_),    intent(out) :: data(nrd,ncd)
       integer(psb_ipk_), intent(out) :: info

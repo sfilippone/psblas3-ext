@@ -51,61 +51,62 @@ subroutine psb_c_cp_ell_from_coo(a,b,info)
   ! This is to have fix_coo called behind the scenes
   call b%cp_to_coo(tmp,info)
 
-  call tmp%fix(info)
-  if (info /= psb_success_) return
-
-  nr  = tmp%get_nrows()
-  nc  = tmp%get_ncols()
-  nza = tmp%get_nzeros()
-  ! If it is sorted then we can lessen memory impact 
-  a%psb_c_base_sparse_mat = tmp%psb_c_base_sparse_mat
-
-  ! First compute the number of nonzeros in each row.
-  call psb_realloc(nr,a%irn,info) 
-  if (info /= 0) goto 9999
-  a%irn = 0
-  do i=1, nza
-    a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
-  end do
-  nzm = 0 
-  do i=1, nr
-    nzm = max(nzm,a%irn(i))
-    a%irn(i) = 0
-  end do
-  ! Second: copy the column indices.
-  call psb_realloc(nr,a%idiag,info) 
-  if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
-  if (info /= 0) goto 9999
-  do i=1, nza
-    ir = tmp%ia(i)
-    ic = tmp%ja(i)
-    j  = a%irn(ir) + 1 
-    a%ja(ir,j) = ic
-    a%irn(ir)  = j
-  end do
-  ! Third copy the other stuff
-  deallocate(tmp%ia,tmp%ja,stat=info) 
-  if (info == 0) call psb_realloc(nr,a%idiag,info)
-  if (info == 0) call psb_realloc(nr,nzm,a%val,info)
-  if (info /= 0) goto 9999
-  k = 0 
-  do i=1, nr
-    a%idiag(i) = 0 
-    do j=1, a%irn(i)
-      k = k + 1 
-      a%val(i,j) = tmp%val(k)
-      if (i==a%ja(i,j)) a%idiag(i)=j
-    end do
-    do j=a%irn(i)+1, nzm
-      a%ja(i,j) = i
-      a%val(i,j) = czero
-    end do
-  end do
-  a%nzt = sum(a%irn(1:a%get_nrows()))
-
-
-  call tmp%free()
-
+  call a%mv_from_coo(tmp,info) 
+!!$  call tmp%fix(info)
+!!$  if (info /= psb_success_) return
+!!$
+!!$  nr  = tmp%get_nrows()
+!!$  nc  = tmp%get_ncols()
+!!$  nza = tmp%get_nzeros()
+!!$  ! If it is sorted then we can lessen memory impact 
+!!$  a%psb_c_base_sparse_mat = tmp%psb_c_base_sparse_mat
+!!$
+!!$  ! First compute the number of nonzeros in each row.
+!!$  call psb_realloc(nr,a%irn,info) 
+!!$  if (info /= 0) goto 9999
+!!$  a%irn = 0
+!!$  do i=1, nza
+!!$    a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
+!!$  end do
+!!$  nzm = 0 
+!!$  do i=1, nr
+!!$    nzm = max(nzm,a%irn(i))
+!!$    a%irn(i) = 0
+!!$  end do
+!!$  ! Second: copy the column indices.
+!!$  call psb_realloc(nr,a%idiag,info) 
+!!$  if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
+!!$  if (info /= 0) goto 9999
+!!$  do i=1, nza
+!!$    ir = tmp%ia(i)
+!!$    ic = tmp%ja(i)
+!!$    j  = a%irn(ir) + 1 
+!!$    a%ja(ir,j) = ic
+!!$    a%irn(ir)  = j
+!!$  end do
+!!$  ! Third copy the other stuff
+!!$  deallocate(tmp%ia,tmp%ja,stat=info) 
+!!$  if (info == 0) call psb_realloc(nr,a%idiag,info)
+!!$  if (info == 0) call psb_realloc(nr,nzm,a%val,info)
+!!$  if (info /= 0) goto 9999
+!!$  k = 0 
+!!$  do i=1, nr
+!!$    a%idiag(i) = 0 
+!!$    do j=1, a%irn(i)
+!!$      k = k + 1 
+!!$      a%val(i,j) = tmp%val(k)
+!!$      if (i==a%ja(i,j)) a%idiag(i)=j
+!!$    end do
+!!$    do j=a%irn(i)+1, nzm
+!!$      a%ja(i,j) = i
+!!$      a%val(i,j) = czero
+!!$    end do
+!!$  end do
+!!$  a%nzt = sum(a%irn(1:a%get_nrows()))
+!!$
+!!$
+!!$  call tmp%free()
+!!$
   return
 
 9999 continue

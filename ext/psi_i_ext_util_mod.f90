@@ -50,82 +50,43 @@ contains
     if (size > 0) psb_hksz = size
   end subroutine psi_set_hksz
   
-  subroutine psi_diacnt_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,info, initd) 
-    use psb_base_mod, only : psb_ipk_, psb_success_
-    
-    implicit none 
-    
-    integer(psb_ipk_), intent(in)    :: nr, nc, nz, ia(:), ja(:)
-    integer(psb_ipk_), intent(out)   :: nrd, nd
-    integer(psb_ipk_), intent(inout) :: d(:)
-    integer(psb_ipk_), intent(out)   :: info
-    logical, intent(in), optional    :: initd
-    
-    !locals
-    integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag
-    logical                        :: initd_
-    character(len=20)              :: name
-    
-    info = psb_success_
-    initd_ = .true.
-    if (present(initd)) initd_ = initd
-    if (initd_) d(:) = 0 
-    
-    ndiag = nr+nc-1  
-    nd    = 0
-    nrd   = 0
-    do i=1,nz
-      k = nr+ja(i)-ia(i)
-      if (d(k) == 0) nd = nd + 1 
-      d(k) = d(k) + 1 
-      nrd = max(nrd,d(k))
-    enddo
-    
-    return
-  end subroutine psi_diacnt_from_coo
-  
-  subroutine psi_offset_from_d(nr,nc,d,offset,info) 
-    use psb_base_mod, only : psb_ipk_, psb_success_
-    
-    implicit none 
-    
-    integer(psb_ipk_), intent(in)    :: nr, nc
-    integer(psb_ipk_), intent(inout) :: d(:)
-    integer(psb_ipk_), intent(out)   :: offset(:)
-    integer(psb_ipk_), intent(out)   :: info
-    
-    !locals
-    integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag
-    character(len=20)              :: name
-    
-    info = psb_success_
-    
-    ndiag = nr+nc-1  
-    k = 1
-    do i=1,ndiag
-      if (d(i)/=0) then
-        offset(k)=i-nr
-        d(i) = k
-        k    = k+1
-      end if
-    end do
-    
-    return
-  end subroutine psi_offset_from_d
-  
 
-  
-  subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nrd,nd,d,offset,info,initd,cleard) 
+  !
+  ! Compute offsets and allocation for DIAgonal storage.
+  ! Input:
+  !   nr,nc,nz,ia,ja
+  ! Output:
+  !    nrd: Number of nonzero entries in the fullest diagonal
+  !     nd: number of nonzero diagonals
+  !      d: d(k) contains the index inside offset of diagonal k,
+  !         which is, if A(I,J) /= 0 then K=NR+J-I, or (optionally) 0.
+  ! offset: for each of the ND nonzero diagonals, its offset J-I
+  ! 
+  ! 1. Optionally init D vector to zeros
+  ! 2. Walk through the NZ pairs (I,J):
+  !    a. if it is a new diagonal add to a heap;
+  !    b. increase its population count stored in D(J-I+NR)
+  !    c. Keep track of maximum population count.
+  ! 3. Go through the ND diagonals, getting them K out of the heap in order:
+  !    a. Set offset(i) to K-NR == J-I
+  !    b. Set D(K) = i  or 0 (depending on cleard)
+  !
+  ! Setting to 0 allows to reuse this function in a loop in a dry run
+  ! to estimate the allocation size for HDIA; without settng to 0 we
+  ! would  need to zero the whole vector, resulting in a quadratic overall cost. 
+  !
+  !
+  subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nd,d,offset,info,initd,cleard) 
     use psb_base_mod
     
     implicit none 
     
-    integer(psb_ipk_), intent(in)   :: nr, nc, nz, ia(:), ja(:)
+    integer(psb_ipk_), intent(in)    :: nr, nc, nz, ia(:), ja(:)
     integer(psb_ipk_), intent(inout) :: d(:)
     integer(psb_ipk_), intent(out)   :: offset(:)
-    integer(psb_ipk_), intent(out)  :: nrd, nd
-    integer(psb_ipk_), intent(out)  :: info
-    logical, intent(in), optional   :: initd,cleard
+    integer(psb_ipk_), intent(out)   :: nd
+    integer(psb_ipk_), intent(out)   :: info
+    logical, intent(in), optional    :: initd,cleard
     
     type(psb_int_heap)             :: heap
     integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag, id
@@ -145,7 +106,6 @@ contains
       info = -8
       return
     end if
-    nrd   = 0
     call psb_init_heap(heap,info)
     if (info /= psb_success_) return
 
@@ -153,7 +113,6 @@ contains
       k = nr+ja(i)-ia(i)
       if (d(k) == 0) call psb_insert_heap(k,heap,info)
       d(k) = d(k) + 1 
-      nrd = max(nrd,d(k))
     enddo
     nd  = psb_howmany_heap(heap)
     if (size(offset)<nd) then 

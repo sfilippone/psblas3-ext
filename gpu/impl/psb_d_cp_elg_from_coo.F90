@@ -58,6 +58,9 @@ subroutine psb_d_cp_elg_from_coo(a,b,info)
   info = psb_success_
 
   call b%cp_to_coo(tmp, info)
+  call a%mv_from_Coo(tmp,info)
+  return
+   
   call tmp%fix(info)
   nr  = tmp%get_nrows()
   nc  = tmp%get_ncols()

@@ -16,7 +16,7 @@ subroutine psi_d_convert_dia_from_coo(a,tmp,info)
   !locals
   integer(psb_ipk_)              :: ndiag,nd
   integer(psb_ipk_),allocatable  :: d(:)
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,nrd,ir,ic
+  integer(psb_ipk_)              :: k,i,j,nc,nr,nza,ir,ic
   
   info = psb_success_
   nr  = tmp%get_nrows()
@@ -32,16 +32,16 @@ subroutine psi_d_convert_dia_from_coo(a,tmp,info)
   if (info /= 0) return
   
   call psi_dia_offset_from_coo(nr,nc,nza,tmp%ia,tmp%ja, &
-       & nrd,nd,d,a%offset,info,initd=.true.,cleard=.false.) 
+       & nd,d,a%offset,info,initd=.true.,cleard=.false.) 
   
   call psb_realloc(nd,a%offset,info)
   if (info /= 0) return
-  call psb_realloc(nrd,nd,a%data,info) 
+  call psb_realloc(nr,nd,a%data,info) 
   if (info /= 0) return
   a%nzeros = nza
   
-  call psi_xtr_dia_from_coo(nr,nza,tmp%ia,tmp%ja,tmp%val,&
-       & d,nrd,nd,a%data,info,initdata=.true.)
+  call psi_xtr_dia_from_coo(nr,nc,nza,tmp%ia,tmp%ja,tmp%val,&
+       & d,nr,nd,a%data,info,initdata=.true.)
   
   deallocate(d,stat=info)
   if (info /= 0) return

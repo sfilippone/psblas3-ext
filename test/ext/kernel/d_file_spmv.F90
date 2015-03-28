@@ -101,13 +101,13 @@ program d_file_spmv
     call read_data(mtrx_file,psb_inp_unit)
     call read_data(filefmt,psb_inp_unit)
     call read_data(acfmt,psb_inp_unit)
-    call read_data(agfmt,psb_inp_unit)
+!    call read_data(agfmt,psb_inp_unit)
     call read_data(ipart,psb_inp_unit)
   end if
   call psb_bcast(ictxt,mtrx_file)
   call psb_bcast(ictxt,filefmt)
   call psb_bcast(ictxt,acfmt)
-  call psb_bcast(ictxt,agfmt)
+!  call psb_bcast(ictxt,agfmt)
   call psb_bcast(ictxt,ipart)
   call psb_barrier(ictxt)
   t1 = psb_wtime()  
@@ -222,7 +222,7 @@ program d_file_spmv
   call psb_geasb(x_col,desc_a,info)
   t2 = psb_wtime() - t1
 
-  call a%cscnv(info,mold=acmold)
+  call a%cscnv(info,mold=acoo)
   call xv%bld(x_col)
   call psb_geasb(bv,desc_a,info,scratch=.true.)
 
@@ -233,6 +233,19 @@ program d_file_spmv
     write(psb_out_unit,'("Time to read and partition matrix : ",es12.5)')t2
     write(psb_out_unit,'(" ")')
   end if
+  call psb_barrier(ictxt)
+  t1=psb_wtime()
+  call a%cscnv(info,mold=acmold)
+  t2 = psb_wtime() - t1
+  call psb_amx(ictxt, t2)
+
+  if (iam==psb_root_) then
+    write(psb_out_unit,'(" ")')
+    write(psb_out_unit,'("Time to convert from COO to ",a," : ",es12.5)')&
+         & a%get_fmt(),t2
+    write(psb_out_unit,'(" ")')
+  end if
+  
 
 
   call psb_barrier(ictxt)

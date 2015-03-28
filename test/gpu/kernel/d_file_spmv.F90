@@ -67,7 +67,7 @@ program d_file_spmv
   character(len=2)   :: filefmt
   integer, parameter :: iunit=12
   integer, parameter :: times=2000 
-  integer, parameter :: ntests=200, ngpu=50 
+  integer, parameter :: ntests=200, ngpu=50, ncnv=20 
 
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
@@ -257,42 +257,6 @@ program d_file_spmv
          & desc_a,b_col_glob,bv,info,parts=part_block)
   end if
 
-  call a%cscnv(info,mold=acoo)
-
-  call psb_geall(x_col,desc_a,info)
-  ns = size(x_col)
-  do i=1, ns
-    x_col(i) = 1.0 + (1.0*i)/ns
-  end do
-  call psb_barrier(ictxt)
-  t1 = psb_wtime()
-  call a%cscnv(info,mold=acmold)
-  tcnvcsr = psb_wtime()-t1
-  call psb_amx(ictxt,tcnvcsr)
-  ns = size(x_col)
-  do i=1, ns
-    x_col(i) = 1.0 + (1.0*i)/ns
-  end do
-  call psb_geasb(x_col,desc_a,info)
-  call xv%bld(x_col)
-  call psb_geasb(bv,desc_a,info,scratch=.true.)
-
-#ifdef HAVE_GPU
-  
-  call a%cscnv(agpu,info,mold=acoo)
-  ns = size(x_col)
-  do i=1, ns
-    x_col(i) = 1.0 + (1.0*i)/ns
-  end do
-  call xg%bld(x_col,mold=vmold)
-  call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
-  call psb_barrier(ictxt)
-  t1 = psb_wtime()
-  call agpu%cscnv(info,mold=agmold)
-  tcnvgpu = psb_wtime()-t1
-  call psb_amx(ictxt,tcnvgpu)
-#endif
-
   t2 = psb_wtime() - t0
 
   call psb_amx(ictxt, t2)
@@ -302,7 +266,45 @@ program d_file_spmv
     write(psb_out_unit,'("Time to read and partition matrix : ",es12.5)')t2
     write(psb_out_unit,'(" ")')
   end if
-
+  call a%cscnv(aux_a,info,mold=acoo)
+  tcnvcsr = 0
+  tcnvgpu = 0
+  call psb_geall(x_col,desc_a,info)
+  do j=1, ncnv
+    call aux_a%cscnv(a,info,mold=acoo)
+    ns = size(x_col)
+    do i=1, ns
+      x_col(i) = 1.0 + (1.0*i)/ns
+    end do
+    call psb_barrier(ictxt)
+    t1 = psb_wtime()
+    call a%cscnv(info,mold=acmold)
+    tcnvcsr = tcnvcsr + psb_wtime()-t1
+    call psb_amx(ictxt,tcnvcsr)
+    ns = size(x_col)
+    do i=1, ns
+      x_col(i) = 1.0 + (1.0*i)/ns
+    end do
+    call psb_geasb(x_col,desc_a,info)
+    call xv%bld(x_col)
+    call psb_geasb(bv,desc_a,info,scratch=.true.)
+    
+#ifdef HAVE_GPU
+    
+    call aux_a%cscnv(agpu,info,mold=acoo)
+    ns = size(x_col)
+    do i=1, ns
+      x_col(i) = 1.0 + (1.0*i)/ns
+    end do
+    call xg%bld(x_col,mold=vmold)
+    call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
+    call psb_barrier(ictxt)
+    t1 = psb_wtime()
+    call agpu%cscnv(info,mold=agmold)
+    tcnvgpu = tcnvgpu+(psb_wtime()-t1)
+    call psb_amx(ictxt,tcnvgpu)
+#endif
+  end do
 
   call psb_barrier(ictxt)
   t1 = psb_wtime()
@@ -411,9 +413,10 @@ program d_file_spmv
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
     write(psb_out_unit,'("Time to convert A from COO to CPU    : ",F20.3)')&
-         & tcnvcsr
+         & tcnvcsr,tcnvcsr/ncnv
     write(psb_out_unit,'("Time to convert A from COO to GPU    : ",F20.3)')&
-         & tcnvgpu
+         & tcnvgpu, tcnvgpu/ncnv
+
 #endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
