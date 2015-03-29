@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #if defined(HAVE_SPGPU)
+#define DEBUG 1
 //new
 
 HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, unsigned int diags, unsigned int hackSize, unsigned int elementType)
@@ -81,6 +82,10 @@ int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params, double *da
 			 tmp->rows,
 			 params->elementType);
  
+#ifdef DEBUG
+  fprintf(stderr,"hackcount %d  allocationHeight %d\n",tmp->hackCount,tmp->allocationHeight);
+#endif
+
   if (ret == SPGPU_SUCCESS)
     ret=allocRemoteBuffer((void **)&(tmp->hdiaOffsets), tmp->allocationHeight*sizeof(int));
   
@@ -130,7 +135,7 @@ void freeHdiagDevice(void* remoteMatrix)
 
 //new
 int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,unsigned int diags,unsigned int hackSize,double *data,unsigned int elementType)
-{ int i;
+{ int i,j;
 #ifdef HAVE_SPGPU
   HdiagDeviceParams p;
 
@@ -147,7 +152,7 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
 
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
-{ int i=0,fo,fa;
+{ int i=0,fo,fa,j;
   int *hoff=NULL,*hackoff=NULL;
   double *values=NULL;
   char buf_a[255], buf_o[255],tmp[255];
@@ -161,7 +166,25 @@ int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
 	    (void *)a,off,devMat->rows,devMat->diags,devMat->rows,SPGPU_TYPE_DOUBLE);
 
   hackoff = devMat->hackOffsets;
-
+#if DEBUG
+  fprintf(stderr,"HDIAG writing to device memory: allocationHeight %d hackCount %d\n",
+	  devMat->allocationHeight,devMat->hackCount);
+  fprintf(stderr,"HackOffsets: ");
+  for (j=0; j<devMat->hackCount+1; j++)
+    fprintf(stderr," %d",hackoff[j]);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"diaOffsets: ");
+  for (j=0; j<devMat->allocationHeight; j++)
+    fprintf(stderr," %d",hoff[j]);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"values: ");
+  for (j=0; j<devMat->allocationHeight*devMat->hackSize; j++)
+    fprintf(stderr," %lf",values[j]);
+  fprintf(stderr,"\n");
+#endif
+  
+  
+  
   if (i == SPGPU_SUCCESS)
     i=allocRemoteBuffer((void **)&(devMat->hackOffsets),
 			(devMat->hackCount+1)*sizeof(int));
