@@ -51,10 +51,7 @@ subroutine psb_d_mv_hdiag_from_coo(a,b,info)
   Integer(Psb_ipk_) :: err_act
 
   info = psb_success_
-
-  call b%fix(info)
-  if (info /= psb_success_) return
- 
+  write(*,*) 'MV_HDIAG_FROM_COO'
   call a%cp_from_coo(b,info)
   if (info /= 0) goto 9999
 

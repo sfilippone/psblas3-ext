@@ -80,6 +80,20 @@ module hdiagdev_mod
   end interface
 
 
+  interface FCreateHdiagDeviceFromCoo
+    function FCreateHdiagDeviceFromCooDouble(deviceMat,&
+       & hackSize,nr,nc,nza,ia,ja,val) &
+       & result(res) bind(c,name='FCreateHdiagDeviceFromCooDouble')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: nr,nc,nza,hackSize
+      integer(c_int)        :: ia(*), ja(*) 
+      real(c_double)        :: val(*)
+      type(c_ptr)           :: deviceMat
+    end function FCreateHdiagDeviceFromCooDouble
+  end interface
+
+
   interface 
     function sizeofHdiagDeviceDouble(deviceMat) &
          & result(res) bind(c,name='sizeofHdiagDeviceDouble') 

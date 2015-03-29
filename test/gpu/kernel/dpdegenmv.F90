@@ -208,7 +208,7 @@ program pdgenmv
     agmold => ahlg
   end select
   call desc_a%cnv(imold)
-  call a%cscnv(agpu,info)
+  call a%cscnv(agpu,info,mold=acoo)
   call agpu%cscnv(info,mold=agmold)
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info

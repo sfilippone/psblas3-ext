@@ -37,6 +37,7 @@ subroutine psb_d_hdiag_to_gpu(a,info,nzrm)
   use hdiagdev_mod
   use psb_vectordev_mod
   use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_hdiag_to_gpu
+  use psb_gpu_env_mod
 #else 
   use psb_d_hdiag_mat_mod
 #endif
@@ -45,7 +46,7 @@ subroutine psb_d_hdiag_to_gpu(a,info,nzrm)
   class(psb_d_hdiag_sparse_mat), intent(inout) :: a
   integer(psb_ipk_), intent(out)             :: info
   integer(psb_ipk_), intent(in), optional    :: nzrm
-  integer(psb_ipk_) :: m, nzm, n, c,d
+  integer(psb_ipk_) :: m, nzm, nr,nc,nza
 #ifdef HAVE_SPGPU
   type(hdiagdev_parms) :: gpu_parms
 #endif
@@ -54,21 +55,17 @@ subroutine psb_d_hdiag_to_gpu(a,info,nzrm)
 
 #ifdef HAVE_SPGPU
   ! (.not.allocated(a%data)).or.
-  if (.not.allocated(a%offset)) return
   
-  n   = size(a%data,1)
-  d   = size(a%data,2)
-  c   = a%get_ncols()
-  !allocsize = a%get_size()
-  !write(*,*) 'Create the DIAG matrix'
-  gpu_parms = FgetHdiagDeviceParams(n,c,d,a%hackSize,spgpu_type_double)
-
+  nr  = a%get_nrows()
+  nc  = a%get_ncols()
+  nza = a%get_nzeros()
   if (c_associated(a%deviceMat)) then 
      call freeHdiagDevice(a%deviceMat)
   endif
-  info       = FallocHdiagDevice(a%deviceMat,n,c,d,a%hackSize,a%data,spgpu_type_double)
-  if (info == 0)  info = &
-       & writeHdiagDevice(a%deviceMat,a%data,a%offset,n)
+  a%hackSize = psb_gpu_WarpSize()
+  write(*,*) 'Invoking FCreateHdiagDevice',nr,nc,nza,a%hackSize
+  info       = FCreateHdiagDeviceFromCoo(a%deviceMat,&
+       & a%hackSize,nr,nc,nza,a%ia,a%ja,a%val)
 !  if (info /= 0) goto 9999
 #endif
 

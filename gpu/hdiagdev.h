@@ -52,6 +52,8 @@ struct HdiagDevice
 
   int cols;
 
+  int nzeros;
+
   int diags;
 
   int hackSize;
@@ -93,6 +95,9 @@ void freeHdiagDevice(void* remoteMatrix);
 int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols, 
 		      unsigned int diags, unsigned int hackSize,
 		      double *data,unsigned int elementType);
+int  FCreateHdiagDeviceFromCooDouble(void **deviceMat, int hackSize,
+				     int nr, int nc, int nza,
+				     int *ia, int *ja, double *val);
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n);
 long long int sizeofHdiagDeviceDouble(void* deviceMat);

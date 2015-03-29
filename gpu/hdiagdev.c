@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #if defined(HAVE_SPGPU)
+#define DEBUG 1
 //new
 
 HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, unsigned int diags, unsigned int hackSize, unsigned int elementType)
@@ -144,6 +145,80 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
   return SPGPU_UNSUPPORTED;
 #endif
 }
+
+int  FCreateHdiagDeviceFromCooDouble(void **deviceMat, int hackSize,
+				     int nr, int nc, int nza,
+				     int *ia, int *ja, double *val)
+{
+  int ret, i;
+  struct HdiagDevice *tmp = (struct HdiagDevice *)malloc(sizeof(struct HdiagDevice));
+  tmp->rows = nr;
+  tmp->hackSize = hackSize;
+  tmp->cols = nc;
+  tmp->nzeros = nza;
+  tmp->hackCount = getHdiaHacksCount(tmp->hackSize, tmp->rows);
+  int *hackOffsets = (int *)calloc(tmp->hackCount+1,sizeof(int));
+  computeHdiaHackOffsetsFromCoo(&tmp->allocationHeight,
+				hackOffsets,tmp->hackSize,
+				tmp->rows,tmp->cols, tmp->nzeros,
+				ia, ja, 1);
+#ifdef DEBUG
+  fprintf(stderr,"hackcount %d  allocationHeight %d\n",tmp->hackCount,tmp->allocationHeight);
+#endif
+  double *hdiaValues = (double *) malloc(tmp->hackSize*tmp->allocationHeight*sizeof(double));
+  int *hdiaOffsets = (int*) malloc(tmp->allocationHeight*sizeof(int));
+  cooToHdia(hdiaValues,	hdiaOffsets, hackOffsets,tmp->hackSize,
+	    tmp->rows, tmp->cols, tmp->nzeros, ia, ja, val, 1,  SPGPU_TYPE_DOUBLE);
+
+  
+  ret=allocRemoteBuffer((void **)&(tmp->hdiaOffsets), tmp->allocationHeight*sizeof(int));
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->hackOffsets),
+			(tmp->hackCount+1)*sizeof(int));
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(double));
+  if (ret== SPGPU_SUCCESS)
+    ret = writeRemoteBuffer(hackOffsets,tmp->hackOffsets,
+			  (tmp->hackCount+1)*sizeof(int));
+#if DEBUG
+  fprintf(stderr,"HDIAG writing to device memory: allocationHeight %d hackCount %d\n",
+	  tmp->allocationHeight,tmp->hackCount);
+  fprintf(stderr,"HackOffsets: ");
+  for (i=0; i<tmp->hackCount+1; i++)
+    fprintf(stderr," %d",hackOffsets[i]);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"diaOffsets: ");
+  for (i=0; i<tmp->allocationHeight; i++)
+    fprintf(stderr," %d",hdiaOffsets[i]);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"values: ");
+  for (i=0; i<tmp->allocationHeight*tmp->hackSize; i++)
+    fprintf(stderr," %lf",hdiaValues[i]);
+  fprintf(stderr,"\n");
+#endif
+
+
+  free(hackOffsets);
+
+  if (ret == SPGPU_SUCCESS)
+    ret=allocRemoteBuffer((void **)&(tmp->hdiaOffsets), tmp->allocationHeight*sizeof(int));
+  if (ret== SPGPU_SUCCESS)
+    ret = writeRemoteBuffer((void*) hdiaOffsets, (void *)tmp->hdiaOffsets, 
+			tmp->allocationHeight*sizeof(int));
+  if (ret== SPGPU_SUCCESS)
+    ret  = writeRemoteBuffer((void*) hdiaValues, (void *)tmp->cM, 
+			     tmp->allocationHeight*tmp->hackSize*sizeof(double));
+  
+  free(hdiaOffsets);
+  free(hdiaValues);
+  *deviceMat = (void *) tmp;
+  if (ret !=  SPGPU_SUCCESS)
+    return SPGPU_UNSUPPORTED;    
+  else
+    return ret;  
+  
+}
+
 
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)

@@ -263,6 +263,8 @@ psb_d_diag_mold.o \
 psb_d_diag_vect_mv.o \
 psb_d_cp_hdiag_from_coo.o \
 psb_d_mv_hdiag_from_coo.o \
+psb_d_cp_hdiag_from_fmt.o \
+psb_d_mv_hdiag_from_fmt.o \
 psb_d_hdiag_to_gpu.o \
 psb_d_hdiag_csmv.o \
 psb_d_hdiag_mold.o \

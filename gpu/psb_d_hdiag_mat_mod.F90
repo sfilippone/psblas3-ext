@@ -35,7 +35,7 @@ module psb_d_hdiag_mat_mod
   use iso_c_binding
   use psb_base_mod
   use psb_d_dia_mat_mod
-  type, extends(psb_d_dia_sparse_mat) :: psb_d_hdiag_sparse_mat
+  type, extends(psb_d_coo_sparse_mat) :: psb_d_hdiag_sparse_mat
     !
 #ifdef HAVE_SPGPU
     type(c_ptr) :: deviceMat = c_null_ptr
@@ -57,9 +57,9 @@ module psb_d_hdiag_mat_mod
     ! Note: we do *not* need the TO methods, because the parent type
     ! methods will work. 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_hdiag_from_coo
-!    procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hdiag_from_fmt
+    procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hdiag_from_fmt
     procedure, pass(a) :: mv_from_coo   => psb_d_mv_hdiag_from_coo
-!    procedure, pass(a) :: mv_from_fmt   => psb_d_mv_hdiag_from_fmt
+    procedure, pass(a) :: mv_from_fmt   => psb_d_mv_hdiag_from_fmt
     procedure, pass(a) :: free          => d_hdiag_free
     procedure, pass(a) :: mold          => psb_d_hdiag_mold
     procedure, pass(a) :: to_gpu        => psb_d_hdiag_to_gpu
@@ -273,7 +273,7 @@ contains
     if (c_associated(a%deviceMat)) &
          & call freeHdiagDevice(a%deviceMat)
     a%deviceMat = c_null_ptr
-    call a%psb_d_dia_sparse_mat%free()
+    call a%psb_d_coo_sparse_mat%free()
     
     return
 
