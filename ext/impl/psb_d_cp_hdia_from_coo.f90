@@ -95,7 +95,7 @@ contains
     a%nhacks = (nr+hacksize-1)/hacksize
     nhacks   = a%nhacks
 
-    ndiag = hacksize+nc-1
+    ndiag = nr+nc-1
     if (info == psb_success_) call psb_realloc(nr,irsz,info)
     if (info == psb_success_) call psb_realloc(ndiag,d,info)
     if (info == psb_success_) call psb_realloc(ndiag,offset,info)
@@ -122,7 +122,7 @@ contains
       write(*,*) 'Loop iteration ',k,nhacks,i,ib,nr
       write(*,*) 'RW:',tmp%ia(kfirst),tmp%ia(klast1-1)
       write(*,*) 'CL:',tmp%ja(kfirst),tmp%ja(klast1-1)
-      call psi_dia_offset_from_coo(hacksize,nc,(klast1-kfirst),&
+      call psi_dia_offset_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & nd, d, offset, info, initd=.false., cleard=.true.)
       iszd = iszd + nd 
@@ -149,7 +149,7 @@ contains
       ! klast1 points to last element of chunk plus 1
       hackfirst = a%hackoffsets(k)
       hacknext  = a%hackoffsets(k+1)
-      call psi_dia_offset_from_coo(hacksize,nc,(klast1-kfirst),&
+      call psi_dia_offset_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & nd, d, a%diaOffsets(hackfirst+1:hacknext), info, &
            & initd=.true., cleard=.false.)
@@ -157,7 +157,7 @@ contains
       if (debug) write(*,*) ' Adding to nzeros: ', &
            & ib - abs(a%diaOffsets(hackfirst+1:hacknext))
       a%nzeros = a%nzeros + sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
-      call psi_d_xtr_dia_from_coo(hacksize,nc,(klast1-kfirst),&
+      call psi_d_xtr_dia_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & tmp%val(kfirst:klast1-1), &
            & d,hacksize,(hacknext-hackfirst),&
