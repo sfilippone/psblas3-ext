@@ -164,8 +164,8 @@ contains
            & a%val((hacksize*hackfirst)+1:hacksize*hacknext),info,&
            & initdata=.true.,rdisp=(i-1))
           
-      call cleand(hacksize,(hacknext-hackfirst),d,a%diaOffsets(hackfirst+1:hacknext))
-
+      call cleand(nr,(hacknext-hackfirst),d,a%diaOffsets(hackfirst+1:hacknext))
+      
     end do
     if (debug) then 
       write(*,*) 'NZEROS: ',a%nzeros, nza
