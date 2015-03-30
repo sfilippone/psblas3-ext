@@ -45,7 +45,7 @@ subroutine psb_d_mv_hdia_from_coo(a,b,info)
 
   info = psb_success_
 
-  call b%fix(info)
+  if (.not.(b%is_by_rows())) call b%fix(info)
   if (info /= psb_success_) return
  
   call a%cp_from_coo(b,info)

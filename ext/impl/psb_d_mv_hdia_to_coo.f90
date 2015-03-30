@@ -45,35 +45,8 @@ subroutine psb_d_mv_hdia_to_coo(a,b,info)
 
   info = psb_success_
 
-  nr  = a%get_nrows()
-  nc  = a%get_ncols()
-  nza = a%get_nzeros()
-
-  b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
-
-  call psb_realloc(nza,b%ia,info)
-  if (info == 0)   call psb_realloc(nza,b%ja,info)
-  if (info /= 0) goto 9999
-  if (info == 0) call psb_realloc(nza,b%val,info)
-  if (info /= 0) goto 9999
-  
-  ! k=0
-  ! do i=1,size(a%data,1)
-  !    do j=1,size(a%data,2)
-  !       if(a%data(i,j) /= 0) then
-  !          k = k+1
-  !          b%ia(k) = i
-  !          b%ja(k) = i+a%offset(j)
-  !          b%val(k) = a%data(i,j)
-  !       endif
-  !    enddo
-  ! enddo
-
-  ! deallocate(a%data, a%offset,stat=info)
-
+  call a%cp_to_coo(b,info)
   call a%free()
-  call b%set_nzeros(nza)
-  call b%fix(info)
   return
 
 9999 continue

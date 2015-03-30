@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #if defined(HAVE_SPGPU)
-#define DEBUG 1
+#define DEBUG 0
 //new
 
 HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, unsigned int diags, unsigned int hackSize, unsigned int elementType)

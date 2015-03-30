@@ -56,7 +56,6 @@ contains
   ! Input:
   !   nr,nc,nz,ia,ja
   ! Output:
-  !    nrd: Number of nonzero entries in the fullest diagonal
   !     nd: number of nonzero diagonals
   !      d: d(k) contains the index inside offset of diagonal k,
   !         which is, if A(I,J) /= 0 then K=NR+J-I, or (optionally) 0.
@@ -76,7 +75,8 @@ contains
   ! would  need to zero the whole vector, resulting in a quadratic overall cost. 
   !
   !
-  subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nd,d,offset,info,initd,cleard) 
+  subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nd,d,offset,info,&
+       & initd,cleard) 
     use psb_base_mod
     
     implicit none 
@@ -91,14 +91,14 @@ contains
     type(psb_int_heap)             :: heap
     integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag, id
     logical                        :: initd_, cleard_
-    character(len=20)              :: name
+     character(len=20)              :: name
     
     info = psb_success_
     initd_ = .true.
     if (present(initd)) initd_ = initd
     cleard_ = .false.
     if (present(cleard)) cleard_ = cleard
-
+ 
     if (initd_) d(:) = 0 
     
     ndiag = nr+nc-1  

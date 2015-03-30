@@ -52,7 +52,7 @@ program pdgenmv
   real(psb_dpk_) :: t1, t2, tprec, flops, tflops, tt1, tt2, bdwdth
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a
+  type(psb_dspmat_type) :: a, atemp
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
@@ -156,7 +156,9 @@ program pdgenmv
     call psb_error()
     stop
   end if
-
+  call a%print('ahdia.mtx',head='Test to/from hdia')
+   
+  
   call xv%set(done)
   nr       = desc_a%get_local_rows() 
 

@@ -43,6 +43,9 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
 
   character :: trans_
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc,nr,nc
+  integer(psb_ipk_)  :: irs,ics, nmx, ni
+  integer(psb_ipk_)  :: nhacks, hacksize,maxnzhack, ncd,ib, nzhack, &
+       & hackfirst, hacknext
   real(psb_dpk_)    :: acc
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
@@ -57,10 +60,10 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
     call psb_errpush(info,name)
     goto 9999
   endif
-
-    n = a%get_ncols()
-    m = a%get_nrows()
-
+  
+  n = a%get_ncols()
+  m = a%get_nrows()
+  
   if (size(x,1)<n) then 
     info = 36
     call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
@@ -73,20 +76,23 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
     goto 9999
   end if
 
-  if (beta == dzero) then
-     do i = 1, m
-        y(i) = dzero
-     enddo
-  else
-     do  i = 1, m
-        y(i) = beta*y(i)
-     end do
-  endif
-
-  do i=1,a%nblocks
-     call psb_d_hdia_csmv_inner(m,n,alpha,size(a%hdia(i)%data,1),&
-          & size(a%hdia(i)%data,2),a%hdia(i)%data,a%offset(i)%off,x,beta,y,i)
-  enddo
+  nhacks   = a%nhacks
+  hacksize = a%hacksize
+  
+  do k=1, nhacks
+    i = (k-1)*hacksize + 1
+    ib = min(hacksize,m-i+1) 
+    hackfirst = a%hackoffsets(k)
+    hacknext  = a%hackoffsets(k+1)
+    ncd = hacknext-hackfirst
+    
+    call psi_d_inner_dia_csmv(ib,&
+         & alpha,hacksize,ncd,&
+         & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
+         & a%diaOffsets(hackfirst+1:hacknext),x,beta,y(i:),info,rdisp=(i-1))
+  end do
+    
+  
   
   call psb_erractionrestore(err_act)
   return
@@ -96,46 +102,41 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
 
 contains
 
-  subroutine psb_d_hdia_csmv_inner(m,n,alpha,nr,nc,data,off,&
-       &x,beta,y,bl) 
-    integer(psb_ipk_), intent(in)   :: m,n,nr,nc,off(:),bl
-    real(psb_dpk_), intent(in)     :: alpha, beta, x(:),data(:,:)
-    real(psb_dpk_), intent(inout)  :: y(:)
+  subroutine psi_d_inner_dia_csmv(m,alpha,nr,nc,data,offsets,&
+       &x,beta,y,info,rdisp) 
+    implicit none 
+    integer(psb_ipk_), intent(in)  :: m,nr,nc,offsets(*)
+    integer(psb_ipk_)              :: rdisp, info
+    real(psb_dpk_), intent(in)     :: alpha, beta, x(*),data(nr,nc)
+    real(psb_dpk_), intent(inout)  :: y(*)
+        
 
-    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2,jump
+    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
     real(psb_dpk_)   :: acc(4) 
     
-    jump = a%hack*(bl-1)
-
-    do j=1,nc
-       if (off(j) > 0) then 
-
-          ir1 = 1
-          ir2 = n - off(j) - jump
-
-          if(ir2 > a%hack) then
-             ir2 = a%hack
-          endif
-       else
-          ir1 = 1 - off(j) - jump
-          ir2 = a%hack
-                
-          if(ir2+jump>m) then
-             ir2 = m - jump
-          endif
-          
-          if(ir1<=0)then
-             ir1=1
-          endif
-
-       end if
-
-       do i=ir1,ir2
-             y(i+jump) = y(i+jump) + alpha*data(i,j)*x((i+jump)+off(j))
-       enddo
-
-    enddo
-    
-  end subroutine psb_d_hdia_csmv_inner
+    if (beta == dzero) then
+      do i = 1, m
+        y(i) = dzero
+      enddo
+    else
+      do  i = 1, m
+        y(i) = beta*y(i)
+      end do
+    endif
+    do j=1, nc
+      if (offsets(j)>=0) then 
+        ir1 = 1
+        ir2 = m - offsets(j)
+      else
+        ir1 = 1 - offsets(j)
+        ir2 = m 
+      end if
+      jc = ir1 + rdisp + offsets(j)
+      do i=ir1,ir2 
+        y(i) = y(i) + alpha*data(i,j)*x(jc)
+        jc = jc + 1 
+      enddo
+    end do
+  end subroutine psi_d_inner_dia_csmv
 
 end subroutine psb_d_hdia_csmv

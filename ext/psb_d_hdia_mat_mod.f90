@@ -33,28 +33,23 @@ module psb_d_hdia_mat_mod
 
   use psb_d_base_mat_mod
 
-  type psb_d_pm
-     real(psb_dpk_), allocatable  :: data(:,:)
-  end type psb_d_pm
-
-  type psb_d_po
-     integer(psb_ipk_), allocatable  :: off(:)
-  end type psb_d_po
 
   type, extends(psb_d_base_sparse_mat) :: psb_d_hdia_sparse_mat
     !
-    ! HDIA format, extended.
+    ! HDIA format
     !
+    integer(psb_ipk_), allocatable :: hackOffsets(:), diaOffsets(:)
+    real(psb_dpk_), allocatable    :: val(:)
     
-    type(psb_d_pm), allocatable :: hdia(:)
-    type(psb_d_po), allocatable :: offset(:)
-    integer(psb_ipk_) :: nblocks, nzeros
-    integer(psb_ipk_) :: hack = 64
+    
+    integer(psb_ipk_) :: nhacks, nzeros
+    integer(psb_ipk_) :: hacksize = 32
     integer(psb_long_int_k_) :: dim=0
 
   contains
     ! procedure, pass(a) :: get_size     => d_hdia_get_size
     procedure, pass(a) :: get_nzeros   => d_hdia_get_nzeros
+    procedure, pass(a) :: set_nzeros   => d_hdia_set_nzeros
     procedure, nopass  :: get_fmt      => d_hdia_get_fmt
     procedure, pass(a) :: sizeof       => d_hdia_sizeof
     ! procedure, pass(a) :: csmm         => psb_d_hdia_csmm
@@ -93,7 +88,7 @@ module psb_d_hdia_mat_mod
 
   end type psb_d_hdia_sparse_mat
 
-  private :: d_hdia_get_nzeros, d_hdia_free,  d_hdia_get_fmt, &
+  private :: d_hdia_get_nzeros, d_hdia_set_nzeros, d_hdia_free,  d_hdia_get_fmt, &
        & d_hdia_get_size, d_hdia_sizeof, d_hdia_get_nz_row
 
   interface
@@ -421,22 +416,17 @@ contains
 
   
    function d_hdia_sizeof(a) result(res)
+     use psb_realloc_mod, only : psb_size
      implicit none 
      class(psb_d_hdia_sparse_mat), intent(in) :: a
      integer(psb_long_int_k_) :: res
      integer(psb_ipk_) :: i
 
      res = 0
-
-     if(a%dim==0.and.allocated(a%hdia)) then
-        do i=1,a%nblocks
-           res = res + (size(a%hdia(i)%data,1) + size(a%hdia(i)%data,2))*psb_sizeof_dp
-           res = res + size(a%offset(i)%off)*psb_sizeof_int
-        enddo
-     else
-        !Dim is set during cp_hdia_from_coo
-        res = a%dim
-     endif
+     
+     res = res + psb_size(a%hackOffsets)*psb_sizeof_int
+     res = res + psb_size(a%diaOffsets)*psb_sizeof_int
+     res = res + psb_size(a%val)*psb_sizeof_dp
 
    end function d_hdia_sizeof
 
@@ -452,6 +442,12 @@ contains
     integer(psb_ipk_) :: res
     res = a%nzeros
   end function d_hdia_get_nzeros
+  subroutine  d_hdia_set_nzeros(a,nz) 
+    implicit none 
+    class(psb_d_hdia_sparse_mat), intent(inout) :: a
+    integer(psb_ipk_), intent(in) :: nz
+    a%nzeros = nz
+  end subroutine d_hdia_set_nzeros
 
   ! function d_hdia_get_size(a) result(res)
   !   implicit none 
@@ -512,21 +508,16 @@ contains
     implicit none 
 
     class(psb_d_hdia_sparse_mat), intent(inout) :: a
-    integer(psb_ipk_) :: i
+    integer(psb_ipk_) :: i,info
 
-    if(allocated(a%hdia)) then
-       do i=1,a%nblocks
-          deallocate(a%hdia(i)%data)
-       enddo
-       deallocate(a%hdia)
-    endif
-
-    if(allocated(a%offset)) then
-       do i=1,a%nblocks
-          deallocate(a%offset(i)%off)
-       enddo
-       deallocate(a%offset)
-    endif
+    
+    if (allocated(a%hackOffsets))&
+         &  deallocate(a%hackOffsets,stat=info)
+    if (allocated(a%diaOffsets))&
+         &  deallocate(a%diaOffsets,stat=info)
+    if (allocated(a%val))&
+         &  deallocate(a%val,stat=info)
+    a%nhacks=0
 
     call a%set_null()
     call a%set_nrows(0)

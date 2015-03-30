@@ -20,8 +20,6 @@ psb_c_cp_ell_from_coo.o \
 psb_c_cp_ell_from_fmt.o \
 psb_c_cp_ell_to_coo.o \
 psb_c_cp_ell_to_fmt.o \
-psb_c_cp_hdia_from_coo.o \
-psb_c_cp_hdia_to_coo.o \
 psb_c_cp_hll_from_coo.o \
 psb_c_cp_hll_from_fmt.o \
 psb_c_cp_hll_to_coo.o \
@@ -67,10 +65,6 @@ psb_c_ell_rowsum.o \
 psb_c_ell_scal.o \
 psb_c_ell_scals.o \
 psb_c_ell_trim.o \
-psb_c_hdia_allocate_mnnz.o \
-psb_c_hdia_csmv.o \
-psb_c_hdia_mold.o \
-psb_c_hdia_print.o \
 psb_c_hll_aclsum.o \
 psb_c_hll_allocate_mnnz.o \
 psb_c_hll_arwsum.o \
@@ -99,8 +93,6 @@ psb_c_mv_ell_from_coo.o \
 psb_c_mv_ell_from_fmt.o \
 psb_c_mv_ell_to_coo.o \
 psb_c_mv_ell_to_fmt.o \
-psb_c_mv_hdia_from_coo.o \
-psb_c_mv_hdia_to_coo.o \
 psb_c_mv_hll_from_coo.o \
 psb_c_mv_hll_from_fmt.o \
 psb_c_mv_hll_to_coo.o \
@@ -202,8 +194,6 @@ psb_s_cp_ell_from_coo.o \
 psb_s_cp_ell_from_fmt.o \
 psb_s_cp_ell_to_coo.o \
 psb_s_cp_ell_to_fmt.o \
-psb_s_cp_hdia_from_coo.o \
-psb_s_cp_hdia_to_coo.o \
 psb_s_cp_hll_from_coo.o \
 psb_s_cp_hll_from_fmt.o \
 psb_s_cp_hll_to_coo.o \
@@ -249,10 +239,6 @@ psb_s_ell_rowsum.o \
 psb_s_ell_scal.o \
 psb_s_ell_scals.o \
 psb_s_ell_trim.o \
-psb_s_hdia_allocate_mnnz.o \
-psb_s_hdia_csmv.o \
-psb_s_hdia_mold.o \
-psb_s_hdia_print.o \
 psb_s_hll_aclsum.o \
 psb_s_hll_allocate_mnnz.o \
 psb_s_hll_arwsum.o \
@@ -281,8 +267,6 @@ psb_s_mv_ell_from_coo.o \
 psb_s_mv_ell_from_fmt.o \
 psb_s_mv_ell_to_coo.o \
 psb_s_mv_ell_to_fmt.o \
-psb_s_mv_hdia_from_coo.o \
-psb_s_mv_hdia_to_coo.o \
 psb_s_mv_hll_from_coo.o \
 psb_s_mv_hll_from_fmt.o \
 psb_s_mv_hll_to_coo.o \
@@ -293,8 +277,6 @@ psb_z_cp_ell_from_coo.o \
 psb_z_cp_ell_from_fmt.o \
 psb_z_cp_ell_to_coo.o \
 psb_z_cp_ell_to_fmt.o \
-psb_z_cp_hdia_from_coo.o \
-psb_z_cp_hdia_to_coo.o \
 psb_z_cp_hll_from_coo.o \
 psb_z_cp_hll_from_fmt.o \
 psb_z_cp_hll_to_coo.o \
@@ -340,10 +322,6 @@ psb_z_ell_rowsum.o \
 psb_z_ell_scal.o \
 psb_z_ell_scals.o \
 psb_z_ell_trim.o \
-psb_z_hdia_allocate_mnnz.o \
-psb_z_hdia_csmv.o \
-psb_z_hdia_mold.o \
-psb_z_hdia_print.o \
 psb_z_hll_aclsum.o \
 psb_z_hll_allocate_mnnz.o \
 psb_z_hll_arwsum.o \
@@ -372,8 +350,6 @@ psb_z_mv_ell_from_coo.o \
 psb_z_mv_ell_from_fmt.o \
 psb_z_mv_ell_to_coo.o \
 psb_z_mv_ell_to_fmt.o \
-psb_z_mv_hdia_from_coo.o \
-psb_z_mv_hdia_to_coo.o \
 psb_z_mv_hll_from_coo.o \
 psb_z_mv_hll_from_fmt.o \
 psb_z_mv_hll_to_coo.o \
@@ -385,6 +361,7 @@ psi_z_convert_hll_from_coo.o \
 psi_s_xtr_dia_from_coo.o \
 psi_c_xtr_dia_from_coo.o \
 psi_d_xtr_dia_from_coo.o \
+psi_d_xtr_coo_from_dia.o \
 psi_z_xtr_dia_from_coo.o \
 psi_s_convert_dia_from_coo.o \
 psi_c_convert_dia_from_coo.o \
