@@ -62,14 +62,14 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
     ib = min(hacksize,nr-i+1) 
     hackfirst = a%hackoffsets(k)
     hacknext  = a%hackoffsets(k+1)
-    call psi_d_xtr_coo_from_dia(ib,&
-           & b%ia(j+1:), b%ja(j+1:), b%val(j+1:), &
+    call psi_d_xtr_coo_from_dia(nr,nc,&
+           & b%ia(j+1:), b%ja(j+1:), b%val(j+1:), nzd, &
            & hacksize,(hacknext-hackfirst),&
            & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
            & a%diaOffsets(hackfirst+1:hacknext),info,rdisp=(i-1))
 !!$    write(*,*) 'diaoffsets',ib,' : ',ib - abs(a%diaOffsets(hackfirst+1:hacknext))
 !!$    write(*,*) 'sum',ib,j,' : ',sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
-    j = j + sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
+    j = j + nzd
   end do
   if (nza /= j) then 
     write(*,*) 'Wrong counts in hdia_to_coo',j,nza

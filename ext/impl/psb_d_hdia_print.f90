@@ -92,13 +92,13 @@ subroutine psb_d_hdia_print(iout,a,iv,head,ivr,ivc)
     hacknext  = a%hackoffsets(k+1)
     ncd = hacknext-hackfirst
     
-    call psi_d_xtr_coo_from_dia(ib,&
-           & ia, ja, val, &
+    call psi_d_xtr_coo_from_dia(nr,nc,&
+           & ia, ja, val, nzhack,&
            & hacksize,ncd,&
            & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
            & a%diaOffsets(hackfirst+1:hacknext),info,rdisp=(i-1))
-    nzhack = sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
-
+    !nzhack = sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
+    
     if(present(iv)) then 
       do j=1,nzhack
         write(iout,frmtv) iv(ia(j)),iv(ja(j)),val(j)

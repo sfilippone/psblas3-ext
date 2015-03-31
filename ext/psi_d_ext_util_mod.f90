@@ -50,13 +50,14 @@ module psi_d_ext_util_mod
   end interface
 
   interface psi_xtr_coo_from_dia
-    subroutine psi_d_xtr_coo_from_dia(nr,ia,ja,val,nrd,ncd,data,offsets,info,rdisp)    
+    subroutine psi_d_xtr_coo_from_dia(nr,nc,ia,ja,val,nz,nrd,ncd,data,offsets,&
+         & info,rdisp)
       import :: psb_ipk_, psb_dpk_
       
       implicit none 
       
-      integer(psb_ipk_), intent(in)    :: nr, nrd,ncd, offsets(:) 
-      integer(psb_ipk_), intent(inout) :: ia(:), ja(:)
+      integer(psb_ipk_), intent(in)    :: nr,nc, nrd,ncd, offsets(:) 
+      integer(psb_ipk_), intent(inout) :: ia(:), ja(:), nz
       real(psb_dpk_),    intent(inout) :: val(:)
       real(psb_dpk_),    intent(in)    :: data(nrd,ncd)
       integer(psb_ipk_), intent(out)   :: info

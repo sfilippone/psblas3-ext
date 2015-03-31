@@ -63,6 +63,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   return
 
 9999 continue
+
   info = psb_err_alloc_dealloc_
   return
 
@@ -81,10 +82,10 @@ contains
     integer(psb_ipk_)              :: ndiag,mi,mj,dm,bi,w
     integer(psb_ipk_),allocatable  :: d(:), offset(:), irsz(:) 
     integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd,nd,hacksize,nhacks,iszd,&
-         &  ib, ir, kfirst, klast1, hackfirst, hacknext
+         &  ib, ir, kfirst, klast1, hackfirst, hacknext, nzout
     integer(psb_ipk_)              :: debug_level, debug_unit
     character(len=20)              :: name
-    logical, parameter :: debug=.true. 
+    logical, parameter :: debug=.false. 
     nr  = tmp%get_nrows()
     nc  = tmp%get_ncols()
     nza = tmp%get_nzeros()
@@ -119,9 +120,11 @@ contains
       kfirst = klast1 
       klast1 = kfirst + sum(irsz(i:i+ib-1))
       ! klast1 points to last element of chunk plus 1
-      write(*,*) 'Loop iteration ',k,nhacks,i,ib,nr
-      write(*,*) 'RW:',tmp%ia(kfirst),tmp%ia(klast1-1)
-      write(*,*) 'CL:',tmp%ja(kfirst),tmp%ja(klast1-1)
+      if (debug) then 
+        write(*,*) 'Loop iteration ',k,nhacks,i,ib,nr
+        write(*,*) 'RW:',tmp%ia(kfirst),tmp%ia(klast1-1)
+        write(*,*) 'CL:',tmp%ja(kfirst),tmp%ja(klast1-1)
+      end if
       call psi_dia_offset_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & nd, d, offset, info, initd=.false., cleard=.true.)
@@ -152,11 +155,8 @@ contains
       call psi_dia_offset_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & nd, d, a%diaOffsets(hackfirst+1:hacknext), info, &
-           & initd=.true., cleard=.false.)
+           & initd=.false., cleard=.false.)
       if (debug) write(*,*) 'Out from dia_offset: ', a%diaOffsets(hackfirst+1:hacknext)
-      if (debug) write(*,*) ' Adding to nzeros: ', &
-           & ib - abs(a%diaOffsets(hackfirst+1:hacknext))
-      a%nzeros = a%nzeros + sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
       call psi_d_xtr_dia_from_coo(nr,nc,(klast1-kfirst),&
            & tmp%ia(kfirst:klast1-1), tmp%ja(kfirst:klast1-1),&
            & tmp%val(kfirst:klast1-1), &
@@ -164,6 +164,9 @@ contains
            & a%val((hacksize*hackfirst)+1:hacksize*hacknext),info,&
            & initdata=.true.,rdisp=(i-1))
           
+      call countnz(nr,nc,(i-1),hacksize,(hacknext-hackfirst),&
+           & a%diaOffsets(hackfirst+1:hacknext),nzout)
+      a%nzeros = a%nzeros + nzout
       call cleand(nr,(hacknext-hackfirst),d,a%diaOffsets(hackfirst+1:hacknext))
       
     end do
@@ -172,16 +175,39 @@ contains
       write(*,*) 'diaoffsets: ',a%diaOffsets(1:iszd)
       write(*,*) 'values: '
       j=0
-!!$      do k=1,nhacks
-!!$        write(*,*) 'Hack No. ',k
-!!$        do i=1,hacksize*(iszd/nhacks)
-!!$          j = j + 1
-!!$          write(*,*) j, a%val(j)
-!!$        end do
-!!$      end do
+      do k=1,nhacks
+        write(*,*) 'Hack No. ',k
+        do i=1,hacksize*(iszd/nhacks)
+          j = j + 1
+          write(*,*) j, a%val(j)
+        end do
+      end do
     end if
   end subroutine inner_cp_hdia_from_coo
-
+  
+  subroutine countnz(nr,nc,rdisp,nrd,ncd,offsets,nz)
+    implicit none 
+    integer(psb_ipk_), intent(in)  :: nr,nc,nrd,ncd,rdisp,offsets(:)
+    integer(psb_ipk_), intent(out) :: nz
+    !
+    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2, nrcmdisp, rdisp1    
+    nz = 0 
+    nrcmdisp = min(nr-rdisp,nc-rdisp) 
+    rdisp1   = 1-rdisp
+    do j=1, ncd
+      if (offsets(j)>=0) then 
+        ir1 = 1
+        ! ir2 = min(nrd,nr - offsets(j) - rdisp_,nc-offsets(j)-rdisp_)
+        ir2 = min(nrd, nrcmdisp - offsets(j))
+      else
+        ! ir1 = max(1,1-offsets(j)-rdisp_) 
+        ir1 = max(1, rdisp1 - offsets(j))
+        ir2 = min(nrd, nrcmdisp) 
+      end if
+      nz = nz + (ir2-ir1+1)
+    end do
+  end subroutine countnz
+  
   subroutine cleand(nr,nd,d,offset)
     implicit none 
     integer(psb_ipk_), intent(in)    :: nr,nd,offset(:)

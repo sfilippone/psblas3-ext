@@ -56,6 +56,7 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
   info = psb_success_
 
   if (.not.a%is_asb()) then 
+    write(*,*) 'A is not assembled??'
     info = psb_err_invalid_mat_state_
     call psb_errpush(info,name)
     goto 9999
@@ -86,10 +87,11 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
     hacknext  = a%hackoffsets(k+1)
     ncd = hacknext-hackfirst
     
-    call psi_d_inner_dia_csmv(ib,&
+    call psi_d_inner_dia_csmv(m,n,&
          & alpha,hacksize,ncd,&
          & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
-         & a%diaOffsets(hackfirst+1:hacknext),x,beta,y(i:),info,rdisp=(i-1))
+         & a%diaOffsets(hackfirst+1:hacknext),x,beta,y,info,rdisp=(i-1))
+
   end do
     
   
@@ -102,38 +104,43 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
 
 contains
 
-  subroutine psi_d_inner_dia_csmv(m,alpha,nr,nc,data,offsets,&
-       &x,beta,y,info,rdisp) 
+  subroutine psi_d_inner_dia_csmv(nr,nc,alpha,nrd,ncd,data,offsets,&
+       & x,beta,y,info,rdisp) 
     implicit none 
-    integer(psb_ipk_), intent(in)  :: m,nr,nc,offsets(*)
+    integer(psb_ipk_), intent(in)  :: nr,nc,nrd,ncd,offsets(*)
     integer(psb_ipk_)              :: rdisp, info
-    real(psb_dpk_), intent(in)     :: alpha, beta, x(*),data(nr,nc)
+    real(psb_dpk_), intent(in)     :: alpha, beta, x(*),data(nrd,ncd)
     real(psb_dpk_), intent(inout)  :: y(*)
         
 
-    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2
+    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2, nrcmdisp, rdisp1
     real(psb_dpk_)   :: acc(4) 
     
+    info = 0
+    nrcmdisp = min(nr-rdisp,nc-rdisp) 
+    rdisp1   = 1-rdisp
     if (beta == dzero) then
-      do i = 1, m
-        y(i) = dzero
+      do i = 1, min(nrd,nr-rdisp)
+        y(rdisp+i) = dzero
       enddo
     else
-      do  i = 1, m
-        y(i) = beta*y(i)
+      do  i = 1, min(nrd,nr-rdisp)
+        y(rdisp+i) = beta*y(i)
       end do
     endif
-    do j=1, nc
+    do j=1, ncd
       if (offsets(j)>=0) then 
         ir1 = 1
-        ir2 = m - offsets(j)
+        ! ir2 = min(nrd,nr - offsets(j) - rdisp_,nc-offsets(j)-rdisp_)
+        ir2 = min(nrd, nrcmdisp - offsets(j))
       else
-        ir1 = 1 - offsets(j)
-        ir2 = m 
+        ! ir1 = max(1,1-offsets(j)-rdisp_) 
+        ir1 = max(1, rdisp1 - offsets(j))
+        ir2 = min(nrd, nrcmdisp) 
       end if
       jc = ir1 + rdisp + offsets(j)
       do i=ir1,ir2 
-        y(i) = y(i) + alpha*data(i,j)*x(jc)
+        y(rdisp+i) = y(rdisp+i) + alpha*data(i,j)*x(jc)
         jc = jc + 1 
       enddo
     end do

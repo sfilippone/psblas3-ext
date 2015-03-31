@@ -63,7 +63,7 @@ subroutine psi_d_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,&
     ir = ia(i) 
     k  = ja(i) - ir
     ic = d(nr+k)
-    if (debug) write(0,*) 'loop xtr_dia_from_coo ',i,' :',ir,k,nr+k,ic  
+    if (debug) write(0,*) 'loop xtr_dia_from_coo :',ia(i),ja(i),k,ir-rdisp_,ic
     data(ir-rdisp_,ic) = val(i)
   enddo
 
