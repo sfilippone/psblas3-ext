@@ -34,21 +34,19 @@ subroutine psi_d_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,&
   use psb_base_mod, only : psb_ipk_, psb_success_, psb_dpk_, dzero
 
   implicit none 
-
   integer(psb_ipk_), intent(in)  :: nr, nc, nz, nrd,ncd,ia(:), ja(:), d(:)
   real(psb_dpk_),    intent(in)  :: val(:)
   real(psb_dpk_),    intent(out) :: data(nrd,ncd)
   integer(psb_ipk_), intent(out) :: info
   logical, intent(in), optional  :: initdata
   integer(psb_ipk_), intent(in), optional :: rdisp
-      
+
   !locals
-  logical           :: initdata_
+  logical                        :: initdata_
   integer(psb_ipk_) :: rdisp_
   integer(psb_ipk_) :: i,ir,ic,k
   logical, parameter :: debug=.false.
 
-  info = psb_success_
   info = psb_success_
   initdata_ = .true.
   if (present(initdata)) initdata_ = initdata

@@ -28,9 +28,8 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
 
-subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info) 
+subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
   use psb_d_hdia_mat_mod, psb_protect_name => psb_d_hdia_csmv
@@ -39,14 +38,13 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
   real(psb_dpk_), intent(in)        :: alpha, beta, x(:)
   real(psb_dpk_), intent(inout)     :: y(:)
   integer(psb_ipk_), intent(out)     :: info
-  !character, optional, intent(in)    :: trans
+  character, optional, intent(in)    :: trans
 
   character :: trans_
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc,nr,nc
   integer(psb_ipk_)  :: irs,ics, nmx, ni
   integer(psb_ipk_)  :: nhacks, hacksize,maxnzhack, ncd,ib, nzhack, &
        & hackfirst, hacknext
-  real(psb_dpk_)    :: acc
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_hdia_csmv'
@@ -56,14 +54,30 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
   info = psb_success_
 
   if (.not.a%is_asb()) then 
-    write(*,*) 'A is not assembled??'
     info = psb_err_invalid_mat_state_
     call psb_errpush(info,name)
     goto 9999
   endif
-  
-  n = a%get_ncols()
-  m = a%get_nrows()
+
+  if (present(trans)) then
+    trans_ = trans
+  else
+    trans_ = 'N'
+  end if
+
+
+  tra  = (psb_toupper(trans_) == 'T')
+  ctra = (psb_toupper(trans_) == 'C')
+  if (tra.or.ctra) then 
+    m = a%get_ncols()
+    n = a%get_nrows()
+    info = psb_err_transpose_not_n_unsupported_
+    call psb_errpush(info,name)
+    goto 9999
+  else
+    n = a%get_ncols()
+    m = a%get_nrows()
+  end if
   
   if (size(x,1)<n) then 
     info = 36
@@ -114,7 +128,6 @@ contains
         
 
     integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2, nrcmdisp, rdisp1
-    real(psb_dpk_)   :: acc(4) 
     
     info = 0
     nrcmdisp = min(nr-rdisp,nc-rdisp) 
@@ -131,10 +144,10 @@ contains
     do j=1, ncd
       if (offsets(j)>=0) then 
         ir1 = 1
-        ! ir2 = min(nrd,nr - offsets(j) - rdisp_,nc-offsets(j)-rdisp_)
+        !  min(nrd,nr - offsets(j) - rdisp_,nc-offsets(j)-rdisp_)
         ir2 = min(nrd, nrcmdisp - offsets(j))
       else
-        ! ir1 = max(1,1-offsets(j)-rdisp_) 
+        !  max(1,1-offsets(j)-rdisp_) 
         ir1 = max(1, rdisp1 - offsets(j))
         ir2 = min(nrd, nrcmdisp) 
       end if

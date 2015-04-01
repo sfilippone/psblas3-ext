@@ -41,7 +41,7 @@ subroutine psb_d_cp_dia_to_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  integer(psb_ipk_)   :: i, j, k,nr,nza,nc
+  integer(psb_ipk_)   :: i, j, k,nr,nza,nc, nzd
 
   info = psb_success_
 
@@ -51,18 +51,12 @@ subroutine psb_d_cp_dia_to_coo(a,b,info)
 
   call b%allocate(nr,nc,nza)
   b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
-  k=0
-  do i=1,size(a%data,1)
-     do j=1,size(a%data,2)
-        if(a%data(i,j) /= 0) then
-           k = k+1
-           b%ia(k) = i
-           b%ja(k) = i+a%offset(j)
-           b%val(k) = a%data(i,j)
-        endif
-     enddo
-  enddo
 
+  call psi_d_xtr_coo_from_dia(nr,nc,&
+       & b%ia, b%ja, b%val, nzd, &
+       & size(a%data,1),size(a%data,2),&
+       & a%data,a%offset,info)
+  
   call b%set_nzeros(nza)
   call b%fix(info)
 

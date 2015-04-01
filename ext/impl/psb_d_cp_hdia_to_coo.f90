@@ -54,6 +54,7 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
   call b%allocate(nr,nc,nza)
   b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
   call b%set_nzeros(nza)
+  call b%set_sort_status(psb_unsorted_)
   nhacks   = a%nhacks
   hacksize = a%hacksize
   j = 0 

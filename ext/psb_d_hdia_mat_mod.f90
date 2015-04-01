@@ -39,7 +39,7 @@ module psb_d_hdia_mat_mod
     ! HDIA format
     !
     integer(psb_ipk_), allocatable :: hackOffsets(:), diaOffsets(:)
-    real(psb_dpk_), allocatable    :: val(:)
+    real(psb_dpk_), allocatable   :: val(:)
     
     
     integer(psb_ipk_) :: nhacks, nzeros
@@ -70,13 +70,13 @@ module psb_d_hdia_mat_mod
     procedure, pass(a) :: cp_to_coo    => psb_d_cp_hdia_to_coo
     procedure, pass(a) :: cp_from_coo  => psb_d_cp_hdia_from_coo
     ! procedure, pass(a) :: cp_to_fmt    => psb_d_cp_hdia_to_fmt
- !   procedure, pass(a) :: cp_from_fmt  => psb_d_cp_hdia_from_fmt
+    !   procedure, pass(a) :: cp_from_fmt  => psb_d_cp_hdia_from_fmt
     procedure, pass(a) :: mv_to_coo    => psb_d_mv_hdia_to_coo
     procedure, pass(a) :: mv_from_coo  => psb_d_mv_hdia_from_coo
     ! procedure, pass(a) :: mv_to_fmt    => psb_d_mv_hdia_to_fmt
-!    procedure, pass(a) :: mv_from_fmt  => psb_d_mv_hdia_from_fmt
+    !    procedure, pass(a) :: mv_from_fmt  => psb_d_mv_hdia_from_fmt
     ! procedure, pass(a) :: csput_a        => psb_d_hdia_csput_a
-    ! procedure, pass(a) :: get_hdiag     => psb_d_hdia_get_hdiag
+    ! procedure, pass(a) :: get_diag     => psb_d_hdia_get_diag
     ! procedure, pass(a) :: csgetptn     => psb_d_hdia_csgetptn
     ! procedure, pass(a) :: csgetrow     => psb_d_hdia_csgetrow
     ! procedure, pass(a) :: get_nz_row   => d_hdia_get_nz_row
@@ -88,31 +88,33 @@ module psb_d_hdia_mat_mod
 
   end type psb_d_hdia_sparse_mat
 
-  private :: d_hdia_get_nzeros, d_hdia_set_nzeros, d_hdia_free,  d_hdia_get_fmt, &
-       & d_hdia_get_size, d_hdia_sizeof, d_hdia_get_nz_row
+  private :: d_hdia_get_nzeros, d_hdia_set_nzeros, d_hdia_free, &
+       & d_hdia_get_fmt, d_hdia_sizeof 
+!!$  &
+!!$       & d_hdia_get_nz_row d_hdia_get_size, 
 
-  interface
-    subroutine  psb_d_hdia_reallocate_nz(nz,a) 
-      import :: psb_d_hdia_sparse_mat, psb_ipk_
-      integer(psb_ipk_), intent(in) :: nz
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_hdia_reallocate_nz
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_reinit(a,clear)
-      import :: psb_d_hdia_sparse_mat
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a   
-      logical, intent(in), optional :: clear
-    end subroutine psb_d_hdia_reinit
-  end interface
-  
-  interface
-    subroutine  psb_d_hdia_trim(a)
-      import :: psb_d_hdia_sparse_mat
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_hdia_trim
-  end interface
+!!$  interface
+!!$    subroutine  psb_d_hdia_reallocate_nz(nz,a) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_ipk_
+!!$      integer(psb_ipk_), intent(in) :: nz
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$    end subroutine psb_d_hdia_reallocate_nz
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_reinit(a,clear)
+!!$      import :: psb_d_hdia_sparse_mat
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a   
+!!$      logical, intent(in), optional :: clear
+!!$    end subroutine psb_d_hdia_reinit
+!!$  end interface
+!!$  
+!!$  interface
+!!$    subroutine  psb_d_hdia_trim(a)
+!!$      import :: psb_d_hdia_sparse_mat
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$    end subroutine psb_d_hdia_trim
+!!$  end interface
   
   interface 
     subroutine psb_d_hdia_mold(a,b,info) 
@@ -161,23 +163,23 @@ module psb_d_hdia_mat_mod
     end subroutine psb_d_cp_hdia_from_coo
   end interface
   
-  interface 
-    subroutine psb_d_cp_hdia_to_fmt(a,b,info) 
-      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in)     :: a
-      class(psb_d_base_sparse_mat), intent(inout) :: b
-      integer(psb_ipk_), intent(out)              :: info
-    end subroutine psb_d_cp_hdia_to_fmt
-  end interface
-  
-  interface 
-    subroutine psb_d_cp_hdia_from_fmt(a,b,info) 
-      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-      class(psb_d_base_sparse_mat), intent(in)   :: b
-      integer(psb_ipk_), intent(out)             :: info
-    end subroutine psb_d_cp_hdia_from_fmt
-  end interface
+!!$  interface 
+!!$    subroutine psb_d_cp_hdia_to_fmt(a,b,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in)     :: a
+!!$      class(psb_d_base_sparse_mat), intent(inout) :: b
+!!$      integer(psb_ipk_), intent(out)              :: info
+!!$    end subroutine psb_d_cp_hdia_to_fmt
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_cp_hdia_from_fmt(a,b,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$      class(psb_d_base_sparse_mat), intent(in)   :: b
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$    end subroutine psb_d_cp_hdia_from_fmt
+!!$  end interface
   
   interface 
     subroutine psb_d_mv_hdia_to_coo(a,b,info) 
@@ -197,102 +199,102 @@ module psb_d_hdia_mat_mod
     end subroutine psb_d_mv_hdia_from_coo
   end interface
   
-  interface 
-    subroutine psb_d_mv_hdia_to_fmt(a,b,info) 
-      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout)  :: a
-      class(psb_d_base_sparse_mat), intent(inout) :: b
-      integer(psb_ipk_), intent(out)              :: info
-    end subroutine psb_d_mv_hdia_to_fmt
-  end interface
-  
-  interface 
-    subroutine psb_d_mv_hdia_from_fmt(a,b,info) 
-      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout)  :: a
-      class(psb_d_base_sparse_mat), intent(inout) :: b
-      integer(psb_ipk_), intent(out)              :: info
-    end subroutine psb_d_mv_hdia_from_fmt
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)      :: val(:)
-      integer(psb_ipk_), intent(in)             :: nz,ia(:), ja(:),&
-           &  imin,imax,jmin,jmax
-      integer(psb_ipk_), intent(out)            :: info
-      integer(psb_ipk_), intent(in), optional   :: gtl(:)
-    end subroutine psb_d_hdia_csput_a
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_csgetptn(imin,imax,a,nz,ia,ja,info,&
-         & jmin,jmax,iren,append,nzin,rscale,cscale)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in)        :: a
-      integer(psb_ipk_), intent(in)                  :: imin,imax
-      integer(psb_ipk_), intent(out)                 :: nz
-      integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
-      integer(psb_ipk_),intent(out)                  :: info
-      logical, intent(in), optional        :: append
-      integer(psb_ipk_), intent(in), optional        :: iren(:)
-      integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
-      logical, intent(in), optional        :: rscale,cscale
-    end subroutine psb_d_hdia_csgetptn
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
-         & jmin,jmax,iren,append,nzin,rscale,cscale)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in)        :: a
-      integer(psb_ipk_), intent(in)                  :: imin,imax
-      integer(psb_ipk_), intent(out)                 :: nz
-      integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
-      real(psb_dpk_), allocatable,  intent(inout)    :: val(:)
-      integer(psb_ipk_),intent(out)                  :: info
-      logical, intent(in), optional        :: append
-      integer(psb_ipk_), intent(in), optional        :: iren(:)
-      integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
-      logical, intent(in), optional        :: rscale,cscale
-    end subroutine psb_d_hdia_csgetrow
-  end interface
-
-  interface 
-    subroutine psb_d_hdia_csgetblk(imin,imax,a,b,info,&
-       & jmin,jmax,iren,append,rscale,cscale)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_d_coo_sparse_mat, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in)    :: a
-      class(psb_d_coo_sparse_mat), intent(inout) :: b
-      integer(psb_ipk_), intent(in)              :: imin,imax
-      integer(psb_ipk_),intent(out)              :: info
-      logical, intent(in), optional        :: append
-      integer(psb_ipk_), intent(in), optional    :: iren(:)
-      integer(psb_ipk_), intent(in), optional    :: jmin,jmax
-      logical, intent(in), optional        :: rscale,cscale
-    end subroutine psb_d_hdia_csgetblk
-  end interface
-    
-  interface 
-    subroutine psb_d_hdia_cssv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)          :: alpha, beta, x(:)
-      real(psb_dpk_), intent(inout)       :: y(:)
-      integer(psb_ipk_), intent(out)           :: info
-      character, optional, intent(in)          :: trans
-    end subroutine psb_d_hdia_cssv
-    subroutine psb_d_hdia_cssm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
-      real(psb_dpk_), intent(inout)       :: y(:,:)
-      integer(psb_ipk_), intent(out)       :: info
-      character, optional, intent(in)      :: trans
-    end subroutine psb_d_hdia_cssm
-  end interface
+!!$  interface 
+!!$    subroutine psb_d_mv_hdia_to_fmt(a,b,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout)  :: a
+!!$      class(psb_d_base_sparse_mat), intent(inout) :: b
+!!$      integer(psb_ipk_), intent(out)              :: info
+!!$    end subroutine psb_d_mv_hdia_to_fmt
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_mv_hdia_from_fmt(a,b,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout)  :: a
+!!$      class(psb_d_base_sparse_mat), intent(inout) :: b
+!!$      integer(psb_ipk_), intent(out)              :: info
+!!$    end subroutine psb_d_mv_hdia_from_fmt
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)      :: val(:)
+!!$      integer(psb_ipk_), intent(in)             :: nz,ia(:), ja(:),&
+!!$           &  imin,imax,jmin,jmax
+!!$      integer(psb_ipk_), intent(out)            :: info
+!!$      integer(psb_ipk_), intent(in), optional   :: gtl(:)
+!!$    end subroutine psb_d_hdia_csput_a
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_csgetptn(imin,imax,a,nz,ia,ja,info,&
+!!$         & jmin,jmax,iren,append,nzin,rscale,cscale)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in)        :: a
+!!$      integer(psb_ipk_), intent(in)                  :: imin,imax
+!!$      integer(psb_ipk_), intent(out)                 :: nz
+!!$      integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
+!!$      integer(psb_ipk_),intent(out)                  :: info
+!!$      logical, intent(in), optional        :: append
+!!$      integer(psb_ipk_), intent(in), optional        :: iren(:)
+!!$      integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
+!!$      logical, intent(in), optional        :: rscale,cscale
+!!$    end subroutine psb_d_hdia_csgetptn
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
+!!$         & jmin,jmax,iren,append,nzin,rscale,cscale)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in)        :: a
+!!$      integer(psb_ipk_), intent(in)                  :: imin,imax
+!!$      integer(psb_ipk_), intent(out)                 :: nz
+!!$      integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
+!!$      real(psb_dpk_), allocatable,  intent(inout)    :: val(:)
+!!$      integer(psb_ipk_),intent(out)                  :: info
+!!$      logical, intent(in), optional        :: append
+!!$      integer(psb_ipk_), intent(in), optional        :: iren(:)
+!!$      integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
+!!$      logical, intent(in), optional        :: rscale,cscale
+!!$    end subroutine psb_d_hdia_csgetrow
+!!$  end interface
+!!$
+!!$  interface 
+!!$    subroutine psb_d_hdia_csgetblk(imin,imax,a,b,info,&
+!!$       & jmin,jmax,iren,append,rscale,cscale)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_d_coo_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in)    :: a
+!!$      class(psb_d_coo_sparse_mat), intent(inout) :: b
+!!$      integer(psb_ipk_), intent(in)              :: imin,imax
+!!$      integer(psb_ipk_),intent(out)              :: info
+!!$      logical, intent(in), optional        :: append
+!!$      integer(psb_ipk_), intent(in), optional    :: iren(:)
+!!$      integer(psb_ipk_), intent(in), optional    :: jmin,jmax
+!!$      logical, intent(in), optional        :: rscale,cscale
+!!$    end subroutine psb_d_hdia_csgetblk
+!!$  end interface
+!!$    
+!!$  interface 
+!!$    subroutine psb_d_hdia_cssv(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)          :: alpha, beta, x(:)
+!!$      real(psb_dpk_), intent(inout)       :: y(:)
+!!$      integer(psb_ipk_), intent(out)           :: info
+!!$      character, optional, intent(in)          :: trans
+!!$    end subroutine psb_d_hdia_cssv
+!!$    subroutine psb_d_hdia_cssm(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
+!!$      real(psb_dpk_), intent(inout)       :: y(:,:)
+!!$      integer(psb_ipk_), intent(out)       :: info
+!!$      character, optional, intent(in)      :: trans
+!!$    end subroutine psb_d_hdia_cssm
+!!$  end interface
   
   interface 
     subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info,trans) 
@@ -303,101 +305,101 @@ module psb_d_hdia_mat_mod
       integer(psb_ipk_), intent(out)       :: info
       character, optional, intent(in)      :: trans
     end subroutine psb_d_hdia_csmv
-    subroutine psb_d_hdia_csmm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
-      real(psb_dpk_), intent(inout)       :: y(:,:)
-      integer(psb_ipk_), intent(out)       :: info
-      character, optional, intent(in)      :: trans
-    end subroutine psb_d_hdia_csmm
+!!$    subroutine psb_d_hdia_csmm(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
+!!$      real(psb_dpk_), intent(inout)       :: y(:,:)
+!!$      integer(psb_ipk_), intent(out)       :: info
+!!$      character, optional, intent(in)      :: trans
+!!$    end subroutine psb_d_hdia_csmm
   end interface
   
   
-  interface 
-    function psb_d_hdia_maxval(a) result(res)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_)         :: res
-    end function psb_d_hdia_maxval
-  end interface
+!!$  interface 
+!!$    function psb_d_hdia_maxval(a) result(res)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_)         :: res
+!!$    end function psb_d_hdia_maxval
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    function psb_d_hdia_csnmi(a) result(res)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_)         :: res
+!!$    end function psb_d_hdia_csnmi
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    function psb_d_hdia_csnm1(a) result(res)
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_)         :: res
+!!$    end function psb_d_hdia_csnm1
+!!$  end interface
+!!$
+!!$  interface 
+!!$    subroutine psb_d_hdia_rowsum(d,a) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(out)              :: d(:)
+!!$    end subroutine psb_d_hdia_rowsum
+!!$  end interface
+!!$
+!!$  interface 
+!!$    subroutine psb_d_hdia_arwsum(d,a) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(out)              :: d(:)
+!!$    end subroutine psb_d_hdia_arwsum
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_colsum(d,a) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(out)              :: d(:)
+!!$    end subroutine psb_d_hdia_colsum
+!!$  end interface
+!!$
+!!$  interface 
+!!$    subroutine psb_d_hdia_aclsum(d,a) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(out)              :: d(:)
+!!$    end subroutine psb_d_hdia_aclsum
+!!$  end interface
+!!$    
+!!$  interface 
+!!$    subroutine psb_d_hdia_get_diag(a,d,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(out)     :: d(:)
+!!$      integer(psb_ipk_), intent(out)   :: info
+!!$    end subroutine psb_d_hdia_get_diag
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdia_scal(d,a,info,side) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)      :: d(:)
+!!$      integer(psb_ipk_), intent(out)   :: info
+!!$      character, intent(in), optional  :: side
+!!$    end subroutine psb_d_hdia_scal
+!!$  end interface
   
-  interface 
-    function psb_d_hdia_csnmi(a) result(res)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_)         :: res
-    end function psb_d_hdia_csnmi
-  end interface
-  
-  interface 
-    function psb_d_hdia_csnm1(a) result(res)
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_)         :: res
-    end function psb_d_hdia_csnm1
-  end interface
-
-  interface 
-    subroutine psb_d_hdia_rowsum(d,a) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)              :: d(:)
-    end subroutine psb_d_hdia_rowsum
-  end interface
-
-  interface 
-    subroutine psb_d_hdia_arwsum(d,a) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)              :: d(:)
-    end subroutine psb_d_hdia_arwsum
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_colsum(d,a) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)              :: d(:)
-    end subroutine psb_d_hdia_colsum
-  end interface
-
-  interface 
-    subroutine psb_d_hdia_aclsum(d,a) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)              :: d(:)
-    end subroutine psb_d_hdia_aclsum
-  end interface
-    
-  interface 
-    subroutine psb_d_hdia_get_hdiag(a,d,info) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)     :: d(:)
-      integer(psb_ipk_), intent(out)   :: info
-    end subroutine psb_d_hdia_get_hdiag
-  end interface
-  
-  interface 
-    subroutine psb_d_hdia_scal(d,a,info,side) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)      :: d(:)
-      integer(psb_ipk_), intent(out)   :: info
-      character, intent(in), optional  :: side
-    end subroutine psb_d_hdia_scal
-  end interface
-  
-  interface
-    subroutine psb_d_hdia_scals(d,a,info) 
-      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdia_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)      :: d
-      integer(psb_ipk_), intent(out)   :: info
-    end subroutine psb_d_hdia_scals
-  end interface
-  
+!!$  interface
+!!$    subroutine psb_d_hdia_scals(d,a,info) 
+!!$      import :: psb_d_hdia_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdia_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)      :: d
+!!$      integer(psb_ipk_), intent(out)   :: info
+!!$    end subroutine psb_d_hdia_scals
+!!$  end interface
+!!$  
 
 
 contains 
@@ -426,7 +428,7 @@ contains
      
      res = res + psb_size(a%hackOffsets)*psb_sizeof_int
      res = res + psb_size(a%diaOffsets)*psb_sizeof_int
-     res = res + psb_size(a%val)*psb_sizeof_dp
+     res = res + psb_size(a%val) * psb_sizeof_dp 
 
    end function d_hdia_sizeof
 
@@ -442,13 +444,14 @@ contains
     integer(psb_ipk_) :: res
     res = a%nzeros
   end function d_hdia_get_nzeros
+
   subroutine  d_hdia_set_nzeros(a,nz) 
     implicit none 
     class(psb_d_hdia_sparse_mat), intent(inout) :: a
     integer(psb_ipk_), intent(in) :: nz
     a%nzeros = nz
   end subroutine d_hdia_set_nzeros
-
+  
   ! function d_hdia_get_size(a) result(res)
   !   implicit none 
   !   class(psb_d_hdia_sparse_mat), intent(in) :: a
@@ -508,7 +511,7 @@ contains
     implicit none 
 
     class(psb_d_hdia_sparse_mat), intent(inout) :: a
-    integer(psb_ipk_) :: i,info
+    integer(psb_ipk_) :: i, info
 
     
     if (allocated(a%hackOffsets))&

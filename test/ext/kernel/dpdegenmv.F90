@@ -52,12 +52,11 @@ program pdgenmv
   real(psb_dpk_) :: t1, t2, tprec, tcnv, flops, tflops, tt1, tt2, bdwdth
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a, atemp
+  type(psb_dspmat_type) :: a
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type), target :: xv, bv, tt
-  class(psb_d_vect_type), pointer  :: pv
+  type(psb_d_vect_type) :: xv, bv
   
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
@@ -163,8 +162,6 @@ program pdgenmv
     call psb_error()
     stop
   end if
-  call a%print('ahdia.mtx',head='Test to/from hdia')
-   
   
   call xv%set(done)
   nr       = desc_a%get_local_rows() 

@@ -28,22 +28,23 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
 
-subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info) 
+subroutine psb_s_hdia_csmv(alpha,a,x,beta,y,info,trans) 
   
   use psb_base_mod
-  use psb_d_hdia_mat_mod, psb_protect_name => psb_d_hdia_csmv
+  use psb_s_hdia_mat_mod, psb_protect_name => psb_s_hdia_csmv
   implicit none 
-  class(psb_d_hdia_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(in)        :: alpha, beta, x(:)
-  real(psb_dpk_), intent(inout)     :: y(:)
+  class(psb_s_hdia_sparse_mat), intent(in) :: a
+  real(psb_spk_), intent(in)        :: alpha, beta, x(:)
+  real(psb_spk_), intent(inout)     :: y(:)
   integer(psb_ipk_), intent(out)     :: info
-  !character, optional, intent(in)    :: trans
+  character, optional, intent(in)    :: trans
 
   character :: trans_
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc,nr,nc
-  real(psb_dpk_)    :: acc
+  integer(psb_ipk_)  :: irs,ics, nmx, ni
+  integer(psb_ipk_)  :: nhacks, hacksize,maxnzhack, ncd,ib, nzhack, &
+       & hackfirst, hacknext
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_hdia_csmv'
@@ -58,9 +59,26 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
     goto 9999
   endif
 
+  if (present(trans)) then
+    trans_ = trans
+  else
+    trans_ = 'N'
+  end if
+
+
+  tra  = (psb_toupper(trans_) == 'T')
+  ctra = (psb_toupper(trans_) == 'C')
+  if (tra.or.ctra) then 
+    m = a%get_ncols()
+    n = a%get_nrows()
+    info = psb_err_transpose_not_n_unsupported_
+    call psb_errpush(info,name)
+    goto 9999
+  else
     n = a%get_ncols()
     m = a%get_nrows()
-
+  end if
+  
   if (size(x,1)<n) then 
     info = 36
     call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
@@ -73,20 +91,24 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
     goto 9999
   end if
 
-  if (beta == dzero) then
-     do i = 1, m
-        y(i) = dzero
-     enddo
-  else
-     do  i = 1, m
-        y(i) = beta*y(i)
-     end do
-  endif
+  nhacks   = a%nhacks
+  hacksize = a%hacksize
+  
+  do k=1, nhacks
+    i = (k-1)*hacksize + 1
+    ib = min(hacksize,m-i+1) 
+    hackfirst = a%hackoffsets(k)
+    hacknext  = a%hackoffsets(k+1)
+    ncd = hacknext-hackfirst
+    
+    call psi_s_inner_dia_csmv(m,n,&
+         & alpha,hacksize,ncd,&
+         & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
+         & a%diaOffsets(hackfirst+1:hacknext),x,beta,y,info,rdisp=(i-1))
 
-  do i=1,a%nblocks
-     call psb_d_hdia_csmv_inner(m,n,alpha,size(a%hdia(i)%data,1),&
-          & size(a%hdia(i)%data,2),a%hdia(i)%data,a%offset(i)%off,x,beta,y,i)
-  enddo
+  end do
+    
+  
   
   call psb_erractionrestore(err_act)
   return
@@ -96,46 +118,45 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info)
 
 contains
 
-  subroutine psb_d_hdia_csmv_inner(m,n,alpha,nr,nc,data,off,&
-       &x,beta,y,bl) 
-    integer(psb_ipk_), intent(in)   :: m,n,nr,nc,off(:),bl
-    real(psb_dpk_), intent(in)     :: alpha, beta, x(:),data(:,:)
-    real(psb_dpk_), intent(inout)  :: y(:)
+  subroutine psi_s_inner_dia_csmv(nr,nc,alpha,nrd,ncd,data,offsets,&
+       & x,beta,y,info,rdisp) 
+    implicit none 
+    integer(psb_ipk_), intent(in)  :: nr,nc,nrd,ncd,offsets(*)
+    integer(psb_ipk_)              :: rdisp, info
+    real(psb_spk_), intent(in)     :: alpha, beta, x(*),data(nrd,ncd)
+    real(psb_spk_), intent(inout)  :: y(*)
+        
 
-    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2,jump
-    real(psb_dpk_)   :: acc(4) 
+    integer(psb_ipk_) :: i,j,k, ir, jc, m4, ir1, ir2, nrcmdisp, rdisp1
     
-    jump = a%hack*(bl-1)
+    info = 0
+    nrcmdisp = min(nr-rdisp,nc-rdisp) 
+    rdisp1   = 1-rdisp
+    if (beta == dzero) then
+      do i = 1, min(nrd,nr-rdisp)
+        y(rdisp+i) = dzero
+      enddo
+    else
+      do  i = 1, min(nrd,nr-rdisp)
+        y(rdisp+i) = beta*y(i)
+      end do
+    endif
+    do j=1, ncd
+      if (offsets(j)>=0) then 
+        ir1 = 1
+        !  min(nrd,nr - offsets(j) - rdisp_,nc-offsets(j)-rdisp_)
+        ir2 = min(nrd, nrcmdisp - offsets(j))
+      else
+        !  max(1,1-offsets(j)-rdisp_) 
+        ir1 = max(1, rdisp1 - offsets(j))
+        ir2 = min(nrd, nrcmdisp) 
+      end if
+      jc = ir1 + rdisp + offsets(j)
+      do i=ir1,ir2 
+        y(rdisp+i) = y(rdisp+i) + alpha*data(i,j)*x(jc)
+        jc = jc + 1 
+      enddo
+    end do
+  end subroutine psi_s_inner_dia_csmv
 
-    do j=1,nc
-       if (off(j) > 0) then 
-
-          ir1 = 1
-          ir2 = n - off(j) - jump
-
-          if(ir2 > a%hack) then
-             ir2 = a%hack
-          endif
-       else
-          ir1 = 1 - off(j) - jump
-          ir2 = a%hack
-                
-          if(ir2+jump>m) then
-             ir2 = m - jump
-          endif
-          
-          if(ir1<=0)then
-             ir1=1
-          endif
-
-       end if
-
-       do i=ir1,ir2
-             y(i+jump) = y(i+jump) + alpha*data(i,j)*x((i+jump)+off(j))
-       enddo
-
-    enddo
-    
-  end subroutine psb_d_hdia_csmv_inner
-
-end subroutine psb_d_hdia_csmv
+end subroutine psb_s_hdia_csmv

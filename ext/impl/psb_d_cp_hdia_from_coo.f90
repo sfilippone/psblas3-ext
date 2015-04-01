@@ -34,7 +34,6 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   
   use psb_base_mod
   use psb_d_hdia_mat_mod, psb_protect_name => psb_d_cp_hdia_from_coo
-  use psi_ext_util_mod
   implicit none 
 
   class(psb_d_hdia_sparse_mat), intent(inout) :: a
@@ -45,7 +44,6 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   type(psb_d_coo_sparse_mat) :: tmp
 
   info = psb_success_
-  ! This is to have fix_coo called behind the scenes
   if (b%is_by_rows()) then 
     call inner_cp_hdia_from_coo(a,b,info)
     if (info /= psb_success_)  goto 9999

@@ -54,7 +54,7 @@ subroutine psb_s_ell_print(iout,a,iv,head,ivr,ivc)
     write(iout,'(a)') '%%MatrixMarket matrix coordinate real general'
     write(iout,'(a,a)') '% ',head 
     write(iout,'(a)') '%'    
-    write(iout,'(a,a)') '% COO'
+    write(iout,'(a,a)') '% ELL'
   endif
 
   nr  = a%get_nrows()

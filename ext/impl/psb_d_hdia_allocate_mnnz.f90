@@ -28,8 +28,6 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
 subroutine  psb_d_hdia_allocate_mnnz(m,n,a,nz) 
   
   use psb_base_mod
@@ -65,18 +63,7 @@ subroutine  psb_d_hdia_allocate_mnnz(m,n,a,nz)
     goto 9999
   endif
 
-  ! if (info == psb_success_) call psb_realloc(m,m,a%data,info)
-  ! if (info == psb_success_) call psb_realloc(2*m,a%offset,info)
-  ! if (info == psb_success_) then 
-  !   a%data   = 0
-  !   a%offset = 0
-  !   call a%set_nrows(m)
-  !   call a%set_ncols(n)
-  !   call a%set_bld()
-  !   call a%set_triangle(.false.)
-  !   call a%set_unit(.false.)
-  !   call a%set_dupl(psb_dupl_def_)
-  ! end if
+
   if (info /= psb_success_) goto 9999
 
   call psb_erractionrestore(err_act)

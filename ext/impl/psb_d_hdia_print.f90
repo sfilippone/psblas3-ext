@@ -42,7 +42,7 @@ subroutine psb_d_hdia_print(iout,a,iv,head,ivr,ivc)
   integer(psb_ipk_), intent(in), optional :: ivr(:), ivc(:)
 
   Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='d_hdia_print'
+  character(len=20)  :: name='hdia_print'
   character(len=*), parameter  :: datatype='real'
   logical, parameter :: debug=.false.
 
@@ -59,7 +59,7 @@ subroutine psb_d_hdia_print(iout,a,iv,head,ivr,ivc)
     write(iout,'(a)') '%%MatrixMarket matrix coordinate real general'
     write(iout,'(a,a)') '% ',head 
     write(iout,'(a)') '%'    
-    write(iout,'(a,a)') '% COO'
+    write(iout,'(a,a)') '% HDIA'
   endif
 
   nr  = a%get_nrows()
@@ -75,8 +75,8 @@ subroutine psb_d_hdia_print(iout,a,iv,head,ivr,ivc)
     maxnzhack = max(maxnzhack,(a%hackoffsets(k+1)-a%hackoffsets(k)))
   end do
   maxnzhack = hacksize*maxnzhack
-  allocate(ia(maxnzhack),ja(maxnzhack),val(maxnzhack))
-  
+  allocate(ia(maxnzhack),ja(maxnzhack),val(maxnzhack),stat=info)
+  if (info /= 0) return 
 
   if (datatype=='real') then 
     write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),es26.18,1x,2(i',ni,',1x))'

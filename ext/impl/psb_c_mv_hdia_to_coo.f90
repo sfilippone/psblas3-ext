@@ -27,17 +27,15 @@
 !!$  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
-!!$ 
-  
-
-subroutine psb_d_mv_hdia_to_coo(a,b,info) 
+!!$  
+subroutine psb_c_mv_hdia_to_coo(a,b,info) 
   
   use psb_base_mod
-  use psb_d_hdia_mat_mod, psb_protect_name => psb_d_mv_hdia_to_coo
+  use psb_c_hdia_mat_mod, psb_protect_name => psb_c_mv_hdia_to_coo
   implicit none 
 
-  class(psb_d_hdia_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(inout) :: b
+  class(psb_c_hdia_sparse_mat), intent(inout) :: a
+  class(psb_c_coo_sparse_mat), intent(inout) :: b
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
@@ -46,10 +44,12 @@ subroutine psb_d_mv_hdia_to_coo(a,b,info)
   info = psb_success_
 
   call a%cp_to_coo(b,info)
-  call a%free(info) 
-  return
+  if (info /= 0) goto 9999 
+  call a%free()
 
+  return
+  
 9999 continue
   info = psb_err_alloc_dealloc_
   return
-end subroutine psb_d_mv_hdia_to_coo
+end subroutine psb_c_mv_hdia_to_coo

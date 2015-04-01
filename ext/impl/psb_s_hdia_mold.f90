@@ -30,13 +30,13 @@
 !!$ 
   
 
-subroutine psb_d_hdia_mold(a,b,info) 
+subroutine psb_s_hdia_mold(a,b,info) 
   
   use psb_base_mod
-  use psb_d_hdia_mat_mod, psb_protect_name => psb_d_hdia_mold
+  use psb_s_hdia_mat_mod, psb_protect_name => psb_s_hdia_mold
   implicit none 
-  class(psb_d_hdia_sparse_mat), intent(in)                  :: a
-  class(psb_d_base_sparse_mat), intent(inout), allocatable :: b
+  class(psb_s_hdia_sparse_mat), intent(in)                  :: a
+  class(psb_s_base_sparse_mat), intent(inout), allocatable :: b
   integer(psb_ipk_), intent(out)                    :: info
   Integer(Psb_ipk_)  :: err_act
   character(len=20)  :: name='hdia_mold'
@@ -48,7 +48,7 @@ subroutine psb_d_hdia_mold(a,b,info)
     call b%free()
     deallocate(b,stat=info)
   end if
-  if (info == 0) allocate(psb_d_hdia_sparse_mat :: b, stat=info)
+  if (info == 0) allocate(psb_s_hdia_sparse_mat :: b, stat=info)
 
   if (info /= psb_success_) then 
     info = psb_err_alloc_dealloc_ 
@@ -60,4 +60,4 @@ subroutine psb_d_hdia_mold(a,b,info)
 9999 call psb_error_handler(err_act)
   return
 
-end subroutine psb_d_hdia_mold
+end subroutine psb_s_hdia_mold

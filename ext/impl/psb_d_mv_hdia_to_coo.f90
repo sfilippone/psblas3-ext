@@ -27,9 +27,7 @@
 !!$  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
-!!$ 
-  
-
+!!$  
 subroutine psb_d_mv_hdia_to_coo(a,b,info) 
   
   use psb_base_mod
@@ -46,9 +44,11 @@ subroutine psb_d_mv_hdia_to_coo(a,b,info)
   info = psb_success_
 
   call a%cp_to_coo(b,info)
+  if (info /= 0) goto 9999 
   call a%free()
-  return
 
+  return
+  
 9999 continue
   info = psb_err_alloc_dealloc_
   return
