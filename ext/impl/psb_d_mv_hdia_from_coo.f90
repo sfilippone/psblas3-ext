@@ -28,8 +28,6 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
 subroutine psb_d_mv_hdia_from_coo(a,b,info) 
   
   use psb_base_mod
@@ -45,7 +43,7 @@ subroutine psb_d_mv_hdia_from_coo(a,b,info)
 
   info = psb_success_
 
-  call b%fix(info)
+  if (.not.(b%is_by_rows())) call b%fix(info)
   if (info /= psb_success_) return
  
   call a%cp_from_coo(b,info)

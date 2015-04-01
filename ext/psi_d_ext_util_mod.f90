@@ -35,7 +35,8 @@ module psi_d_ext_util_mod
   use psb_base_mod, only : psb_ipk_, psb_dpk_
 
   interface psi_xtr_dia_from_coo
-    subroutine psi_d_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,initdata)
+    subroutine psi_d_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,&
+         & initdata,rdisp)    
       import  :: psb_ipk_, psb_dpk_
       implicit none 
       integer(psb_ipk_), intent(in)  :: nr, nc, nz, nrd, ncd, ia(:), ja(:), d(:)
@@ -43,8 +44,25 @@ module psi_d_ext_util_mod
       real(psb_dpk_),    intent(out) :: data(nrd,ncd)
       integer(psb_ipk_), intent(out) :: info
       logical, intent(in), optional  :: initdata
+      integer(psb_ipk_), intent(in), optional :: rdisp
       
     end subroutine psi_d_xtr_dia_from_coo
+  end interface
+
+  interface psi_xtr_coo_from_dia
+    subroutine psi_d_xtr_coo_from_dia(nr,nc,ia,ja,val,nz,nrd,ncd,data,offsets,&
+         & info,rdisp)
+      import :: psb_ipk_, psb_dpk_
+      
+      implicit none 
+      
+      integer(psb_ipk_), intent(in)    :: nr,nc, nrd,ncd, offsets(:) 
+      integer(psb_ipk_), intent(inout) :: ia(:), ja(:), nz
+      real(psb_dpk_),    intent(inout) :: val(:)
+      real(psb_dpk_),    intent(in)    :: data(nrd,ncd)
+      integer(psb_ipk_), intent(out)   :: info
+      integer(psb_ipk_), intent(in), optional :: rdisp
+    end subroutine psi_d_xtr_coo_from_dia
   end interface
   
 end module psi_d_ext_util_mod

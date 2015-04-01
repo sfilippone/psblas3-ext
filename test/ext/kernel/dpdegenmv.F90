@@ -49,15 +49,14 @@ program pdgenmv
 
   ! miscellaneous 
   real(psb_dpk_), parameter :: one = 1.d0
-  real(psb_dpk_) :: t1, t2, tprec, flops, tflops, tt1, tt2, bdwdth
+  real(psb_dpk_) :: t1, t2, tprec, tcnv, flops, tflops, tt1, tt2, bdwdth
 
   ! sparse matrix and preconditioner
   type(psb_dspmat_type) :: a
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type), target :: xv, bv, tt
-  class(psb_d_vect_type), pointer  :: pv
+  type(psb_d_vect_type) :: xv, bv
   
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
@@ -150,13 +149,20 @@ program pdgenmv
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
   end select
+  call a%cscnv(info,mold=acoo)
+  
+  call psb_barrier(ictxt)
+  t1 = psb_wtime()
   call a%cscnv(info,mold=acmold)
+  tcnv = psb_wtime()-t1
+  call psb_amx(ictxt,tcnv)
+
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
     call psb_error()
     stop
   end if
-
+  
   call xv%set(done)
   nr       = desc_a%get_local_rows() 
 
@@ -192,8 +198,10 @@ program pdgenmv
     flops  = flops / (t2)
     tflops = tflops / (tt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+    write(psb_out_unit,'("Conversion time              (CPU)   : ",F20.3)')&
+         & tcnv
     write(psb_out_unit,&
-         & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
+         & '("Number of flops (",i6," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
     write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
          &  ntests,t2

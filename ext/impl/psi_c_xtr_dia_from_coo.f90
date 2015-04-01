@@ -29,33 +29,40 @@
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
   
-subroutine psi_c_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,initdata)    
+subroutine psi_c_xtr_dia_from_coo(nr,nc,nz,ia,ja,val,d,nrd,ncd,data,info,&
+     & initdata, rdisp)    
   use psb_base_mod, only : psb_ipk_, psb_success_, psb_spk_, czero
 
   implicit none 
-
   integer(psb_ipk_), intent(in)  :: nr, nc, nz, nrd,ncd,ia(:), ja(:), d(:)
   complex(psb_spk_),    intent(in)  :: val(:)
   complex(psb_spk_),    intent(out) :: data(nrd,ncd)
   integer(psb_ipk_), intent(out) :: info
   logical, intent(in), optional  :: initdata
+  integer(psb_ipk_), intent(in), optional :: rdisp
 
   !locals
   logical                        :: initdata_
-
+  integer(psb_ipk_) :: rdisp_
   integer(psb_ipk_) :: i,ir,ic,k
+  logical, parameter :: debug=.false.
 
-  info = psb_success_
   info = psb_success_
   initdata_ = .true.
   if (present(initdata)) initdata_ = initdata
+  rdisp_ = 0
+  if (present(rdisp)) rdisp_ = rdisp
+
+  if (debug) write(0,*) 'Start xtr_dia_from_coo',nr,nc,nz,nrd,ncd,initdata_, rdisp_
+
   if (initdata_) data(1:nrd,1:ncd) = czero
 
   do i=1,nz
-    ir = ia(i)
+    ir = ia(i) 
     k  = ja(i) - ir
     ic = d(nr+k)
-    data(ir,ic) = val(i)
+    if (debug) write(0,*) 'loop xtr_dia_from_coo :',ia(i),ja(i),k,ir-rdisp_,ic
+    data(ir-rdisp_,ic) = val(i)
   enddo
 
 

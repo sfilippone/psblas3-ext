@@ -34,6 +34,7 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
   
   use psb_base_mod
   use psb_d_hdia_mat_mod, psb_protect_name => psb_d_cp_hdia_to_coo
+  use psi_ext_util_mod
   implicit none 
 
   class(psb_d_hdia_sparse_mat), intent(in)    :: a
@@ -41,7 +42,8 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  integer(psb_ipk_)   :: i, j, k,nr,nza,nc
+  integer(psb_ipk_)   :: k,i,j,nc,nr,nza, nzd,nd,hacksize,nhacks,iszd,&
+       &  ib, ir, kfirst, klast1, hackfirst, hacknext
 
   info = psb_success_
 
@@ -51,20 +53,31 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
 
   call b%allocate(nr,nc,nza)
   b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
-  
-  ! k=0
-  ! do i=1,size(a%data,1)
-  !    do j=1,size(a%data,2)
-  !       if(a%data(i,j) /= 0) then
-  !          k = k+1
-  !          b%ia(k) = i
-  !          b%ja(k) = i+a%offset(j)
-  !          b%val(k) = a%data(i,j)
-  !       endif
-  !    enddo
-  ! enddo
-
   call b%set_nzeros(nza)
+  call b%set_sort_status(psb_unsorted_)
+  nhacks   = a%nhacks
+  hacksize = a%hacksize
+  j = 0 
+  do k=1, nhacks
+    i = (k-1)*hacksize + 1
+    ib = min(hacksize,nr-i+1) 
+    hackfirst = a%hackoffsets(k)
+    hacknext  = a%hackoffsets(k+1)
+    call psi_d_xtr_coo_from_dia(nr,nc,&
+           & b%ia(j+1:), b%ja(j+1:), b%val(j+1:), nzd, &
+           & hacksize,(hacknext-hackfirst),&
+           & a%val((hacksize*hackfirst)+1:hacksize*hacknext),&
+           & a%diaOffsets(hackfirst+1:hacknext),info,rdisp=(i-1))
+!!$    write(*,*) 'diaoffsets',ib,' : ',ib - abs(a%diaOffsets(hackfirst+1:hacknext))
+!!$    write(*,*) 'sum',ib,j,' : ',sum(ib - abs(a%diaOffsets(hackfirst+1:hacknext)))
+    j = j + nzd
+  end do
+  if (nza /= j) then 
+    write(*,*) 'Wrong counts in hdia_to_coo',j,nza
+    info = -8 
+    return 
+  end if
+
   call b%fix(info)
 
 end subroutine psb_d_cp_hdia_to_coo

@@ -33,6 +33,7 @@
 module psb_ext_mod
   use psb_const_mod
   use psi_ext_util_mod
+
   use psb_d_ell_mat_mod
   use psb_s_ell_mat_mod
   use psb_z_ell_mat_mod
@@ -43,11 +44,16 @@ module psb_ext_mod
   use psb_c_hll_mat_mod
   use psb_z_hll_mat_mod
   
-  use psb_d_dia_mat_mod
-  use psb_d_hdia_mat_mod
-
   use psb_s_dia_mat_mod
+  use psb_d_dia_mat_mod
+  use psb_c_dia_mat_mod
+  use psb_z_dia_mat_mod
+
   use psb_s_hdia_mat_mod
+  use psb_d_hdia_mat_mod
+  use psb_c_hdia_mat_mod
+  use psb_z_hdia_mat_mod
+
 #ifdef HAVE_RSB
   use psb_d_rsb_mat_mod
 #endif

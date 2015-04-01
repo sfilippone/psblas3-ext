@@ -152,7 +152,7 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
 
 
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
-{ int i=0,fo,fa,j;
+{ int i=0,fo,fa,j,k,p;
   int *hoff=NULL,*hackoff=NULL;
   double *values=NULL;
   char buf_a[255], buf_o[255],tmp[255];
@@ -177,10 +177,17 @@ int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
   for (j=0; j<devMat->allocationHeight; j++)
     fprintf(stderr," %d",hoff[j]);
   fprintf(stderr,"\n");
-  fprintf(stderr,"values: ");
-  for (j=0; j<devMat->allocationHeight*devMat->hackSize; j++)
-    fprintf(stderr," %lf",values[j]);
+#if 1
+  fprintf(stderr,"values: \n");
+  p=0;
+  for (j=0; j<devMat->hackCount; j++){
+    fprintf(stderr,"Hack no: %d\n",j+1);
+    for (k=0; k<devMat->hackSize*(devMat->allocationHeight/devMat->hackCount); k++){
+      fprintf(stderr," %d %lf\n",p+1,values[p]); p++;
+    }
+  }
   fprintf(stderr,"\n");
+#endif
 #endif
   
   
