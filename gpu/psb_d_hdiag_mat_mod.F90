@@ -74,7 +74,7 @@ module psb_d_hdiag_mat_mod
   private :: d_hdiag_get_nzeros, d_hdiag_free,  d_hdiag_get_fmt, &
        & d_hdiag_get_size, d_hdiag_sizeof, d_hdiag_get_nz_row
 
-      
+
   interface 
     subroutine psb_d_hdiag_vect_mv(alpha,a,x,beta,y,info,trans) 
       import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_d_base_vect_type, psb_ipk_
@@ -87,33 +87,33 @@ module psb_d_hdiag_mat_mod
     end subroutine psb_d_hdiag_vect_mv
   end interface
 
-  interface 
-    subroutine psb_d_hdiag_inner_vect_sv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_ipk_, psb_d_hdiag_sparse_mat, psb_dpk_,  psb_d_base_vect_type
-      class(psb_d_hdiag_sparse_mat), intent(in)    :: a
-      real(psb_dpk_), intent(in)                 :: alpha, beta
-      class(psb_d_base_vect_type), intent(inout) :: x, y
-      integer(psb_ipk_), intent(out)             :: info
-      character, optional, intent(in)            :: trans
-    end subroutine psb_d_hdiag_inner_vect_sv
-  end interface
-
-  interface
-    subroutine  psb_d_hdiag_reallocate_nz(nz,a) 
-      import :: psb_d_hdiag_sparse_mat, psb_ipk_
-      integer(psb_ipk_), intent(in)              :: nz
-      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_hdiag_reallocate_nz
-  end interface
-
-  interface
-    subroutine  psb_d_hdiag_allocate_mnnz(m,n,a,nz) 
-      import :: psb_d_hdiag_sparse_mat, psb_ipk_
-      integer(psb_ipk_), intent(in)              :: m,n
-      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-      integer(psb_ipk_), intent(in), optional    :: nz
-    end subroutine psb_d_hdiag_allocate_mnnz
-  end interface
+!!$  interface 
+!!$    subroutine psb_d_hdiag_inner_vect_sv(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_ipk_, psb_d_hdiag_sparse_mat, psb_dpk_,  psb_d_base_vect_type
+!!$      class(psb_d_hdiag_sparse_mat), intent(in)    :: a
+!!$      real(psb_dpk_), intent(in)                 :: alpha, beta
+!!$      class(psb_d_base_vect_type), intent(inout) :: x, y
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$      character, optional, intent(in)            :: trans
+!!$    end subroutine psb_d_hdiag_inner_vect_sv
+!!$  end interface
+!!$
+!!$  interface
+!!$    subroutine  psb_d_hdiag_reallocate_nz(nz,a) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_ipk_
+!!$      integer(psb_ipk_), intent(in)              :: nz
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
+!!$    end subroutine psb_d_hdiag_reallocate_nz
+!!$  end interface
+!!$
+!!$  interface
+!!$    subroutine  psb_d_hdiag_allocate_mnnz(m,n,a,nz) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_ipk_
+!!$      integer(psb_ipk_), intent(in)              :: m,n
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
+!!$      integer(psb_ipk_), intent(in), optional    :: nz
+!!$    end subroutine psb_d_hdiag_allocate_mnnz
+!!$  end interface
 
   interface 
     subroutine psb_d_hdiag_mold(a,b,info) 
@@ -125,10 +125,11 @@ module psb_d_hdiag_mat_mod
   end interface
 
   interface 
-    subroutine psb_d_hdiag_to_gpu(a,info) 
+    subroutine psb_d_hdiag_to_gpu(a,info, nzrm) 
       import :: psb_d_hdiag_sparse_mat, psb_ipk_
       class(psb_d_hdiag_sparse_mat), intent(inout) :: a
       integer(psb_ipk_), intent(out)             :: info
+      integer(psb_ipk_), intent(in), optional    :: nzrm
     end subroutine psb_d_hdiag_to_gpu
   end interface
 
@@ -141,15 +142,15 @@ module psb_d_hdiag_mat_mod
     end subroutine psb_d_cp_hdiag_from_coo
   end interface
   
-  interface 
-    subroutine psb_d_cp_hdiag_from_fmt(a,b,info) 
-      import :: psb_d_hdiag_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-      class(psb_d_base_sparse_mat), intent(in)   :: b
-      integer(psb_ipk_), intent(out)             :: info
-    end subroutine psb_d_cp_hdiag_from_fmt
-  end interface
-  
+!!$  interface 
+!!$    subroutine psb_d_cp_hdiag_from_fmt(a,b,info) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
+!!$      class(psb_d_base_sparse_mat), intent(in)   :: b
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$    end subroutine psb_d_cp_hdiag_from_fmt
+!!$  end interface
+!!$  
   interface 
     subroutine psb_d_mv_hdiag_from_coo(a,b,info) 
       import :: psb_d_hdiag_sparse_mat, psb_d_coo_sparse_mat, psb_ipk_
@@ -159,16 +160,16 @@ module psb_d_hdiag_mat_mod
     end subroutine psb_d_mv_hdiag_from_coo
   end interface
   
-
-  interface 
-    subroutine psb_d_mv_hdiag_from_fmt(a,b,info) 
-      import :: psb_d_hdiag_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
-      class(psb_d_hdiag_sparse_mat), intent(inout)  :: a
-      class(psb_d_base_sparse_mat), intent(inout) :: b
-      integer(psb_ipk_), intent(out)              :: info
-    end subroutine psb_d_mv_hdiag_from_fmt
-  end interface
-  
+!!$
+!!$  interface 
+!!$    subroutine psb_d_mv_hdiag_from_fmt(a,b,info) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_d_base_sparse_mat, psb_ipk_
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout)  :: a
+!!$      class(psb_d_base_sparse_mat), intent(inout) :: b
+!!$      integer(psb_ipk_), intent(out)              :: info
+!!$    end subroutine psb_d_mv_hdiag_from_fmt
+!!$  end interface
+!!$  
   interface 
     subroutine psb_d_hdiag_csmv(alpha,a,x,beta,y,info,trans) 
       import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
@@ -179,36 +180,37 @@ module psb_d_hdiag_mat_mod
       character, optional, intent(in)         :: trans
     end subroutine psb_d_hdiag_csmv
   end interface
-  interface 
-    subroutine psb_d_hdiag_csmm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdiag_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)              :: alpha, beta, x(:,:)
-      real(psb_dpk_), intent(inout)           :: y(:,:)
-      integer(psb_ipk_), intent(out)          :: info
-      character, optional, intent(in)         :: trans
-    end subroutine psb_d_hdiag_csmm
-  end interface
-  
-  interface 
-    subroutine psb_d_hdiag_scal(d,a,info, side) 
-      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)                 :: d(:)
-      integer(psb_ipk_), intent(out)             :: info
-      character, intent(in), optional            :: side
-    end subroutine psb_d_hdiag_scal
-  end interface
-  
-  interface
-    subroutine psb_d_hdiag_scals(d,a,info) 
-      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)                 :: d
-      integer(psb_ipk_), intent(out)             :: info
-    end subroutine psb_d_hdiag_scals
-  end interface
-  
+
+!!$  interface 
+!!$    subroutine psb_d_hdiag_csmm(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdiag_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)              :: alpha, beta, x(:,:)
+!!$      real(psb_dpk_), intent(inout)           :: y(:,:)
+!!$      integer(psb_ipk_), intent(out)          :: info
+!!$      character, optional, intent(in)         :: trans
+!!$    end subroutine psb_d_hdiag_csmm
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_hdiag_scal(d,a,info, side) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)                 :: d(:)
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$      character, intent(in), optional            :: side
+!!$    end subroutine psb_d_hdiag_scal
+!!$  end interface
+!!$  
+!!$  interface
+!!$    subroutine psb_d_hdiag_scals(d,a,info) 
+!!$      import :: psb_d_hdiag_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_hdiag_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)                 :: d
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$    end subroutine psb_d_hdiag_scals
+!!$  end interface
+!!$  
 
 contains 
 
@@ -223,23 +225,6 @@ contains
   !
   !
   ! == ===================================
-
-  
-!!$  function d_hdiag_sizeof(a) result(res)
-!!$    use hdiagdev_mod
-!!$    implicit none 
-!!$    class(psb_d_hdiag_sparse_mat), intent(in) :: a
-!!$    integer(psb_long_int_k_) :: res
-!!$
-!!$! !$    res = 8 
-!!$! !$    res = res + psb_sizeof_dp  * size(a%data)
-!!$! !$    res = res + psb_sizeof_int * size(a%offset)
-!!$
-!!$    ! Should we account for the shadow data structure
-!!$    ! on the GPU device side? 
-!!$    ! res = 2*res
-!!$    res = sizeofHdiagDeviceDouble(a%deviceMat)
-!!$  end function d_hdiag_sizeof
 
   function d_hdiag_get_fmt() result(res)
     implicit none 

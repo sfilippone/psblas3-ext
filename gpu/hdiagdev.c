@@ -290,5 +290,136 @@ int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 #endif
 }
 
+int writeHdiagDeviceFloat(void* deviceMat, float* val, int* hdiaOffsets, int *hackOffsets)
+{ int i=0,fo,fa,j,k,p;
+  char buf_a[255], buf_o[255],tmp[255];
+#ifdef HAVE_SPGPU
+  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
+  
+  i=SPGPU_SUCCESS; 
+  
+  
+#if DEBUG
+  fprintf(stderr," Write  %p \n",devMat);
+  
+  fprintf(stderr,"HDIAG writing to device memory: allocationHeight %d hackCount %d\n",
+	  devMat->allocationHeight,devMat->hackCount);
+  fprintf(stderr,"HackOffsets: ");
+  for (j=0; j<devMat->hackCount+1; j++)
+    fprintf(stderr," %d",hackOffsets[j]);
+  fprintf(stderr,"\n");
+  fprintf(stderr,"diaOffsets: ");
+  for (j=0; j<devMat->allocationHeight; j++)
+    fprintf(stderr," %d",hdiaOffsets[j]);
+  fprintf(stderr,"\n");
+#if 1
+  fprintf(stderr,"values: \n");
+  p=0;
+  for (j=0; j<devMat->hackCount; j++){
+    fprintf(stderr,"Hack no: %d\n",j+1);
+    for (k=0; k<devMat->hackSize*(devMat->allocationHeight/devMat->hackCount); k++){
+      fprintf(stderr," %d %lf\n",p+1,val[p]); p++;
+    }
+  }
+  fprintf(stderr,"\n");
+#endif
+#endif
+  
+  
+  if(i== SPGPU_SUCCESS)
+    i = writeRemoteBuffer((void *) hackOffsets,(void *) devMat->hackOffsets,
+			  (devMat->hackCount+1)*sizeof(int));
+  
+  if(i== SPGPU_SUCCESS)
+    i = writeRemoteBuffer((void*) hdiaOffsets, (void *)devMat->hdiaOffsets, 
+			  devMat->allocationHeight*sizeof(int));
+  if(i== SPGPU_SUCCESS)
+    i = writeRemoteBuffer((void*) val, (void *)devMat->cM, 
+			  devMat->allocationHeight*devMat->hackSize*sizeof(float));
+  if (i!=0) 
+    fprintf(stderr,"Error in writeHdiagDeviceFloat %d\n",i);
+
+#if DEBUG
+  fprintf(stderr," EndWrite  %p \n",devMat);
+#endif
+  
+  if(i==0)
+    return SPGPU_SUCCESS;
+  else
+    return SPGPU_UNSUPPORTED;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+
+
+long long int sizeofHdiagDeviceFloat(void* deviceMat)
+{ int i=0,fo,fa;
+  int *hoff=NULL,*hackoff=NULL;
+  long long int memsize=0;
+#ifdef HAVE_SPGPU
+  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
+  
+  
+  memsize += (devMat->hackCount+1)*sizeof(int);
+  memsize += devMat->allocationHeight*sizeof(int);
+  memsize += devMat->allocationHeight*devMat->hackSize*sizeof(float);
+  
+#endif
+  return(memsize);
+}
+
+
+
+int readHdiagDeviceFloat(void* deviceMat, float* a, int* off)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
+  /* i = readRemoteBuffer((void *) a, (void *)devMat->cM,devMat->rows*devMat->diags*sizeof(float)); */
+  /* i = readRemoteBuffer((void *) off, (void *)devMat->off, devMat->diags*sizeof(int)); */
+
+
+  /*if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","readEllDeviceFloat",i);
+  }*/
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+int spmvHdiagDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
+			  float beta, void* deviceY)
+{
+  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
+  struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
+  struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+#ifdef HAVE_SPGPU
+#ifdef VERBOSE
+  /*__assert(x->count_ == x->count_, "ERROR: x and y don't share the same number of vectors");*/
+  /*__assert(x->size_ >= devMat->columns, "ERROR: x vector's size is not >= to matrix size (columns)");*/
+  /*__assert(y->size_ >= devMat->rows, "ERROR: y vector's size is not >= to matrix size (rows)");*/
+#endif
+#if DEBUG
+  fprintf(stderr," First  %p \n",devMat);
+  fprintf(stderr,"%d %d %d  %p %p %p\n",devMat->rows,devMat->cols, devMat->hackSize,
+	  devMat->hackOffsets, devMat->hdiaOffsets, devMat->cM);
+#endif 
+  spgpuShdiaspmv (handle, (float*)y->v_, (float *)y->v_, alpha,
+		  (float *)devMat->cM,devMat->hdiaOffsets, 
+		  devMat->hackSize, devMat->hackOffsets, devMat->rows,devMat->cols,
+		  x->v_, beta);
+  
+  //cudaSync();
+
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
 
 #endif

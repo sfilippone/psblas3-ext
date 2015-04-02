@@ -92,9 +92,17 @@ int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols,
 
 int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params);
 
-int writeHdiagDeviceDouble(void* deviceMat, double* val, int* hdiaOffsets, int *hackOffsets);
 
 void freeHdiagDevice(void* remoteMatrix);
+
+int writeHdiagDeviceFloat(void* deviceMat, float* val, int* hdiaOffsets, int *hackOffsets);
+int spmvHdiagDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
+			  float beta, void* deviceY);
+
+int writeHdiagDeviceDouble(void* deviceMat, double* val, int* hdiaOffsets, int *hackOffsets);
+int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
+			  double beta, void* deviceY);
+
 
 #else
 #define CINTRF_UNSUPPORTED   -1

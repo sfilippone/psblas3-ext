@@ -29,6 +29,7 @@
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
   
+
 subroutine psb_d_hdiag_to_gpu(a,info) 
   
   use psb_base_mod
@@ -78,7 +79,7 @@ subroutine psb_d_hdiag_to_gpu(a,info)
   info = FAllocHdiagDevice(a%deviceMat,nr,nc,&
        & allocheight,hacksize,hackCount,spgpu_type_double)
   if (info == 0) info = &
-       & writeHdiagDeviceDouble(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
+       & writeHdiagDevice(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
 
 #endif
 

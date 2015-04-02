@@ -37,7 +37,7 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 	psb_z_hybg_mat_mod.o  psb_z_csrg_mat_mod.o\
 	psb_gpu_env_mod.o psb_gpu_mod.o \
 	psb_d_diag_mat_mod.o\
-	psb_d_hdiag_mat_mod.o
+	psb_d_hdiag_mat_mod.o psb_s_hdiag_mat_mod.o
 
 COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o \
 	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 

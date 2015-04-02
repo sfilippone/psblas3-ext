@@ -266,14 +266,13 @@ psb_d_mv_hdiag_from_coo.o \
 psb_d_hdiag_to_gpu.o \
 psb_d_hdiag_csmv.o \
 psb_d_hdiag_mold.o \
-psb_d_hdiag_vect_mv.o 
-
-#psb_s_cp_diag_from_coo.o \
-#psb_s_mv_diag_from_coo.o \
-#psb_s_diag_to_gpu.o \
-#psb_s_diag_csmv.o \
-#psb_s_diag_mold.o \
-#psb_s_diag_vect_mv.o 
+psb_d_hdiag_vect_mv.o \
+psb_s_cp_hdiag_from_coo.o \
+psb_s_mv_hdiag_from_coo.o \
+psb_s_hdiag_to_gpu.o \
+psb_s_hdiag_csmv.o \
+psb_s_hdiag_mold.o \
+psb_s_hdiag_vect_mv.o 
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

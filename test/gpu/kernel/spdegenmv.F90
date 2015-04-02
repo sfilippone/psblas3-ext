@@ -75,11 +75,13 @@ program pdgenmv
   type(psb_s_ell_sparse_mat), target   :: aell
   type(psb_s_hll_sparse_mat), target   :: ahll
   type(psb_s_dia_sparse_mat), target   :: adia
+  type(psb_s_hdia_sparse_mat), target   :: ahdia
 #ifdef HAVE_GPU
   type(psb_s_elg_sparse_mat), target   :: aelg
   type(psb_s_csrg_sparse_mat), target  :: acsrg
   type(psb_s_hybg_sparse_mat), target  :: ahybg
   type(psb_s_hlg_sparse_mat), target   :: ahlg
+  type(psb_s_hdiag_sparse_mat), target   :: ahdiag
 !!$  type(psb_s_diag_sparse_mat), target   :: adiag
 #endif
   class(psb_s_base_sparse_mat), pointer :: agmold, acmold
@@ -149,6 +151,8 @@ program pdgenmv
     acmold => ahll
   case('DIA')
     acmold => adia
+  case('HDIA')
+    acmold => ahdia
   case('CSR')
     acmold => acsr
 #ifdef HAVE_RSB
@@ -174,6 +178,8 @@ program pdgenmv
     agmold => ahlg
 !!$  case('DIAG')
 !!$    agmold => adiag
+  case('HDIAG')
+    agmold => ahdiag
   case('CSRG')
     agmold => acsrg
   case('HYBG')

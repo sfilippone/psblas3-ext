@@ -30,34 +30,35 @@
 !!$ 
   
 
-subroutine psb_d_cp_hdiag_from_coo(a,b,info) 
+subroutine psb_s_mv_hdiag_from_coo(a,b,info) 
   
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hdiagdev_mod
   use psb_vectordev_mod
-  use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_cp_hdiag_from_coo
+  use psb_s_hdiag_mat_mod, psb_protect_name => psb_s_mv_hdiag_from_coo
   use psb_gpu_env_mod
 #else 
-  use psb_d_hdiag_mat_mod
+  use psb_s_hdiag_mat_mod
 #endif
+
   implicit none 
 
-  class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(in)    :: b
+  class(psb_s_hdiag_sparse_mat), intent(inout) :: a
+  class(psb_s_coo_sparse_mat), intent(inout) :: b
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  integer(psb_ipk_)              :: debug_level, debug_unit
-  character(len=20)              :: name
+  Integer(Psb_ipk_) :: err_act
 
   info = psb_success_
 
+  
 #ifdef HAVE_SPGPU
   a%hacksize = psb_gpu_WarpSize()
 #endif
 
-  call a%psb_d_hdia_sparse_mat%cp_from_coo(b,info)
+  call a%psb_s_hdia_sparse_mat%mv_from_coo(b,info)
 
 #ifdef HAVE_SPGPU
   call a%to_gpu(info)
@@ -70,4 +71,4 @@ subroutine psb_d_cp_hdiag_from_coo(a,b,info)
   info = psb_err_alloc_dealloc_
   return
 
-end subroutine psb_d_cp_hdiag_from_coo
+end subroutine psb_s_mv_hdiag_from_coo

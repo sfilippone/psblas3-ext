@@ -30,44 +30,36 @@
 !!$ 
   
 
-subroutine psb_d_cp_hdiag_from_coo(a,b,info) 
+subroutine psb_s_hdiag_mold(a,b,info) 
   
   use psb_base_mod
-#ifdef HAVE_SPGPU
-  use hdiagdev_mod
-  use psb_vectordev_mod
-  use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_cp_hdiag_from_coo
-  use psb_gpu_env_mod
-#else 
-  use psb_d_hdiag_mat_mod
-#endif
+  use psb_s_hdiag_mat_mod, psb_protect_name => psb_s_hdiag_mold
   implicit none 
+  class(psb_s_hdiag_sparse_mat), intent(in)                   :: a
+  class(psb_s_base_sparse_mat), intent(inout), allocatable  :: b
+  integer(psb_ipk_), intent(out)                            :: info
+  integer(psb_ipk_)  :: err_act
+  character(len=20)  :: name='hdiag_mold'
+  logical, parameter :: debug=.false.
 
-  class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(in)    :: b
-  integer(psb_ipk_), intent(out)             :: info
-
-  !locals
-  integer(psb_ipk_)              :: debug_level, debug_unit
-  character(len=20)              :: name
-
-  info = psb_success_
-
-#ifdef HAVE_SPGPU
-  a%hacksize = psb_gpu_WarpSize()
-#endif
-
-  call a%psb_d_hdia_sparse_mat%cp_from_coo(b,info)
-
-#ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
-#endif
+  call psb_get_erraction(err_act)
   
+  info = 0 
+  if (allocated(b)) then 
+    call b%free()
+    deallocate(b,stat=info)
+  end if
+  if (info == 0) allocate(psb_s_hdiag_sparse_mat :: b, stat=info)
+
+  if (info /= psb_success_) then 
+    info = psb_err_alloc_dealloc_ 
+    call psb_errpush(info, name)
+    goto 9999
+  end if
   return
 
-9999 continue
-  info = psb_err_alloc_dealloc_
+9999 call psb_error_handler(err_act)
+
   return
 
-end subroutine psb_d_cp_hdiag_from_coo
+end subroutine psb_s_hdiag_mold

@@ -30,44 +30,57 @@
 !!$ 
   
 
-subroutine psb_d_cp_hdiag_from_coo(a,b,info) 
+subroutine psb_s_hdiag_to_gpu(a,info) 
   
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hdiagdev_mod
   use psb_vectordev_mod
-  use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_cp_hdiag_from_coo
-  use psb_gpu_env_mod
+  use psb_s_hdiag_mat_mod, psb_protect_name => psb_s_hdiag_to_gpu
 #else 
-  use psb_d_hdiag_mat_mod
+  use psb_s_hdiag_mat_mod
 #endif
+  use iso_c_binding
   implicit none 
-
-  class(psb_d_hdiag_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(in)    :: b
+  class(psb_s_hdiag_sparse_mat), intent(inout) :: a
   integer(psb_ipk_), intent(out)             :: info
-
-  !locals
-  integer(psb_ipk_)              :: debug_level, debug_unit
-  character(len=20)              :: name
-
-  info = psb_success_
-
+  integer(psb_ipk_) :: nr, nc, hacksize, hackcount, allocheight 
 #ifdef HAVE_SPGPU
-  a%hacksize = psb_gpu_WarpSize()
+  type(hdiagdev_parms) :: gpu_parms
 #endif
 
-  call a%psb_d_hdia_sparse_mat%cp_from_coo(b,info)
+  info = 0
 
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
+  nr = a%get_nrows()
+  nc = a%get_ncols()
+  hacksize  = a%hackSize
+  hackCount = a%nhacks
+  if (.not.allocated(a%hackOffsets)) then 
+    info = -1 
+    return
+  end if
+  allocheight = a%hackOffsets(hackCount+1) 
+!!$  write(*,*) 'HDIAG TO GPU:',nr,nc,hacksize,hackCount,allocheight,&
+!!$       & size(a%hackoffsets),size(a%diaoffsets), size(a%val)
+  if (.not.allocated(a%diaOffsets)) then
+    info = -2 
+    return
+  end if
+  if (.not.allocated(a%val)) then
+    info = -3
+    return
+  end if
+
+  if (c_associated(a%deviceMat)) then 
+     call freeHdiagDevice(a%deviceMat)
+  endif
+
+  info = FAllocHdiagDevice(a%deviceMat,nr,nc,&
+       & allocheight,hacksize,hackCount,spgpu_type_double)
+  if (info == 0) info = &
+       & writeHdiagDevice(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
+
 #endif
-  
-  return
 
-9999 continue
-  info = psb_err_alloc_dealloc_
-  return
-
-end subroutine psb_d_cp_hdiag_from_coo
+end subroutine psb_s_hdiag_to_gpu
