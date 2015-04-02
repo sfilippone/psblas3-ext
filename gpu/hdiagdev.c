@@ -36,95 +36,6 @@
 #include <unistd.h>
 #if defined(HAVE_SPGPU)
 #define DEBUG 0
-//new
-
-
-
-HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, 
-				       unsigned int diags, unsigned int hackSize, 
-				       unsigned int elementType) 
-{
-  HdiagDeviceParams params;
-
-  params.elementType = elementType;
-  //numero di elementi di val
-  params.rows = rows;
-  params.columns = columns; 
-  params.diags = diags;
-  params.hackSize = hackSize;
-
-  return params;
-
-}
-
-//new
-int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params, double *data)
-{
-  struct HdiagDevice *tmp = (struct HdiagDevice *)malloc(sizeof(struct HdiagDevice));
-  int ret=SPGPU_SUCCESS;
-  int *tmpOff = NULL;
-  *remoteMatrix = (void *)tmp;
-
-  tmp->rows = params->rows;
-
-  tmp->hackSize = params->hackSize;
-
-  tmp->cols = params->columns;
-
-  tmp->diags = params->diags;
-
-  tmp->hackCount = getHdiaHacksCount(tmp->hackSize, tmp->rows);
-
-  tmp->hackOffsets = (int *)calloc(tmp->hackCount+1,sizeof(int));
-
-  computeHdiaHackOffsets(
-			 &tmp->allocationHeight,
-			 tmp->hackOffsets,
-			 tmp->hackSize,
-			 data,
-			 tmp->rows,
-			 tmp->diags,
-			 tmp->rows,
-			 params->elementType);
-  
-#if DEBUG 
-  fprintf(stderr,"hackcount %d  allocationHeight %d\n",tmp->hackCount,tmp->allocationHeight);
-#endif
-
-  if (ret == SPGPU_SUCCESS)
-    ret=allocRemoteBuffer((void **)&(tmp->hdiaOffsets), tmp->allocationHeight*sizeof(int));
-  
-  /* tmp->baseIndex = params->firstIndex; */
-
-  if (params->elementType == SPGPU_TYPE_INT)
-    {
-      if (ret == SPGPU_SUCCESS)
-	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(int));
-    }
-  else if (params->elementType == SPGPU_TYPE_FLOAT)
-    {
-      if (ret == SPGPU_SUCCESS)
-	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(float));
-    }    
-  else if (params->elementType == SPGPU_TYPE_DOUBLE)
-    {
-      if (ret == SPGPU_SUCCESS)
-	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(double));
-    }
-  else if (params->elementType == SPGPU_TYPE_COMPLEX_FLOAT)
-    {
-      if (ret == SPGPU_SUCCESS)
-	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(cuFloatComplex));
-    }
-  else if (params->elementType == SPGPU_TYPE_COMPLEX_DOUBLE)
-    {
-      if (ret == SPGPU_SUCCESS)
-	ret=allocRemoteBuffer((void **)&(tmp->cM), tmp->hackSize*tmp->allocationHeight*sizeof(cuDoubleComplex));
-    }
-  else
-    return SPGPU_UNSUPPORTED; // Unsupported params
-  return ret;
-}
 
 
 void freeHdiagDevice(void* remoteMatrix)
@@ -138,29 +49,10 @@ void freeHdiagDevice(void* remoteMatrix)
   }
 }
 
-//new
-int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int columns,
-		      unsigned int diags,unsigned int hackSize,double *data,unsigned int elementType)
-{ int i,j;
-#ifdef HAVE_SPGPU
-  HdiagDeviceParams p;
 
-  p = getHdiagDeviceParams(rows, columns, diags, hackSize, elementType);
-  i = allocHdiagDevice(deviceMat, &p, data);
-  if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","FallocEllDevice",i);
-  }
-  return(i);
-#else
-  return SPGPU_UNSUPPORTED;
-#endif
-}
-
-
-
-HdiagDeviceParams getHdiagDeviceParamsNew(unsigned int rows, unsigned int columns, 
-					  unsigned int allocationHeight, unsigned int hackSize, 
-					  unsigned int hackCount, unsigned int elementType) 
+HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, 
+				       unsigned int allocationHeight, unsigned int hackSize, 
+				       unsigned int hackCount, unsigned int elementType) 
 {
   HdiagDeviceParams params;
 
@@ -176,7 +68,7 @@ HdiagDeviceParams getHdiagDeviceParamsNew(unsigned int rows, unsigned int column
 
 }
 
-int allocHdiagDeviceNew(void **remoteMatrix, HdiagDeviceParams* params)
+int allocHdiagDevice(void **remoteMatrix, HdiagDeviceParams* params)
 {
   struct HdiagDevice *tmp = (struct HdiagDevice *)malloc(sizeof(struct HdiagDevice));
   int ret=SPGPU_SUCCESS;
@@ -242,16 +134,16 @@ int allocHdiagDeviceNew(void **remoteMatrix, HdiagDeviceParams* params)
   return ret;
 }
 
-int FallocHdiagDeviceNew(void** deviceMat, unsigned int rows, unsigned int cols, 
-			 unsigned int allocationHeight, unsigned int hackSize,
-			 unsigned int hackCount, unsigned int elementType)
+int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols, 
+		      unsigned int allocationHeight, unsigned int hackSize,
+		      unsigned int hackCount, unsigned int elementType)
 { int i=0;
 #ifdef HAVE_SPGPU
   HdiagDeviceParams p;
-
-  p = getHdiagDeviceParamsNew(rows, cols, allocationHeight, hackSize, hackCount,elementType);
+ 
+  p = getHdiagDeviceParams(rows, cols, allocationHeight, hackSize, hackCount,elementType);
   
-  i = allocHdiagDeviceNew(deviceMat, &p);
+  i = allocHdiagDevice(deviceMat, &p);
 #if DEBUG
   fprintf(stderr," Falloc  %p \n",*deviceMat);
 #endif
@@ -267,7 +159,7 @@ int FallocHdiagDeviceNew(void** deviceMat, unsigned int rows, unsigned int cols,
 
 }
 
-int writeHdiagDeviceDoubleNew(void* deviceMat, double* val, int* hdiaOffsets, int *hackOffsets)
+int writeHdiagDeviceDouble(void* deviceMat, double* val, int* hdiaOffsets, int *hackOffsets)
 { int i=0,fo,fa,j,k,p;
   char buf_a[255], buf_o[255],tmp[255];
 #ifdef HAVE_SPGPU
@@ -275,19 +167,6 @@ int writeHdiagDeviceDoubleNew(void* deviceMat, double* val, int* hdiaOffsets, in
   
   i=SPGPU_SUCCESS; 
   
-#if 0 
-  if (i == SPGPU_SUCCESS)
-    i=allocRemoteBuffer((void **)&(devMat->hackOffsets),
-			(devMat->hackCount+1)*sizeof(int));
-
-  if (i == SPGPU_SUCCESS)
-    i=allocRemoteBuffer((void **)&(devMat->hdiaOffsets),
-			(devMat->allocationHeight)*sizeof(int));
-  
-  if (i == SPGPU_SUCCESS)
-    i=allocRemoteBuffer((void **)&(devMat->cM),
-			(devMat->allocationHeight)*(devMat->hackSize)*sizeof(double));
-#endif
   
 #if DEBUG
   fprintf(stderr," Write  %p \n",devMat);
@@ -327,7 +206,7 @@ int writeHdiagDeviceDoubleNew(void* deviceMat, double* val, int* hdiaOffsets, in
     i = writeRemoteBuffer((void*) val, (void *)devMat->cM, 
 			  devMat->allocationHeight*devMat->hackSize*sizeof(double));
   if (i!=0) 
-    fprintf(stderr,"Error in writeHdiagDeviceDoubleNew %d\n",i);
+    fprintf(stderr,"Error in writeHdiagDeviceDouble %d\n",i);
 
 #if DEBUG
   fprintf(stderr," EndWrite  %p \n",devMat);
@@ -343,74 +222,6 @@ int writeHdiagDeviceDoubleNew(void* deviceMat, double* val, int* hdiaOffsets, in
 }
 
 
-
-int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n)
-{ int i=0,fo,fa,j,k,p;
-  int *hoff=NULL,*hackoff=NULL;
-  double *values=NULL;
-  char buf_a[255], buf_o[255],tmp[255];
-#ifdef HAVE_SPGPU
-  struct HdiagDevice *devMat = (struct HdiagDevice *) deviceMat;
-
-  hoff = (int *)calloc(devMat->allocationHeight,sizeof(int));
-  values = (double *)calloc(devMat->hackSize*devMat->allocationHeight,sizeof(double));
-
-  diaToHdia((void *)values,hoff,devMat->hackOffsets,devMat->hackSize,
-	    (void *)a,off,devMat->rows,devMat->diags,devMat->rows,SPGPU_TYPE_DOUBLE);
-
-  hackoff = devMat->hackOffsets;
-#if DEBUG
-  fprintf(stderr,"HDIAG writing to device memory: allocationHeight %d hackCount %d\n",
-	  devMat->allocationHeight,devMat->hackCount);
-  fprintf(stderr,"HackOffsets: ");
-  for (j=0; j<devMat->hackCount+1; j++)
-    fprintf(stderr," %d",hackoff[j]);
-  fprintf(stderr,"\n");
-  fprintf(stderr,"diaOffsets: ");
-  for (j=0; j<devMat->allocationHeight; j++)
-    fprintf(stderr," %d",hoff[j]);
-  fprintf(stderr,"\n");
-#if 1
-  fprintf(stderr,"values: \n");
-  p=0;
-  for (j=0; j<devMat->hackCount; j++){
-    fprintf(stderr,"Hack no: %d\n",j+1);
-    for (k=0; k<devMat->hackSize*(devMat->allocationHeight/devMat->hackCount); k++){
-      fprintf(stderr," %d %lf\n",p+1,values[p]); p++;
-    }
-  }
-  fprintf(stderr,"\n");
-#endif
-#endif
-  
-  
-  
-  if (i == SPGPU_SUCCESS)
-    i=allocRemoteBuffer((void **)&(devMat->hackOffsets),
-			(devMat->hackCount+1)*sizeof(int));
-  
-  if(i== SPGPU_SUCCESS)
-    i = writeRemoteBuffer(hackoff,devMat->hackOffsets,
-			  (devMat->hackCount+1)*sizeof(int));
-
-  free(hackoff);
-
-  i = writeRemoteBuffer((void*) hoff, (void *)devMat->hdiaOffsets, 
-			devMat->allocationHeight*sizeof(int));
-  i = writeRemoteBuffer((void*) values, (void *)devMat->cM, 
-			devMat->allocationHeight*devMat->hackSize*sizeof(double));
-
-  free(hoff);
-  free(values);
-
-  if(i==0)
-    return SPGPU_SUCCESS;
-  else
-    return SPGPU_UNSUPPORTED;
-#else
-  return SPGPU_UNSUPPORTED;
-#endif
-}
 
 long long int sizeofHdiagDeviceDouble(void* deviceMat)
 { int i=0,fo,fa;
@@ -447,7 +258,6 @@ int readHdiagDeviceDouble(void* deviceMat, double* a, int* off)
 #endif
 }
 
-//new
 int spmvHdiagDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
 			  double beta, void* deviceY)
 {

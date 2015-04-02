@@ -75,10 +75,10 @@ subroutine psb_d_hdiag_to_gpu(a,info)
      call freeHdiagDevice(a%deviceMat)
   endif
 
-  info = FAllocHdiagDeviceNew(a%deviceMat,nr,nc,&
+  info = FAllocHdiagDevice(a%deviceMat,nr,nc,&
        & allocheight,hacksize,hackCount,spgpu_type_double)
   if (info == 0) info = &
-       & writeHdiagDeviceDoubleNew(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
+       & writeHdiagDeviceDouble(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
 
 #endif
 
