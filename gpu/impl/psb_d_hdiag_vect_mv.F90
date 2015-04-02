@@ -77,7 +77,7 @@ subroutine psb_d_hdiag_vect_mv(alpha,a,x,beta,y,info,trans)
     if (beta /= dzero) then 
       if (.not.y%is_host()) call y%sync()
     end if
-    call a%psb_d_dia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
+    call a%psb_d_hdia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
     call y%set_host()
   else
     select type (xx => x) 
@@ -112,7 +112,7 @@ subroutine psb_d_hdiag_vect_mv(alpha,a,x,beta,y,info,trans)
 
   end if
 #else
-  call a%psb_d_dia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
+  call a%psb_d_hdia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
 #endif
   if (info /= 0) goto 9999
   call psb_erractionrestore(err_act)

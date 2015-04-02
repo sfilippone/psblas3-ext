@@ -40,6 +40,8 @@ module hdiagdev_mod
     integer(c_int) :: columns
     integer(c_int) :: diags
     integer(c_int) :: hackSize
+    integer(c_int) :: hackCount
+    integer(c_int) :: allocationHeight    
  end type hdiagdev_parms
 
 #ifdef HAVE_SPGPU  
@@ -64,6 +66,13 @@ module hdiagdev_mod
       type(hdiagdev_parms)    :: res
       integer(c_int), value :: rows,columns,diags,elementType,hackSize
     end function FgetHdiagDeviceParams
+    function FgetHdiagDeviceParamsNew(rows, columns, allocationHeight,hackSize, hackCount, elementType) &
+         & result(res) bind(c,name='getHdiagDeviceParamsNew')
+      use iso_c_binding
+      import :: hdiagdev_parms
+      type(hdiagdev_parms)    :: res
+      integer(c_int), value :: rows,columns,allocationHeight,elementType,hackSize,hackCount
+    end function FgetHdiagDeviceParamsNew
   end interface
   
 
@@ -77,6 +86,14 @@ module hdiagdev_mod
       real(c_double)        :: data(rows,*)
       type(c_ptr)           :: deviceMat
     end function FallocHdiagDevice
+    function FallocHdiagDeviceNew(deviceMat,rows,columns,allocationHeight,&
+         & hackSize,hackCount,elementType) &
+         & result(res) bind(c,name='FallocHdiagDeviceNew')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: rows,columns,allocationHeight,hackSize,hackCount,elementType
+      type(c_ptr)           :: deviceMat
+    end function FallocHdiagDeviceNew
   end interface
 
 
@@ -110,6 +127,16 @@ module hdiagdev_mod
       real(c_double)      :: a(n,*)
       integer(c_int)      :: off(*)
     end function writeHdiagDeviceDouble
+
+
+    function writeHdiagDeviceDoubleNew(deviceMat,val,hdiaOffsets, hackOffsets) &
+         & result(res) bind(c,name='writeHdiagDeviceDoubleNew')
+      use iso_c_binding
+      integer(c_int)      :: res
+      type(c_ptr), value  :: deviceMat
+      real(c_double)      :: val(*)
+      integer(c_int)      :: hdiaOffsets(*), hackOffsets(*)
+    end function writeHdiagDeviceDoubleNew
 
     function writeHdiagDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
          & result(res) bind(c,name='writeHdiagDeviceFloatComplex')

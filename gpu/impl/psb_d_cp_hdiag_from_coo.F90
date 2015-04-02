@@ -38,6 +38,7 @@ subroutine psb_d_cp_hdiag_from_coo(a,b,info)
   use psb_vectordev_mod
   use psb_d_diag_mat_mod
   use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_cp_hdiag_from_coo
+  use psb_gpu_env_mod
 #else 
   use psb_d_hdiag_mat_mod
 #endif
@@ -48,26 +49,22 @@ subroutine psb_d_cp_hdiag_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  type(psb_d_coo_sparse_mat) :: tmp
-  integer(psb_ipk_)              :: ndiag,mi,mj,dm,nd
-  integer(psb_ipk_),allocatable  :: d(:),pres(:) 
-  integer(psb_ipk_)              :: k,i,j,nc,nr,nza, nzd
   integer(psb_ipk_)              :: debug_level, debug_unit
   character(len=20)              :: name
-#ifdef HAVE_SPGPU
-  type(hdiagdev_parms) :: gpu_parms
-#endif
+
   info = psb_success_
 
-  call a%psb_d_dia_sparse_mat%cp_from_coo(b,info)
+#ifdef HAVE_SPGPU
+  a%hacksize = psb_gpu_WarpSize()
+#endif
+
+  call a%psb_d_hdia_sparse_mat%cp_from_coo(b,info)
 
 #ifdef HAVE_SPGPU
   call a%to_gpu(info)
   if (info /= 0) goto 9999
 #endif
-
-  call a%psb_d_dia_sparse_mat%free
-
+  
   return
 
 9999 continue

@@ -34,32 +34,30 @@ module psb_d_hdiag_mat_mod
 
   use iso_c_binding
   use psb_base_mod
-  use psb_d_dia_mat_mod
-  type, extends(psb_d_dia_sparse_mat) :: psb_d_hdiag_sparse_mat
+  use psb_d_hdia_mat_mod
+
+  type, extends(psb_d_hdia_sparse_mat) :: psb_d_hdiag_sparse_mat
     !
 #ifdef HAVE_SPGPU
     type(c_ptr) :: deviceMat = c_null_ptr
-    integer(psb_ipk_) :: hackSize = 32
-    integer(psb_ipk_) :: allocationHeight
-    integer(psb_ipk_) :: hacksCount
 
   contains
     procedure, nopass  :: get_fmt       => d_hdiag_get_fmt
-    procedure, pass(a) :: sizeof        => d_hdiag_sizeof
+    !  procedure, pass(a) :: sizeof        => d_hdiag_sizeof
     procedure, pass(a) :: vect_mv       => psb_d_hdiag_vect_mv
-    !procedure, pass(a) :: csmm          => psb_d_hdiag_csmm
+    ! procedure, pass(a) :: csmm          => psb_d_hdiag_csmm
     procedure, pass(a) :: csmv          => psb_d_hdiag_csmv
-!    procedure, pass(a) :: in_vect_sv    => psb_d_hdiag_inner_vect_sv
-!    procedure, pass(a) :: scals         => psb_d_hdiag_scals
-!    procedure, pass(a) :: scalv         => psb_d_hdiag_scal
-!    procedure, pass(a) :: reallocate_nz => psb_d_hdiag_reallocate_nz
-!    procedure, pass(a) :: allocate_mnnz => psb_d_hdiag_allocate_mnnz
+    !    procedure, pass(a) :: in_vect_sv    => psb_d_hdiag_inner_vect_sv
+    !    procedure, pass(a) :: scals         => psb_d_hdiag_scals
+    !    procedure, pass(a) :: scalv         => psb_d_hdiag_scal
+    !    procedure, pass(a) :: reallocate_nz => psb_d_hdiag_reallocate_nz
+    !    procedure, pass(a) :: allocate_mnnz => psb_d_hdiag_allocate_mnnz
     ! Note: we do *not* need the TO methods, because the parent type
     ! methods will work. 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_hdiag_from_coo
-!    procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hdiag_from_fmt
+    !    procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hdiag_from_fmt
     procedure, pass(a) :: mv_from_coo   => psb_d_mv_hdiag_from_coo
-!    procedure, pass(a) :: mv_from_fmt   => psb_d_mv_hdiag_from_fmt
+    !    procedure, pass(a) :: mv_from_fmt   => psb_d_mv_hdiag_from_fmt
     procedure, pass(a) :: free          => d_hdiag_free
     procedure, pass(a) :: mold          => psb_d_hdiag_mold
     procedure, pass(a) :: to_gpu        => psb_d_hdiag_to_gpu
@@ -127,11 +125,10 @@ module psb_d_hdiag_mat_mod
   end interface
 
   interface 
-    subroutine psb_d_hdiag_to_gpu(a,info, nzrm) 
+    subroutine psb_d_hdiag_to_gpu(a,info) 
       import :: psb_d_hdiag_sparse_mat, psb_ipk_
       class(psb_d_hdiag_sparse_mat), intent(inout) :: a
       integer(psb_ipk_), intent(out)             :: info
-      integer(psb_ipk_), intent(in), optional    :: nzrm
     end subroutine psb_d_hdiag_to_gpu
   end interface
 
@@ -228,21 +225,21 @@ contains
   ! == ===================================
 
   
-  function d_hdiag_sizeof(a) result(res)
-    use hdiagdev_mod
-    implicit none 
-    class(psb_d_hdiag_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
-
-! !$    res = 8 
-! !$    res = res + psb_sizeof_dp  * size(a%data)
-! !$    res = res + psb_sizeof_int * size(a%offset)
-
-    ! Should we account for the shadow data structure
-    ! on the GPU device side? 
-    ! res = 2*res
-    res = sizeofHdiagDeviceDouble(a%deviceMat)
-  end function d_hdiag_sizeof
+!!$  function d_hdiag_sizeof(a) result(res)
+!!$    use hdiagdev_mod
+!!$    implicit none 
+!!$    class(psb_d_hdiag_sparse_mat), intent(in) :: a
+!!$    integer(psb_long_int_k_) :: res
+!!$
+!!$! !$    res = 8 
+!!$! !$    res = res + psb_sizeof_dp  * size(a%data)
+!!$! !$    res = res + psb_sizeof_int * size(a%offset)
+!!$
+!!$    ! Should we account for the shadow data structure
+!!$    ! on the GPU device side? 
+!!$    ! res = 2*res
+!!$    res = sizeofHdiagDeviceDouble(a%deviceMat)
+!!$  end function d_hdiag_sizeof
 
   function d_hdiag_get_fmt() result(res)
     implicit none 
@@ -273,7 +270,7 @@ contains
     if (c_associated(a%deviceMat)) &
          & call freeHdiagDevice(a%deviceMat)
     a%deviceMat = c_null_ptr
-    call a%psb_d_dia_sparse_mat%free()
+    call a%psb_d_hdia_sparse_mat%free()
     
     return
 
@@ -288,6 +285,7 @@ contains
     if (c_associated(a%deviceMat)) &
          &  call freeHdiagDevice(a%deviceMat)
     a%deviceMat = c_null_ptr
+    call a%psb_d_hdia_sparse_mat%free()
     
     return
   end subroutine d_hdiag_finalize

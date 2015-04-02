@@ -29,8 +29,7 @@
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
   
-
-subroutine psb_d_hdiag_to_gpu(a,info,nzrm) 
+subroutine psb_d_hdiag_to_gpu(a,info) 
   
   use psb_base_mod
 #ifdef HAVE_SPGPU
@@ -44,8 +43,7 @@ subroutine psb_d_hdiag_to_gpu(a,info,nzrm)
   implicit none 
   class(psb_d_hdiag_sparse_mat), intent(inout) :: a
   integer(psb_ipk_), intent(out)             :: info
-  integer(psb_ipk_), intent(in), optional    :: nzrm
-  integer(psb_ipk_) :: m, nzm, n, c,d
+  integer(psb_ipk_) :: nr, nc, hacksize, hackcount, allocheight 
 #ifdef HAVE_SPGPU
   type(hdiagdev_parms) :: gpu_parms
 #endif
@@ -53,23 +51,35 @@ subroutine psb_d_hdiag_to_gpu(a,info,nzrm)
   info = 0
 
 #ifdef HAVE_SPGPU
-  ! (.not.allocated(a%data)).or.
-  if (.not.allocated(a%offset)) return
-  
-  n   = size(a%data,1)
-  d   = size(a%data,2)
-  c   = a%get_ncols()
-  !allocsize = a%get_size()
-  !write(*,*) 'Create the DIAG matrix'
-  gpu_parms = FgetHdiagDeviceParams(n,c,d,a%hackSize,spgpu_type_double)
+  nr = a%get_nrows()
+  nc = a%get_ncols()
+  hacksize  = a%hackSize
+  hackCount = a%nhacks
+  if (.not.allocated(a%hackOffsets)) then 
+    info = -1 
+    return
+  end if
+  allocheight = a%hackOffsets(hackCount+1) 
+!!$  write(*,*) 'HDIAG TO GPU:',nr,nc,hacksize,hackCount,allocheight,&
+!!$       & size(a%hackoffsets),size(a%diaoffsets), size(a%val)
+  if (.not.allocated(a%diaOffsets)) then
+    info = -2 
+    return
+  end if
+  if (.not.allocated(a%val)) then
+    info = -3
+    return
+  end if
 
   if (c_associated(a%deviceMat)) then 
      call freeHdiagDevice(a%deviceMat)
   endif
-  info       = FallocHdiagDevice(a%deviceMat,n,c,d,a%hackSize,a%data,spgpu_type_double)
-  if (info == 0)  info = &
-       & writeHdiagDevice(a%deviceMat,a%data,a%offset,n)
-!  if (info /= 0) goto 9999
+
+  info = FAllocHdiagDeviceNew(a%deviceMat,nr,nc,&
+       & allocheight,hacksize,hackCount,spgpu_type_double)
+  if (info == 0) info = &
+       & writeHdiagDeviceDoubleNew(a%deviceMat,a%val,a%diaOffsets,a%hackOffsets)
+
 #endif
 
 end subroutine psb_d_hdiag_to_gpu

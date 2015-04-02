@@ -96,7 +96,7 @@ subroutine psb_d_hdiag_csmv(alpha,a,x,beta,y,info,trans)
 
 #ifdef HAVE_SPGPU
   if (tra) then 
-    call a%psb_d_dia_sparse_mat%spmm(alpha,x,beta,y,info,trans)
+    call a%psb_d_hdia_sparse_mat%spmm(alpha,x,beta,y,info,trans)
   else
     !
     ! Just to test, move X/Y to/from the GPU.
@@ -122,7 +122,7 @@ subroutine psb_d_hdiag_csmv(alpha,a,x,beta,y,info,trans)
     call freeMultiVecDevice(gpY)
   endif
 #else
-  call a%psb_d_dia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
+  call a%psb_d_hdia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
 #endif
 
   call psb_erractionrestore(err_act)

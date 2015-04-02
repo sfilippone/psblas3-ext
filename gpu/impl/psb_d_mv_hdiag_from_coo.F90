@@ -37,6 +37,7 @@ subroutine psb_d_mv_hdiag_from_coo(a,b,info)
   use hdiagdev_mod
   use psb_vectordev_mod
   use psb_d_hdiag_mat_mod, psb_protect_name => psb_d_mv_hdiag_from_coo
+  use psb_gpu_env_mod
 #else 
   use psb_d_hdiag_mat_mod
 #endif
@@ -52,14 +53,18 @@ subroutine psb_d_mv_hdiag_from_coo(a,b,info)
 
   info = psb_success_
 
-  call b%fix(info)
-  if (info /= psb_success_) return
- 
-  call a%cp_from_coo(b,info)
+  
+#ifdef HAVE_SPGPU
+  a%hacksize = psb_gpu_WarpSize()
+#endif
+
+  call a%psb_d_hdia_sparse_mat%mv_from_coo(b,info)
+
+#ifdef HAVE_SPGPU
+  call a%to_gpu(info)
   if (info /= 0) goto 9999
-
-  call b%free()
-
+#endif
+  
   return
 
 9999 continue

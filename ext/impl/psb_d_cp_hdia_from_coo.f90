@@ -94,7 +94,7 @@ contains
     a%nhacks = (nr+hacksize-1)/hacksize
     nhacks   = a%nhacks
 
-    ndiag = nr+nc-1
+    ndiag = nr+nc-1 
     if (info == psb_success_) call psb_realloc(nr,irsz,info)
     if (info == psb_success_) call psb_realloc(ndiag,d,info)
     if (info == psb_success_) call psb_realloc(ndiag,offset,info)
@@ -172,14 +172,14 @@ contains
       write(*,*) 'NZEROS: ',a%nzeros, nza
       write(*,*) 'diaoffsets: ',a%diaOffsets(1:iszd)
       write(*,*) 'values: '
-      j=0
-      do k=1,nhacks
-        write(*,*) 'Hack No. ',k
-        do i=1,hacksize*(iszd/nhacks)
-          j = j + 1
-          write(*,*) j, a%val(j)
-        end do
-      end do
+!!$      j=0
+!!$      do k=1,nhacks
+!!$        write(*,*) 'Hack No. ',k
+!!$        do i=1,hacksize*(iszd/nhacks)
+!!$          j = j + 1
+!!$          write(*,*) j, a%val(j)
+!!$        end do
+!!$      end do
     end if
   end subroutine inner_cp_hdia_from_coo
   

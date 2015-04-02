@@ -77,6 +77,9 @@ typedef struct HdiagDeviceParams
   unsigned int diags;
 
   unsigned int hackSize;
+  unsigned int hackCount;
+  unsigned int allocationHeight;
+
 
 } HdiagDeviceParams;
 
@@ -84,17 +87,32 @@ int dia2hdia(void *hdiaValues,int *hdiaOffsets,int *hackOffsets,int hackSize,
 	     void* diaValues, int* diaOffsets, int diaValuesPitch, int diagonals,
 	     int rowsCount, int elementType);
 
-HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns,
+HdiagDeviceParams getHdiagDeviceParams(unsigned int rows, unsigned int columns, 				    
 				       unsigned int diags, unsigned int hackSize,
 				       unsigned int elementType);
+
 int allocHdiagDevice(void ** remoteMatrix, HdiagDeviceParams* params,double * data);
+
 void freeHdiagDevice(void* remoteMatrix);
 
 int FallocHdiagDevice(void** deviceMat, unsigned int rows, unsigned int cols, 
 		      unsigned int diags, unsigned int hackSize,
 		      double *data,unsigned int elementType);
 
+HdiagDeviceParams getHdiagDeviceParamsNew(unsigned int rows, unsigned int columns, 
+					  unsigned int allocationHeight, unsigned int hackSize,
+					  unsigned int hackCount, unsigned int elementType);
+
+int FallocHdiagDeviceNew(void** deviceMat, unsigned int rows, unsigned int cols, 
+			 unsigned int allocationHeight, unsigned int hackSize,
+			 unsigned int hackCount, unsigned int elementType);
+
+int allocHdiagDeviceNew(void ** remoteMatrix, HdiagDeviceParams* params);
+
+int writeHdiagDeviceDoubleNew(void* deviceMat, double* val, int* hdiaOffsets, int *hackOffsets);
+
 int writeHdiagDeviceDouble(void* deviceMat, double* a, int* off, int n);
+
 long long int sizeofHdiagDeviceDouble(void* deviceMat);
 #else
 #define CINTRF_UNSUPPORTED   -1
