@@ -28,8 +28,6 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
-
 subroutine psi_d_convert_hll_from_coo(a,hksz,tmp,info)
   use psb_base_mod
   use psb_d_hll_mat_mod, psb_protect_name => psi_d_convert_hll_from_coo

@@ -54,12 +54,26 @@ contains
   !
   ! Compute offsets and allocation for DIAgonal storage.
   ! Input:
-  !   nr,nc,nz,ia,ja
+  !   nr,nc,nz,ia,ja: the matrix pattern in COO
+  !   Note:  This routine is designed to be called
+  !          with either a full matrix or an horizontal stripe,
+  !          with the COO entries sorted in row major order, hence
+  !          it will handle the conversion of a strip, so it can
+  !          be used by both DIA and HDIA. In both cases NR and NC
+  !          *MUST* be the *GLOBAL* number of rows/columns, not those
+  !          of the strips, i.e. it must be that all entris in IA <=NR
+  !          and JA <= NC. 
   ! Output:
   !     nd: number of nonzero diagonals
   !      d: d(k) contains the index inside offset of diagonal k,
   !         which is, if A(I,J) /= 0 then K=NR+J-I, or (optionally) 0.
+  !         *MUST* be allocated on the *global* size NR+NC-1
+  !         
   ! offset: for each of the ND nonzero diagonals, its offset J-I
+  !
+  !  Notes: D and OFFSET together represent the set of diagonals;
+  !         D can be used outside to quickly find which entry of OFFSET
+  !         a given a(i,j) corresponds to, without doing a search. 
   ! 
   ! 1. Optionally init D vector to zeros
   ! 2. Walk through the NZ pairs (I,J):
@@ -72,7 +86,9 @@ contains
   !
   ! Setting to 0 allows to reuse this function in a loop in a dry run
   ! to estimate the allocation size for HDIA; without settng to 0 we
-  ! would  need to zero the whole vector, resulting in a quadratic overall cost. 
+  ! would  need to zero the whole vector, resulting
+  ! in a quadratic overall cost. Outside this subroutine, it is possible
+  ! to zero selectively the entres in D by using the indices in OFFSET.
   !
   !
   subroutine psi_dia_offset_from_coo(nr,nc,nz,ia,ja,nd,d,offset,info,&
