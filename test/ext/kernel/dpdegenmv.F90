@@ -198,8 +198,8 @@ program pdgenmv
     flops  = flops / (t2)
     tflops = tflops / (tt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
-    write(psb_out_unit,'("Conversion time              (CPU)   : ",F20.3)')&
-         & tcnv
+    write(psb_out_unit,'("Conversion time         (ms) (CPU)   : ",F20.3)')&
+         & tcnv*1.d3
     write(psb_out_unit,&
          & '("Number of flops (",i6," prod)        : ",F20.0,"           ")') &
          &  ntests,flops

@@ -86,7 +86,6 @@ subroutine psb_d_mv_elg_from_coo(a,b,info)
 #endif
   call psb_realloc(nr,a%idiag,info) 
   if (info == 0) call psb_realloc(ld,nzm,a%ja,info) 
-  if (info == 0) call psb_realloc(nr,a%idiag,info)
   if (info == 0) call psb_realloc(ld,nzm,a%val,info)
   if (info /= 0) goto 9999
   k = 0

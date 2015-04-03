@@ -48,52 +48,9 @@ subroutine psb_c_mv_ell_from_coo(a,b,info)
   if (.not.b%is_by_rows()) call b%fix(info)
   if (info /= psb_success_) return
 
-  nr  = b%get_nrows()
-  nc  = b%get_ncols()
-  nza = b%get_nzeros()
-
-  ! If it is sorted then we can lessen memory impact 
-  a%psb_c_base_sparse_mat = b%psb_c_base_sparse_mat
-  
-  ! First compute the number of nonzeros in each row.
-  call psb_realloc(nr,a%irn,info) 
-  if (info /= 0) goto 9999
-  a%irn = 0
-  nzm = 0 
-  do i=1, nza
-    ir = b%ia(i)
-    a%irn(ir) = a%irn(ir) + 1
-    nzm = max(nzm,a%irn(ir))
-  end do
-  ! Second: copy the column indices.
-  call psb_realloc(nr,a%idiag,info) 
-  if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
-  if (info == 0) call psb_realloc(nr,a%idiag,info)
-  if (info == 0) call psb_realloc(nr,nzm,a%val,info)
-  if (info /= 0) goto 9999
-  k = 0
-  a%nzt = 0 
-  do i=1, nr
-    ic = i
-    do j=1, a%irn(i)
-      ir = b%ia(k+j)
-      ic = b%ja(k+j)
-      a%ja(i,j) = ic
-      a%val(i,j) = b%val(k+j)
-    end do
-    do j=a%irn(i)+1,nzm
-      a%ja(i,j) = ic
-      a%val(i,j) = czero
-    end do
-    k = k + a%irn(i)
-  end do
-  a%nzt = k
+  call a%cp_from_coo(b,info)
   call b%free()
 
-  return
-
-9999 continue
-  info = psb_err_alloc_dealloc_
   return
 
 end subroutine psb_c_mv_ell_from_coo

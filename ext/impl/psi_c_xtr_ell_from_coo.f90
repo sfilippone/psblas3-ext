@@ -28,29 +28,32 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
+subroutine psi_c_xtr_ell_from_coo(i,nr,mxrwl,iac,jac,valc, &
+     & ja,val,irn,diag,ld)
+  use psb_base_mod, only : psb_ipk_, psb_success_, psb_spk_, czero
   
-
-subroutine psb_s_mv_ell_from_coo(a,b,info) 
-  
-  use psb_base_mod
-  use psb_s_ell_mat_mod, psb_protect_name => psb_s_mv_ell_from_coo
   implicit none 
+  integer(psb_ipk_) :: i,nr,mxrwl,ld
+  integer(psb_ipk_) :: iac(*),jac(*),ja(ld,*),irn(*),diag(*)
+  complex(psb_spk_)    :: valc(*), val(ld,*)
+  
+  integer(psb_ipk_) :: ii,jj,kk, kc,nc, ir, ic 
+  kc = 1
+  do ii = 1, nr
+    nc = irn(ii)
+    do jj=1,nc
+      !if (iac(kc) /= i+ii-1) write(0,*) 'Copy mismatch',iac(kc),i,ii,i+ii-1
+      ir = iac(kc)
+      ic = jac(kc)
+      if (ir == ic) diag(ii) = jj
+      ja(ii,jj)  = ic
+      val(ii,jj) = valc(kc) 
+      kc = kc + 1
+    end do
+    do jj = nc+1,mxrwl
+      ja(ii,jj)  = i+ii-1
+      val(ii,jj) = czero
+    end do
+  end do
+end subroutine psi_c_xtr_ell_from_coo
 
-  class(psb_s_ell_sparse_mat), intent(inout) :: a
-  class(psb_s_coo_sparse_mat), intent(inout) :: b
-  integer(psb_ipk_), intent(out)             :: info
-
-  !locals
-  Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic
-
-  info = psb_success_
-
-  if (.not.b%is_by_rows()) call b%fix(info)
-  if (info /= psb_success_) return
-
-  call a%cp_from_coo(b,info)
-  call b%free()
-
-  return
-
-end subroutine psb_s_mv_ell_from_coo

@@ -408,8 +408,17 @@ module psb_d_ell_mat_mod
     end subroutine psb_d_ell_scals
   end interface
   
-
-
+  interface
+    subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize) 
+      import :: psb_d_ell_sparse_mat, psb_d_coo_sparse_mat, psb_ipk_
+      implicit none 
+      class(psb_d_ell_sparse_mat), intent(inout) :: a
+      class(psb_d_coo_sparse_mat), intent(in)    :: tmp
+      integer(psb_ipk_), intent(out)             :: info
+      integer(psb_ipk_), intent(in), optional    :: hacksize
+    end subroutine psi_d_convert_ell_from_coo
+  end interface
+    
 contains 
 
   ! == ===================================

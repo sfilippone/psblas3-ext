@@ -382,6 +382,10 @@ psi_s_xtr_ell_from_coo.o \
 psi_c_xtr_ell_from_coo.o \
 psi_d_xtr_ell_from_coo.o \
 psi_z_xtr_ell_from_coo.o \
+psi_s_convert_ell_from_coo.o \
+psi_c_convert_ell_from_coo.o \
+psi_d_convert_ell_from_coo.o \
+psi_z_convert_ell_from_coo.o \
 psi_s_convert_hll_from_coo.o \
 psi_c_convert_hll_from_coo.o \
 psi_d_convert_hll_from_coo.o \

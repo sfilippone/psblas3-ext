@@ -28,29 +28,86 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-  
+subroutine psi_s_convert_ell_from_coo(a,tmp,info,hacksize) 
 
-subroutine psb_s_mv_ell_from_coo(a,b,info) 
-  
   use psb_base_mod
-  use psb_s_ell_mat_mod, psb_protect_name => psb_s_mv_ell_from_coo
+  use psb_s_ell_mat_mod, psb_protect_name => psi_s_convert_ell_from_coo
+  use psi_ext_util_mod
   implicit none 
 
   class(psb_s_ell_sparse_mat), intent(inout) :: a
-  class(psb_s_coo_sparse_mat), intent(inout) :: b
+  class(psb_s_coo_sparse_mat), intent(in)    :: tmp
   integer(psb_ipk_), intent(out)             :: info
+  integer(psb_ipk_), intent(in), optional    :: hacksize
 
   !locals
-  Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic
+  Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, &
+       & ir, ic, hsz_, ldv
 
   info = psb_success_
 
-  if (.not.b%is_by_rows()) call b%fix(info)
+  nr  = tmp%get_nrows()
+  nc  = tmp%get_ncols()
+  nza = tmp%get_nzeros()
+
+  hsz_ = 1
+  if (present(hacksize)) then
+    if (hacksize> 1) hsz_ = hacksize
+  end if
+  ! Make ldv a multiple of hacksize 
+  ldv = ((nr+hsz_-1)/hsz_)*hsz_
+
+  ! If it is sorted then we can lessen memory impact 
+  a%psb_s_base_sparse_mat = tmp%psb_s_base_sparse_mat
+
+  ! First compute the number of nonzeros in each row.
+  call psb_realloc(nr,a%irn,info) 
+  if (info /= psb_success_) return
+  a%irn = 0
+  do i=1, nza
+    ir = tmp%ia(i)
+    a%irn(ir) = a%irn(ir) + 1
+  end do
+  nzm = 0
+  a%nzt = 0 
+  do i=1,nr
+    nzm = max(nzm,a%irn(i))
+    a%nzt = a%nzt + a%irn(i)
+  end do
+  ! Second: copy the column indices.
+  call psb_realloc(nr,a%idiag,info) 
+  if (info == psb_success_) call psb_realloc(ldv,nzm,a%ja,info) 
+  if (info == psb_success_) call psb_realloc(ldv,nzm,a%val,info)
   if (info /= psb_success_) return
 
-  call a%cp_from_coo(b,info)
-  call b%free()
+  if (.false.) then 
+    k = 0
+    a%nzt = 0 
+    do i=1, nr
+      ic = i
+      a%idiag(i) = 1
+      do j=1, a%irn(i)
+        ir = tmp%ia(k+j)
+        ic = tmp%ja(k+j)
+        if (ir == ic) a%idiag(i) = j
+        a%ja(i,j)  = ic
+        a%val(i,j) = tmp%val(k+j)
+      end do
+      do j=a%irn(i)+1,nzm
+        a%ja(i,j) = ic
+        a%val(i,j) = szero
+      end do
+      k = k + a%irn(i)
+    end do
 
-  return
+    a%val(nr+1:,:) = szero
+    a%ja(nr+1:,:)  = nr
 
-end subroutine psb_s_mv_ell_from_coo
+    a%nzt = k
+  else
+    call psi_s_xtr_ell_from_coo(1,nr,nzm,tmp%ia,tmp%ja,tmp%val,&
+         & a%ja,a%val,a%irn,a%idiag,ldv)
+  end if
+
+end subroutine psi_s_convert_ell_from_coo
+
