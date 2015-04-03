@@ -63,9 +63,8 @@ subroutine psb_d_mv_ell_from_coo(a,b,info)
   do i=1, nza
     ir = b%ia(i)
     a%irn(ir) = a%irn(ir) + 1
+    nzm = max(nzm,a%irn(ir))
   end do
-  nzm = maxval(a%irn(1:nr))
-
   ! Second: copy the column indices.
   call psb_realloc(nr,a%idiag,info) 
   if (info == 0) call psb_realloc(nr,nzm,a%ja,info) 
@@ -79,7 +78,6 @@ subroutine psb_d_mv_ell_from_coo(a,b,info)
     do j=1, a%irn(i)
       ir = b%ia(k+j)
       ic = b%ja(k+j)
-      if (ir == ic) a%idiag(i)=j
       a%ja(i,j) = ic
       a%val(i,j) = b%val(k+j)
     end do

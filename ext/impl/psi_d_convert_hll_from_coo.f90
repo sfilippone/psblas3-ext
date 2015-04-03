@@ -31,7 +31,7 @@
 subroutine psi_d_convert_hll_from_coo(a,hksz,tmp,info)
   use psb_base_mod
   use psb_d_hll_mat_mod, psb_protect_name => psi_d_convert_hll_from_coo
-
+  use psi_ext_util_mod
   implicit none 
   class(psb_d_hll_sparse_mat), intent(inout) :: a
   class(psb_d_coo_sparse_mat), intent(in)    :: tmp
@@ -106,7 +106,7 @@ subroutine psi_d_convert_hll_from_coo(a,hksz,tmp,info)
     isz   = (a%hkoffs(hk+1)-a%hkoffs(hk))
     mxrwl = isz/hksz
     nza   = sum(a%irn(i:i+ir-1))
-    call inner_copy(i,ir,mxrwl,tmp%ia(kc:kc+nza-1),&
+    call psi_d_xtr_ell_from_coo(i,ir,mxrwl,tmp%ia(kc:kc+nza-1),&
          & tmp%ja(kc:kc+nza-1),tmp%val(kc:kc+nza-1),&
          & a%ja(k:k+isz-1),a%val(k:k+isz-1),a%irn(i:i+ir-1),&
          & a%idiag(i:i+ir-1),hksz)
@@ -118,32 +118,5 @@ subroutine psi_d_convert_hll_from_coo(a,hksz,tmp,info)
   ! Third copy the other stuff
   if (info /= 0) return
   call a%set_sorted(.true.)
-
-contains
-
-  subroutine  inner_copy(i,ir,mxrwl,iac,&
-       & jac,valc,ja,val,irn,diag,ld)
-    implicit none 
-    integer(psb_ipk_) :: i,ir,mxrwl,ld
-    integer(psb_ipk_) :: iac(*),jac(*),ja(ld,*),irn(*),diag(*)
-    real(psb_dpk_)    :: valc(*), val(ld,*)
-
-    integer(psb_ipk_) :: ii,jj,kk, kc,nc
-    kc = 1
-    do ii = 1, ir
-      nc = irn(ii)
-      do jj=1,nc
-        if (iac(kc) /= i+ii-1) write(0,*) 'Copy mismatch',iac(kc),i,ii,i+ii-1
-        if (jac(kc) == i+ii-1) diag(ii) = jj
-        ja(ii,jj)  = jac(kc) 
-        val(ii,jj) = valc(kc) 
-        kc = kc + 1
-      end do
-      do jj = nc+1,mxrwl
-        ja(ii,jj)  = i+ii-1
-        val(ii,jj) = dzero
-      end do
-    end do
-  end subroutine inner_copy
 
 end subroutine psi_d_convert_hll_from_coo

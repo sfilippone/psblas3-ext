@@ -378,6 +378,10 @@ psb_z_mv_hll_from_coo.o \
 psb_z_mv_hll_from_fmt.o \
 psb_z_mv_hll_to_coo.o \
 psb_z_mv_hll_to_fmt.o \
+psi_s_xtr_ell_from_coo.o \
+psi_c_xtr_ell_from_coo.o \
+psi_d_xtr_ell_from_coo.o \
+psi_z_xtr_ell_from_coo.o \
 psi_s_convert_hll_from_coo.o \
 psi_c_convert_hll_from_coo.o \
 psi_d_convert_hll_from_coo.o \

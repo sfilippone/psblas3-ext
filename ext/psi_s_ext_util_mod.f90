@@ -49,6 +49,18 @@ module psi_s_ext_util_mod
     end subroutine psi_s_xtr_dia_from_coo
   end interface
 
+  interface psi_xtr_ell_from_coo
+    subroutine psi_s_xtr_ell_from_coo(i,nr,mxrwl,iac,jac,&
+         & valc,ja,val,irn,diag,ld)
+      import  :: psb_ipk_, psb_spk_
+      implicit none 
+      integer(psb_ipk_) :: i,nr,mxrwl,ld
+      integer(psb_ipk_) :: iac(*),jac(*),ja(ld,*),irn(*),diag(*)
+      real(psb_spk_)    :: valc(*), val(ld,*)
+      
+    end subroutine psi_s_xtr_ell_from_coo
+  end interface psi_xtr_ell_from_coo
+      
   interface psi_xtr_coo_from_dia
     subroutine psi_s_xtr_coo_from_dia(nr,nc,ia,ja,val,nz,nrd,ncd,data,offsets,&
          & info,rdisp)
