@@ -37,6 +37,8 @@ subroutine psb_c_cp_elg_from_coo(a,b,info)
   use elldev_mod
   use psb_vectordev_mod
   use psb_c_elg_mat_mod, psb_protect_name => psb_c_cp_elg_from_coo
+  use psi_ext_util_mod
+  use psb_gpu_env_mod
 #else 
   use psb_c_elg_mat_mod
 #endif
@@ -47,7 +49,7 @@ subroutine psb_c_cp_elg_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  Integer(Psb_ipk_)   :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic, ld
+  Integer(Psb_ipk_)   :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic, ld, hacksize
   integer(psb_ipk_)   :: debug_level, debug_unit
   character(len=20)   :: name
   type(psb_c_coo_sparse_mat)  :: tmp
@@ -56,7 +58,34 @@ subroutine psb_c_cp_elg_from_coo(a,b,info)
 #endif
 
   info = psb_success_
+#ifdef HAVE_SPGPU
+  hacksize = psb_gpu_WarpSize()
+#else
+  hacksize = 1
+#endif
+  if (b%is_by_rows()) then
+    call psi_c_convert_ell_from_coo(a,b,info)
+  else
+    call b%cp_to_coo(tmp,info)
+    if (info == psb_success_)  call psi_c_convert_ell_from_coo(a,tmp,info) 
+    if (info == psb_success_)  call tmp%free()
+  end if
+  if (info /= psb_success_) goto 9999
 
+#ifdef HAVE_SPGPU
+  call a%to_gpu(info)  
+  if (info /= psb_success_) goto 9999
+#endif  
+
+
+  return
+
+  
+  
+
+  return
+  
+  
   call b%cp_to_coo(tmp, info)
   call a%mv_from_Coo(tmp,info)
   return

@@ -55,11 +55,18 @@ subroutine psb_c_mv_elg_from_coo(a,b,info)
 
   info = psb_success_
 
-    info = psb_success_
+  info = psb_success_
 
   if (.not.b%is_by_rows()) call b%fix(info)
   if (info /= psb_success_) return
 
+  call a%cp_from_coo(b,info)
+  call b%free()
+
+  return
+
+
+  
   nr  = b%get_nrows()
   nc  = b%get_ncols()
   nza = b%get_nzeros()

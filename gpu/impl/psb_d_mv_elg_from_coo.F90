@@ -55,11 +55,18 @@ subroutine psb_d_mv_elg_from_coo(a,b,info)
 
   info = psb_success_
 
-    info = psb_success_
+  info = psb_success_
 
   if (.not.b%is_by_rows()) call b%fix(info)
   if (info /= psb_success_) return
 
+  call a%cp_from_coo(b,info)
+  call b%free()
+
+  return
+
+
+  
   nr  = b%get_nrows()
   nc  = b%get_ncols()
   nza = b%get_nzeros()
@@ -86,6 +93,7 @@ subroutine psb_d_mv_elg_from_coo(a,b,info)
 #endif
   call psb_realloc(nr,a%idiag,info) 
   if (info == 0) call psb_realloc(ld,nzm,a%ja,info) 
+  if (info == 0) call psb_realloc(nr,a%idiag,info)
   if (info == 0) call psb_realloc(ld,nzm,a%val,info)
   if (info /= 0) goto 9999
   k = 0
