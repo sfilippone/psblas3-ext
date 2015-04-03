@@ -88,7 +88,8 @@ program d_file_spmv
   integer            :: i,info,j,nrt, ns, nr, ipart
   integer            :: internal, m,ii,nnzero
   real(psb_dpk_) :: t0,t1, t2, tprec, flops
-  real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth, tcnvcsr,tcnvgpu
+  real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth,&
+       & tcnvcsr, tcnvc1, tcnvgpu, tcnvg1
   integer :: nrhs, nrow, n_row, dim, nv, ne
   integer, allocatable :: ivg(:), ipv(:)
 
@@ -279,8 +280,10 @@ program d_file_spmv
     call psb_barrier(ictxt)
     t1 = psb_wtime()
     call a%cscnv(info,mold=acmold)
-    tcnvcsr = tcnvcsr + psb_wtime()-t1
-    call psb_amx(ictxt,tcnvcsr)
+    t2 = psb_Wtime() -t1
+    call psb_amx(ictxt,t2)
+    tcnvcsr = tcnvcsr + t2
+    if (j==1) tcnvc1 = t2
     ns = size(x_col)
     do i=1, ns
       x_col(i) = 1.0 + (1.0*i)/ns
@@ -301,8 +304,11 @@ program d_file_spmv
     call psb_barrier(ictxt)
     t1 = psb_wtime()
     call agpu%cscnv(info,mold=agmold)
-    tcnvgpu = tcnvgpu+(psb_wtime()-t1)
-    call psb_amx(ictxt,tcnvgpu)
+    call psb_gpu_DeviceSync()
+    t2 = psb_Wtime() -t1
+    call psb_amx(ictxt,t2)
+    if (j==1) tcnvg1 = t2
+    tcnvgpu = tcnvgpu + t2
 #endif
   end do
 
@@ -412,10 +418,18 @@ program d_file_spmv
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
-    write(psb_out_unit,'("Time to convert A from COO to CPU    : ",F20.3)')&
-         & tcnvcsr,tcnvcsr/ncnv
-    write(psb_out_unit,'("Time to convert A from COO to GPU    : ",F20.3)')&
-         & tcnvgpu, tcnvgpu/ncnv
+    write(psb_out_unit,'("Time to convert A from COO to CPU (1): ",F20.9)')&
+         & tcnvc1
+    write(psb_out_unit,'("Time to convert A from COO to CPU (a): ",F20.9)')&
+         & tcnvcsr/ncnv
+    write(psb_out_unit,'("Time to convert A from COO to CPU (t): ",F20.9)')&
+         & tcnvcsr
+    write(psb_out_unit,'("Time to convert A from COO to GPU (1): ",F20.9)')&
+         & tcnvg1
+    write(psb_out_unit,'("Time to convert A from COO to GPU (a): ",F20.9)')&
+         & tcnvgpu/ncnv
+    write(psb_out_unit,'("Time to convert A from COO to GPU (t): ",F20.9)')&
+         & tcnvgpu
 
 #endif
     write(psb_out_unit,&
