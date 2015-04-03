@@ -35,11 +35,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <string.h>
 
 #if defined(HAVE_CUDA)
 #include "cuda_runtime.h"
 #include "core.h" 
 #include "cuComplex.h"
+#include "fcusparse.h"
 
 int allocRemoteBuffer(void** buffer, int count);
 int allocMappedMemory(void **buffer, void **dp, int size);
@@ -114,7 +117,7 @@ int readDoubleComplex(void *, cuDoubleComplex*, int);
 int readMultiDoubleComplex(void*, cuDoubleComplex*, int, int );
 void freeDoubleComplex(void *);
 
-
+double etime();
 
 #endif
 

@@ -35,7 +35,7 @@ module psb_gpu_env_mod
   !use psb_penv_mod
   !use psi_comm_buffers_mod, only : psb_buffer_queue
   use iso_c_binding
-
+  use base_cusparse_mod
 !  interface psb_gpu_init
 !    module procedure  psb_gpu_init
 !  end interface
@@ -217,6 +217,7 @@ contains
       end if
       info = psb_C_gpu_init(dev_)
     end if
+    info = initFcusparse()
     call psb_gpuCreateHandle()
 #endif
   end subroutine psb_gpu_init
@@ -238,6 +239,8 @@ contains
   end function psb_gpu_getDeviceCount
 
   subroutine psb_gpu_exit()
+    integer :: res
+    res =  closeFcusparse()
     call psb_gpuDestroyHandle()
     call psb_gpuClose()
     call psb_cudaReset()

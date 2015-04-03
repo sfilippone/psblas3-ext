@@ -79,6 +79,7 @@ subroutine psb_d_mv_ell_from_coo(a,b,info)
     do j=1, a%irn(i)
       ir = b%ia(k+j)
       ic = b%ja(k+j)
+      if (ir == ic) a%idiag(i)=j
       a%ja(i,j) = ic
       a%val(i,j) = b%val(k+j)
     end do

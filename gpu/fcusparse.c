@@ -37,33 +37,42 @@
 #include <cuda_runtime.h>
 #include <cusparse_v2.h>
 #include "cintrf.h"
+#include "fcusparse.h"
+
+static   cusparseHandle_t *cusparse_handle=NULL;
 
 
-static   cusparseHandle_t *my_handle=NULL;
-
-int FcusparseCreate(void **context);
-int FcusparseDestroy(void **context);
-cusparseHandle_t *getHandle();
 void setHandle(cusparseHandle_t);
 
-int FcusparseCreate(void **context) 
+int FcusparseCreate() 
 {
+  int ret=CUSPARSE_STATUS_SUCCESS;
   cusparseHandle_t *handle;
-
-  if ((handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-    return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-  *context = (void *) handle;
-  return ((int)cusparseCreate(handle));
+  if (cusparse_handle == NULL) {
+    if ((handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
+      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
+    ret = (int)cusparseCreate(handle);
+    if (ret == CUSPARSE_STATUS_SUCCESS)
+      cusparse_handle = handle;
+  }
+  return (ret);
 }
 
-int FcusparseDestroy(void **context) 
+int FcusparseDestroy() 
 {
   int val;
-  val = (int) cusparseDestroy(*((cusparseHandle_t *) *context));
-  free(*context);
-  *context=NULL;
+  val = (int) cusparseDestroy(*cusparse_handle);
+  free(cusparse_handle);
+  cusparse_handle=NULL;
   return(val);
 }
+cusparseHandle_t *getHandle()
+{
+  if (cusparse_handle == NULL)
+    FcusparseCreate();
+  return(cusparse_handle);
+}
+
 
 
 /*    Single precision real   */ 

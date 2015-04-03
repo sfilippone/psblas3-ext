@@ -79,12 +79,12 @@ psb_vectordev_mod.o: psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev
 vectordev.o: cuda_util.o   vectordev.h
 elldev.o: elldev.c
 fcusparse.h elldev.c: elldev.h vectordev.h
-fcusparse.o: fcusparse.h
+fcusparse.o: fcusparse.h fcusparse_fct.h
 svectordev.o:  svectordev.h vectordev.h
 dvectordev.o:  dvectordev.h vectordev.h
 cvectordev.o:  cvectordev.h vectordev.h
 zvectordev.o:  zvectordev.h vectordev.h
-
+psb_gpu_env_mod.o: base_cusparse_mod.o
 psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 	psb_d_gpu_vect_mod.o  psb_s_gpu_vect_mod.o\
 	psb_z_gpu_vect_mod.o  psb_c_gpu_vect_mod.o\

@@ -28,7 +28,6 @@
   /* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE */
   /* POSSIBILITY OF SUCH DAMAGE. */
  
-
 typedef struct T_CSRGDeviceMat
 {			
   cusparseMatDescr_t descr;
@@ -62,7 +61,6 @@ typedef struct T_Hmat
 {
   T_HYBGDeviceMat *mat;
 } T_Hmat;
-
 
 int T_spmvCSRGDevice(T_Cmat *Mat, TYPE alpha, void *deviceX, 
 		     TYPE beta, void *deviceY);
@@ -106,13 +104,7 @@ int T_spmvCSRGDevice(T_Cmat *Matrix, TYPE alpha, void *deviceX,
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
   void *vX, *vY;
   int r,n;
-  
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((r=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (r);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -132,13 +124,7 @@ int T_spsvCSRGDevice(T_Cmat *Matrix, TYPE alpha, void *deviceX,
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
   void *vX, *vY;
   int r,n;
-  
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((r=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (r);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -182,9 +168,9 @@ int T_CSRGDeviceFree(T_Cmat *Matrix)
   T_CSRGDeviceMat *cMat= Matrix->mat;
   
   if (cMat!=NULL) {
-    freeRemoteBuffer(cMat->irp);
-    freeRemoteBuffer(cMat->ja);
-    freeRemoteBuffer(cMat->val);
+    //freeRemoteBuffer(cMat->irp);
+    //freeRemoteBuffer(cMat->ja);
+    //freeRemoteBuffer(cMat->val);
     cusparseDestroyMatDescr(cMat->descr);
     cusparseDestroySolveAnalysisInfo(cMat->triang);  
     free(cMat);
@@ -222,12 +208,8 @@ int T_CSRGDeviceCsrsmAnalysis(T_Cmat *Matrix)
   T_CSRGDeviceMat *cMat= Matrix->mat;  
   cusparseSolveAnalysisInfo_t info;
   int rc;
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((rc=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (rc);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
+
   rc= (int)  cusparseTcsrsv_analysis(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
 				     cMat->m,cMat->nz,cMat->descr,
 				     cMat->val, cMat->irp, cMat->ja,
@@ -283,10 +265,10 @@ int T_CSRGDevice2Host(T_Cmat *Matrix, int m, int n, int nz,
 int T_HYBGDeviceFree(T_Hmat *Matrix)
 {
   T_HYBGDeviceMat *hMat= Matrix->mat;
-
-  freeRemoteBuffer(hMat->irp);
-  freeRemoteBuffer(hMat->ja);
-  freeRemoteBuffer(hMat->val);
+  
+  //freeRemoteBuffer(hMat->irp);
+  //freeRemoteBuffer(hMat->ja);
+  //freeRemoteBuffer(hMat->val);
   cusparseDestroyMatDescr(hMat->descr);
   cusparseDestroySolveAnalysisInfo(hMat->triang);
   cusparseDestroyHybMat(hMat->hybA);
@@ -304,13 +286,8 @@ int T_spmvHYBGDevice(T_Hmat *Matrix, TYPE alpha, void *deviceX,
   void *vX, *vY;
   int r,n,rc;
   cusparseMatrixType_t type;
-  
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((r=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (r);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
+
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -348,14 +325,14 @@ int T_HYBGDeviceAlloc(T_Hmat *Matrix,int nr, int nc, int nz)
   hMat->m  = nr;
   hMat->n  = nc;
   hMat->nz = nz;
-  if (nr1 == 0) nr1 = 1;
-  if (nz1 == 0) nz1 = 1;
-  if ((rc= allocRemoteBuffer(((void **) &(hMat->irp)), ((nr1+1)*sizeof(int)))) != 0)
-    return(rc);
-  if ((rc= allocRemoteBuffer(((void **) &(hMat->ja)), ((nz1)*sizeof(int)))) != 0)
-    return(rc);
-  if ((rc= allocRemoteBuffer(((void **) &(hMat->val)), ((nz1)*sizeof(TYPE)))) != 0)
-    return(rc);
+  /* if (nr1 == 0) nr1 = 1; */
+  /* if (nz1 == 0) nz1 = 1; */
+  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->irp)), ((nr1+1)*sizeof(int)))) != 0) */
+  /*   return(rc); */
+  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->ja)), ((nz1)*sizeof(int)))) != 0) */
+  /*   return(rc); */
+  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->val)), ((nz1)*sizeof(TYPE)))) != 0) */
+  /*   return(rc); */
   if ((rc= cusparseCreateMatDescr(&(hMat->descr))) !=0) 
     return(rc);
   if ((rc= cusparseCreateSolveAnalysisInfo(&(hMat->triang))) !=0)
@@ -399,13 +376,7 @@ int T_spsvHYBGDevice(T_Hmat *Matrix, TYPE alpha, void *deviceX,
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
   void *vX, *vY;
   int r,n;
-  
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((r=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (r);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -422,12 +393,8 @@ int T_HYBGDeviceHybsmAnalysis(T_Hmat *Matrix)
   T_HYBGDeviceMat *hMat= Matrix->mat;  
   cusparseSolveAnalysisInfo_t info;
   int rc;
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((rc=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (rc);    
-  }
+  cusparseHandle_t *my_handle=getHandle();
+
   /* rc = (int) cusparseGetMatType(hMat->descr); */
   /* fprintf(stderr,"Analysis MatType: %d\n",rc); */
   /* rc = (int) cusparseGetMatDiagType(hMat->descr); */
@@ -446,16 +413,20 @@ int T_HYBGDeviceHybsmAnalysis(T_Hmat *Matrix)
 int T_HYBGHost2Device(T_Hmat *Matrix, int m, int n, int nz,
 		      int *irp, int *ja, TYPE *val) 
 {
-  int rc;
+  int rc; double t1,t2;
+  int nr1=m, nz1=nz;
   T_HYBGDeviceMat *hMat= Matrix->mat;
+  cusparseHandle_t *my_handle=getHandle();
 
-  if (my_handle==NULL) {
-    if ((my_handle = (cusparseHandle_t *)malloc(sizeof(cusparseHandle_t)))==NULL) 
-      return((int) CUSPARSE_STATUS_ALLOC_FAILED);
-    if ((rc=cusparseCreate(my_handle))!=CUSPARSE_STATUS_SUCCESS)
-      return (rc);    
-  }
-  
+  if (nr1 == 0) nr1 = 1;
+  if (nz1 == 0) nz1 = 1;
+  if ((rc= allocRemoteBuffer(((void **) &(hMat->irp)), ((nr1+1)*sizeof(int)))) != 0)
+    return(rc);
+  if ((rc= allocRemoteBuffer(((void **) &(hMat->ja)), ((nz1)*sizeof(int)))) != 0)
+    return(rc);
+  if ((rc= allocRemoteBuffer(((void **) &(hMat->val)), ((nz1)*sizeof(TYPE)))) != 0)
+    return(rc);
+
   if ((rc=writeRemoteBuffer((void *) irp, (void *) hMat->irp, 
 			    (m+1)*sizeof(int)))
       != SPGPU_SUCCESS) 
@@ -475,7 +446,7 @@ int T_HYBGHost2Device(T_Hmat *Matrix, int m, int n, int nz,
   /* fprintf(stderr,"Conversion DiagType: %d\n",rc); */
   /* rc = (int) cusparseGetMatFillMode(hMat->descr); */
   /* fprintf(stderr,"Conversion FillMode: %d\n",rc); */
-
+  //t1=etime();
   rc = (int) cusparseTcsr2hyb(*my_handle, m, n,
 		   hMat->descr, 
 		   (const TYPE *)hMat->val,
@@ -483,6 +454,13 @@ int T_HYBGHost2Device(T_Hmat *Matrix, int m, int n, int nz,
 		   hMat->hybA,0,
 		   CUSPARSE_HYB_PARTITION_AUTO);
 
+  freeRemoteBuffer(hMat->irp);  hMat->irp = NULL;
+  freeRemoteBuffer(hMat->ja);   hMat->ja  = NULL;
+  freeRemoteBuffer(hMat->val);  hMat->val = NULL;
+
+  //cudaSync();
+  //t2 = etime();
+  //fprintf(stderr,"Inner call to cusparseTcsr2hyb: %lf\n",(t2-t1));
   if (rc != 0) {
     fprintf(stderr,"From csr2hyb: %d\n",rc);
   }

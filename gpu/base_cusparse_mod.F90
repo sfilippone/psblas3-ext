@@ -79,25 +79,21 @@ module base_cusparse_mod
     enumerator cusparse_direction_column
   end enum
 
-  type(c_ptr), save :: cusparse_context = c_null_ptr
-
 
 #if defined(HAVE_CUDA) && defined(HAVE_SPGPU)
   
   interface 
-    function FcusparseCreate(context) &
+    function FcusparseCreate() &
          & bind(c,name="FcusparseCreate") result(res)
       use iso_c_binding
-      type(c_ptr)    :: context
       integer(c_int) :: res
     end function FcusparseCreate
   end interface
 
   interface 
-    function FcusparseDestroy(context) &
+    function FcusparseDestroy() &
          & bind(c,name="FcusparseDestroy") result(res)
       use iso_c_binding
-      type(c_ptr)    :: context
       integer(c_int) :: res
     end function FcusparseDestroy
   end interface
@@ -107,23 +103,15 @@ contains
   function initFcusparse() result(res)
     implicit none 
     integer(c_int) :: res
-    if (c_associated(cusparse_context)) then 
-      res = cusparse_status_success
-    else
-      res = FcusparseCreate(cusparse_context)
-    end if
+    
+    res = FcusparseCreate()
   end function initFcusparse
 
   function closeFcusparse() result(res)
     implicit none 
     integer(c_int) :: res
-    if (c_associated(cusparse_context)) then 
-      res = FcusparseDestroy(cusparse_context)
-    else
-      res = cusparse_status_success
-    end if
+    res = FcusparseDestroy()
   end function closeFcusparse
 
 #endif
-
 end module base_cusparse_mod

@@ -210,7 +210,7 @@ int gpuInit(int dev)
 
   cudaGetDeviceProperties(prop,dev);
   hasUVA=getDeviceHasUVA();
-
+  
   return err;
   
 }
@@ -641,6 +641,19 @@ void freeDoubleComplex(void *d_DoubleComplex)
 }
 
 
+
+double etime() 
+{
+  struct timeval tt;
+  struct timezone tz;
+  double temp;
+  if (gettimeofday(&tt,&tz) != 0) {
+    fprintf(stderr,"Fatal error for gettimeofday ??? \n");
+    exit(-1);
+  }
+  temp = ((double)tt.tv_sec) + ((double)tt.tv_usec)*1.0e-6;
+  return(temp);
+}
 
 
 
