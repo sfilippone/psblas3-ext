@@ -134,7 +134,7 @@ contains
       nc = irn(ii)
       do jj=1,nc
         if (iac(kc) /= i+ii-1) write(0,*) 'Copy mismatch',iac(kc),i,ii,i+ii-1
-        if (jac(kc) == i+ii-1) a%idiag(ii) = jj
+        if (jac(kc) == i+ii-1) diag(ii) = jj
         ja(ii,jj)  = jac(kc) 
         val(ii,jj) = valc(kc) 
         kc = kc + 1
