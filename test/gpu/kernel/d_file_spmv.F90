@@ -420,16 +420,16 @@ program d_file_spmv
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
     write(psb_out_unit,'("Time to convert A from COO to CPU (1): ",F20.9)')&
          & tcnvc1
-    write(psb_out_unit,'("Time to convert A from COO to CPU (a): ",F20.9)')&
-         & tcnvcsr/ncnv
     write(psb_out_unit,'("Time to convert A from COO to CPU (t): ",F20.9)')&
          & tcnvcsr
+    write(psb_out_unit,'("Time to convert A from COO to CPU (a): ",F20.9)')&
+         & tcnvcsr/ncnv
     write(psb_out_unit,'("Time to convert A from COO to GPU (1): ",F20.9)')&
          & tcnvg1
-    write(psb_out_unit,'("Time to convert A from COO to GPU (a): ",F20.9)')&
-         & tcnvgpu/ncnv
     write(psb_out_unit,'("Time to convert A from COO to GPU (t): ",F20.9)')&
          & tcnvgpu
+    write(psb_out_unit,'("Time to convert A from COO to GPU (a): ",F20.9)')&
+         & tcnvgpu/ncnv
 
 #endif
     write(psb_out_unit,&
@@ -450,11 +450,11 @@ program d_file_spmv
     write(psb_out_unit,'("MFLOPS                       (xGPU)  : ",F20.3)')&
          & tflops/1.d6
 
-    write(psb_out_unit,'("Time for ",i6," products (s) (GPU.)  : ",F20.3)')&
+    write(psb_out_unit,'("Time for ",i6," products (s) (GPU)   : ",F20.3)')&
          & ngpu*ntests,gt2
-    write(psb_out_unit,'("Time per product    (ms)     (GPU.)  : ",F20.3)')&
+    write(psb_out_unit,'("Time per product    (ms)     (GPU)   : ",F20.3)')&
          & gt2*1.d3/(1.d0*ntests*ngpu)
-    write(psb_out_unit,'("MFLOPS                       (GPU.)  : ",F20.3)')&
+    write(psb_out_unit,'("MFLOPS                       (GPU)   : ",F20.3)')&
          & gflops/1.d6
 #endif
     !
