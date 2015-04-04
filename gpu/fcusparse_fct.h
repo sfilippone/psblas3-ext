@@ -168,9 +168,9 @@ int T_CSRGDeviceFree(T_Cmat *Matrix)
   T_CSRGDeviceMat *cMat= Matrix->mat;
   
   if (cMat!=NULL) {
-    //freeRemoteBuffer(cMat->irp);
-    //freeRemoteBuffer(cMat->ja);
-    //freeRemoteBuffer(cMat->val);
+    freeRemoteBuffer(cMat->irp);
+    freeRemoteBuffer(cMat->ja);
+    freeRemoteBuffer(cMat->val);
     cusparseDestroyMatDescr(cMat->descr);
     cusparseDestroySolveAnalysisInfo(cMat->triang);  
     free(cMat);
@@ -266,9 +266,6 @@ int T_HYBGDeviceFree(T_Hmat *Matrix)
 {
   T_HYBGDeviceMat *hMat= Matrix->mat;
   
-  //freeRemoteBuffer(hMat->irp);
-  //freeRemoteBuffer(hMat->ja);
-  //freeRemoteBuffer(hMat->val);
   cusparseDestroyMatDescr(hMat->descr);
   cusparseDestroySolveAnalysisInfo(hMat->triang);
   cusparseDestroyHybMat(hMat->hybA);
@@ -325,14 +322,7 @@ int T_HYBGDeviceAlloc(T_Hmat *Matrix,int nr, int nc, int nz)
   hMat->m  = nr;
   hMat->n  = nc;
   hMat->nz = nz;
-  /* if (nr1 == 0) nr1 = 1; */
-  /* if (nz1 == 0) nz1 = 1; */
-  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->irp)), ((nr1+1)*sizeof(int)))) != 0) */
-  /*   return(rc); */
-  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->ja)), ((nz1)*sizeof(int)))) != 0) */
-  /*   return(rc); */
-  /* if ((rc= allocRemoteBuffer(((void **) &(hMat->val)), ((nz1)*sizeof(TYPE)))) != 0) */
-  /*   return(rc); */
+
   if ((rc= cusparseCreateMatDescr(&(hMat->descr))) !=0) 
     return(rc);
   if ((rc= cusparseCreateSolveAnalysisInfo(&(hMat->triang))) !=0)
