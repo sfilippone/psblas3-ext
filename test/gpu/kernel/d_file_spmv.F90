@@ -159,7 +159,16 @@ program d_file_spmv
       call psb_abort(ictxt)
     end if
 
-    nrt = aux_a%get_nrows()
+    !
+    ! Always get nnz from original matrix.
+    ! Some formats add fill-in and do not keep track
+    ! of how many were added. So if the original matrix 
+    ! contained some extra zeros, the count of entries
+    ! is not recoverable exactly.
+    !    
+    nrt  = aux_a%get_nrows()
+    annz = aux_a%get_nzeros()
+    call psb_bcast(ictxt,annz)
     call psb_bcast(ictxt,nrt)
 
     write(psb_out_unit,'("Generating an rhs...")')
@@ -178,6 +187,7 @@ program d_file_spmv
 
   else
 
+    call psb_bcast(ictxt,annz)
     call psb_bcast(ictxt,nrt)
     call psb_realloc(nrt,1,aux_b,info)
     if (info /= 0) then
@@ -384,7 +394,6 @@ program d_file_spmv
 #endif
 
 
-  annz     = a%get_nzeros()
   amatsize = a%sizeof()
   agmatsize = agpu%sizeof()
   damatsize = amatsize
@@ -392,7 +401,6 @@ program d_file_spmv
   dgmatsize = agmatsize
   dgmatsize = dgmatsize/(1024*1024)
   descsize = psb_sizeof(desc_a)
-  call psb_sum(ictxt,annz)
   call psb_sum(ictxt,damatsize)
   call psb_sum(ictxt,dgmatsize)
   call psb_sum(ictxt,descsize)
