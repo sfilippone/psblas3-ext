@@ -74,40 +74,14 @@ subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize)
     nzm = max(nzm,a%irn(i))
     a%nzt = a%nzt + a%irn(i)
   end do
-  ! Second: copy the column indices.
+  ! Allocate and extract.
   call psb_realloc(nr,a%idiag,info) 
   if (info == psb_success_) call psb_realloc(ldv,nzm,a%ja,info) 
   if (info == psb_success_) call psb_realloc(ldv,nzm,a%val,info)
   if (info /= psb_success_) return
 
-  if (.false.) then 
-    k = 0
-    a%nzt = 0 
-    do i=1, nr
-      ic = i
-      a%idiag(i) = 1
-      do j=1, a%irn(i)
-        ir = tmp%ia(k+j)
-        ic = tmp%ja(k+j)
-        if (ir == ic) a%idiag(i) = j
-        a%ja(i,j)  = ic
-        a%val(i,j) = tmp%val(k+j)
-      end do
-      do j=a%irn(i)+1,nzm
-        a%ja(i,j) = ic
-        a%val(i,j) = dzero
-      end do
-      k = k + a%irn(i)
-    end do
-
-    a%val(nr+1:,:) = dzero
-    a%ja(nr+1:,:)  = nr
-
-    a%nzt = k
-  else
-    call psi_d_xtr_ell_from_coo(1,nr,nzm,tmp%ia,tmp%ja,tmp%val,&
-         & a%ja,a%val,a%irn,a%idiag,ldv)
-  end if
-
+  call psi_d_xtr_ell_from_coo(1,nr,nzm,tmp%ia,tmp%ja,tmp%val,&
+       & a%ja,a%val,a%irn,a%idiag,ldv)
+  
 end subroutine psi_d_convert_ell_from_coo
 
