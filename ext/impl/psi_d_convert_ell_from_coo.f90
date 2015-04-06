@@ -43,6 +43,9 @@ subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize)
   !locals
   Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, &
        & ir, ic, hsz_, ldv
+  real(psb_dpk_) :: t0,t1
+  logical, parameter :: timing=.true.
+  
 
   info = psb_success_
 
@@ -63,6 +66,8 @@ subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize)
   ! First compute the number of nonzeros in each row.
   call psb_realloc(nr,a%irn,info) 
   if (info /= psb_success_) return
+  if (timing) t0=psb_wtime()
+
   a%irn = 0
   do i=1, nza
     ir = tmp%ia(i)
@@ -74,14 +79,21 @@ subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize)
     nzm = max(nzm,a%irn(i))
     a%nzt = a%nzt + a%irn(i)
   end do
+  if (timing) then
+    t1 = psb_wtime()
+    write(*,*) 'convert_ell_from_coo: count and scan:',t1-t0
+  end if
   ! Allocate and extract.
   call psb_realloc(nr,a%idiag,info) 
   if (info == psb_success_) call psb_realloc(ldv,nzm,a%ja,info) 
   if (info == psb_success_) call psb_realloc(ldv,nzm,a%val,info)
   if (info /= psb_success_) return
-
+  if (timing) t0=psb_wtime()
   call psi_d_xtr_ell_from_coo(1,nr,nzm,tmp%ia,tmp%ja,tmp%val,&
        & a%ja,a%val,a%irn,a%idiag,ldv)
-  
+  if (timing) then
+    t1 = psb_wtime()
+    write(*,*) 'convert_ell_from_coo: time of xtr_ell:',t1-t0
+  end if
 end subroutine psi_d_convert_ell_from_coo
 
