@@ -64,10 +64,11 @@ subroutine psb_c_cp_elg_from_coo(a,b,info)
   hacksize = 1
 #endif
   if (b%is_by_rows()) then
-    call psi_c_convert_ell_from_coo(a,b,info)
+    call psi_c_convert_ell_from_coo(a,b,info,hacksize=hacksize)
   else
     call b%cp_to_coo(tmp,info)
-    if (info == psb_success_)  call psi_c_convert_ell_from_coo(a,tmp,info) 
+    if (info == psb_success_)  call psi_c_convert_ell_from_coo(a,tmp,&
+         & info,hacksize=hacksize) 
     if (info == psb_success_)  call tmp%free()
   end if
   if (info /= psb_success_) goto 9999
