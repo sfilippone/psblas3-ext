@@ -68,6 +68,21 @@ module hlldev_mod
   end interface
 
 
+  interface psi_copy_coo_to_hlg
+    function psi_copy_coo_to_hlg_double(nr,nc,nza, hacksize,noffs,isz,&
+         & irn,idisp, hoffs,ja,val, deviceMat)&
+         & result(res) bind(c,name='psiCopyCooToHlgDouble')
+      use iso_c_binding
+      integer(c_int)  :: res
+      integer(c_int), value :: nr,  nc, nza,  hacksize, noffs,isz
+      integer(c_int)  ::  irn(*), idisp(*),  ja(*), hoffs(*)
+      real(c_double)  ::  val(*)
+      type(c_ptr), value :: deviceMat
+    end function psi_copy_coo_to_hlg_double
+  end interface
+  
+
+
   interface writeHllDevice 
 
     function writeHllDeviceFloat(deviceMat,val,ja,hkoffs,irn) &

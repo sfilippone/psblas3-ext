@@ -109,6 +109,11 @@ int readHllDeviceFloatComplex(void* deviceMat, float complex* val,
 			      int* ja, int *hkoffs, int* irn);
 int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
 			       int* ja, int *hkoffs, int* irn);
+
+
+int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			  int *irn, int *hoffs,  int *idisp, int *ja, double *val, void *deviceMat);
+
 #else
 #define CINTRF_UNSUPPORTED   -1
 #endif

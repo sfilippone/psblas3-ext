@@ -481,11 +481,11 @@ int getEllDeviceMaxRowSize(void* deviceMat)
 
 void w_cuda_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
 		   int *rS,int *devIdisp, int *devJa, double *devVal,
-		   int *rP, int *cM);
+		   int *rP, double *cM);
 
 int w_CopyCooToElg(int nr, int nc, int nza, int hacksz, int ldv, int nzm,
 		   int *rS,int *devIdisp, int *devJa, double *devVal,
-		   int *rP, int *cM)
+		   int *rP, double *cM)
 
 { int i,j,k;
   spgpuHandle_t handle; 
@@ -525,7 +525,7 @@ int psiCopyCooToElgDouble(int nr, int nc, int nza, int hacksz, int ldv, int nzm,
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
   if (i==0) i = w_CopyCooToElg(nr,nc,nza,hacksz,ldv,nzm,(int *) devMat->rS,devIdisp,devJa,devVal,
-			       (int *) devMat->rP, (int *)devMat->cM);
+			       (int *) devMat->rP, (double *)devMat->cM);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));

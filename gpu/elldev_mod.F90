@@ -79,7 +79,7 @@ module elldev_mod
       real(c_double)  ::  val(*)
       type(c_ptr), value :: deviceMat
     end function psi_copy_coo_to_elg_double    
-  end interface psi_copy_coo_to_elg
+  end interface
   
 
   interface writeEllDevice

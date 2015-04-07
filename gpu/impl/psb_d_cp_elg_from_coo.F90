@@ -86,8 +86,8 @@ subroutine psb_d_cp_elg_from_coo(a,b,info)
     nza  = b%get_nzeros()
     info = FallocEllDevice(a%deviceMat,nr,nzm,nza,nc,spgpu_type_double,1)
 
-    info = psi_copy_coo_to_elg(nr,nc,nza, hacksize,ldv,nzm, a%irn,idisp,b%ja,b%val,&
-         & a%deviceMat)
+    if (info == 0) info = psi_copy_coo_to_elg(nr,nc,nza, hacksize,ldv,nzm, &
+         & a%irn,idisp,b%ja,b%val, a%deviceMat)
 
 #else
 

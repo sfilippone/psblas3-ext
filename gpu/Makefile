@@ -42,7 +42,7 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o \
 	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 
 
-CUDAOBJS=w_cuda_CopyCooToElg.o
+CUDAOBJS=w_cuda_CopyCooToElg.o  w_cuda_CopyCooToHlg.o
 
 OBJS=$(COBJS) $(FOBJS) $(CUDAOBJS)
 
