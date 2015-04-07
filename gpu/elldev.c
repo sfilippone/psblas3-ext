@@ -322,6 +322,9 @@ int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
 #endif
 }
 
+
+  
+
 int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
@@ -466,4 +469,87 @@ int getEllDeviceMaxRowSize(void* deviceMat)
   return SPGPU_UNSUPPORTED;
 #endif
 }
+
+
+
+
+// New copying interface
+
+
+/* void  w_Cuda_cpy_idx_2d_vect(spgpuHandle_t handle, int nr, double *V1d, double *V2d, int ldv2d,  */
+/* 			     int *Lidxs, int ldix); */
+
+void w_cuda_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, double *devVal,
+		   int *rP, int *cM);
+
+int w_CopyCooToElg(int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, double *devVal,
+		   int *rP, int *cM)
+
+{ int i,j,k;
+  spgpuHandle_t handle; 
+  
+  handle = psb_gpuGetHandle();
+  w_cuda_CopyCooToElg(handle, nr,  nc, nza, hacksz, ldv, nzm,
+		      rS,devIdisp, devJa, devVal, rP, cM);
+
+  return(0);
+  /* w_Cuda_cpy_idx_2d_vect(handle, nr, (double *) v1d->v_, (double *) v2d->v_, v2d->pitch_, */
+  /* 			 (int *) lidxs->v_, lidxs->pitch_); */
+
+  /* //fprintf(stderr,"%p %p %p %p %p %p %p %p %p \n",handle,idxs,vi,vj,va,idxdiag,vdiag,lidxs,vv); */
+  /* w_Cuda_coeff_upd_a(handle, ifirst, nb, (int *) idxs->v_, dim1,dim2, */
+  /* 		     (int *)vi->v_, (int *)vj->v_, (double *)va->v_, (int *)idxdiag->v_,  */
+  /* 		     (double *)vdiag->v_,(double *)vinvdiag->v_,nr, nc, */
+  /* 		     (int *)lidxs->v_, (double *)vv->v_,c1,c6); */
+
+}
+
+
+
+int psiCopyCooToElgDouble(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, double *val, void *deviceMat)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
+  double *devVal;
+  int *devIdisp, *devJa;
+
+  allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
+  allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
+  allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(double));
+  i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(double));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
+
+  if (i==0) i = w_CopyCooToElg(nr,nc,nza,hacksz,ldv,nzm,(int *) devMat->rS,devIdisp,devJa,devVal,
+			       (int *) devMat->rP, (int *)devMat->cM);
+  // Ex updateFromHost function
+  //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
+  //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
+  //if (i==0) i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+
+
+  freeRemoteBuffer(devIdisp);
+  freeRemoteBuffer(devJa);
+  freeRemoteBuffer(devVal);
+  
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceDouble",i);
+  }
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+
+
+
+
+
+
 #endif

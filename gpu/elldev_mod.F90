@@ -69,6 +69,19 @@ module elldev_mod
   end interface
 
 
+  interface psi_copy_coo_to_elg
+    function psi_copy_coo_to_elg_double(nr,nc,nza, hacksize,ldv,nzm, irn,idisp,ja,val,&
+         & deviceMat) result(res) bind(c,name='psiCopyCooToElgDouble')
+      use iso_c_binding
+      integer(c_int)  :: res
+      integer(c_int), value :: nr,  nc, nza,  hacksize, ldv,  nzm
+      integer(c_int)  ::  irn(*), idisp(*),  ja(*)
+      real(c_double)  ::  val(*)
+      type(c_ptr), value :: deviceMat
+    end function psi_copy_coo_to_elg_double    
+  end interface psi_copy_coo_to_elg
+  
+
   interface writeEllDevice
  
     function writeEllDeviceFloat(deviceMat,val,ja,ldj,irn) &

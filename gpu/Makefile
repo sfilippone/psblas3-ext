@@ -42,7 +42,9 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o \
 	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 
 
-OBJS=$(COBJS) $(FOBJS)
+CUDAOBJS=w_cuda_CopyCooToElg.o
+
+OBJS=$(COBJS) $(FOBJS) $(CUDAOBJS)
 
 lib: cmp ilib copy
 
@@ -53,6 +55,8 @@ copy: cmp ilib
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 	/bin/cp -p *$(.mod) $(INCDIR)
 
+$(CUDAOBJS): 
+	(cd CUDA; $(MAKE))
 hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
 psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o
 psb_i_gpu_vect_mod.o : psb_vectordev_mod.o psb_gpu_env_mod.o

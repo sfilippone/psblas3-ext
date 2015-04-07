@@ -121,6 +121,9 @@ int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
 			       double complex beta, void* deviceY);
 
 
+int psiCopyCooToElgDouble(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, double *val, void *deviceMat);
+
 int getEllDevicePitch(void* deviceMat);
 
 // sparse Ell matrix-vector product

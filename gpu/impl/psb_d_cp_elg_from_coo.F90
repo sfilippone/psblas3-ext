@@ -31,7 +31,7 @@
   
 
 subroutine psb_d_cp_elg_from_coo(a,b,info) 
-  
+
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use elldev_mod
@@ -49,10 +49,12 @@ subroutine psb_d_cp_elg_from_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  Integer(Psb_ipk_)   :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic, ld, hacksize
+  Integer(Psb_ipk_)   :: nza, nr, i,j,k, idl,err_act, nc, nzm, &
+       & ir, ic, ld, ldv, hacksize
   integer(psb_ipk_)   :: debug_level, debug_unit
   character(len=20)   :: name
   type(psb_d_coo_sparse_mat)  :: tmp
+  integer(psb_ipk_), allocatable  :: idisp(:)
 #ifdef HAVE_SPGPU
   type(elldev_parms) :: gpu_parms
 #endif
@@ -63,27 +65,122 @@ subroutine psb_d_cp_elg_from_coo(a,b,info)
 #else
   hacksize = 1
 #endif
-  if (b%is_by_rows()) then
-    call psi_d_convert_ell_from_coo(a,b,info,hacksize=hacksize)
-  else
-    call b%cp_to_coo(tmp,info)
-    if (info == psb_success_)  call psi_d_convert_ell_from_coo(a,tmp,&
-         & info,hacksize=hacksize) 
-    if (info == psb_success_)  call tmp%free()
-  end if
-  if (info /= psb_success_) goto 9999
+
+  if (.true.) then
+
+    if (.not.b%is_by_rows()) then
+      info = -2
+      goto 9999
+    end if
 
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)  
-  if (info /= psb_success_) goto 9999
+    call psi_d_count_ell_from_coo(a,b,idisp,ldv,nzm,info,hacksize=hacksize)
+
+    
+    if (c_associated(a%deviceMat)) then 
+      call freeEllDevice(a%deviceMat)
+    endif
+    
+    nr   = b%get_nrows()
+    nc   = b%get_ncols()
+    nza  = b%get_nzeros()
+    info = FallocEllDevice(a%deviceMat,nr,nzm,nza,nc,spgpu_type_double,1)
+
+    info = psi_copy_coo_to_elg(nr,nc,nza, hacksize,ldv,nzm, a%irn,idisp,b%ja,b%val,&
+         & a%deviceMat)
+
+#else
+
+    call psi_d_convert_ell_from_coo(a,b,info,hacksize=hacksize)
+
+#ifdef HAVE_SPGPU
+    call a%to_gpu(info)  
+    if (info /= psb_success_) goto 9999
+#endif  
+#endif
+
+  else
+    if (b%is_by_rows()) then
+      call psi_d_convert_ell_from_coo(a,b,info,hacksize=hacksize)
+    else
+      call b%cp_to_coo(tmp,info)
+      if (info == psb_success_)  call psi_d_convert_ell_from_coo(a,tmp,&
+           & info,hacksize=hacksize) 
+      if (info == psb_success_)  call tmp%free()
+    end if
+    if (info /= psb_success_) goto 9999
+
+#ifdef HAVE_SPGPU
+    call a%to_gpu(info)  
+    if (info /= psb_success_) goto 9999
 #endif  
 
-  
+  endif
   return
 
 9999 continue
   info = psb_err_alloc_dealloc_
   return
+
+contains
+  
+  subroutine psi_d_count_ell_from_coo(a,tmp,idisp,ldv,nzm,info,hacksize) 
+
+    use psb_base_mod
+    use psi_ext_util_mod
+    implicit none 
+
+    class(psb_d_ell_sparse_mat), intent(inout) :: a
+    class(psb_d_coo_sparse_mat), intent(in)    :: tmp
+    integer(psb_ipk_), allocatable, intent(out) :: idisp(:)
+    integer(psb_ipk_), intent(out)             :: info, nzm, ldv
+    integer(psb_ipk_), intent(in), optional    :: hacksize
+
+    !locals
+    Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, &
+         & ir, ic, hsz_
+    real(psb_dpk_) :: t0,t1
+    logical, parameter :: timing=.true.
+
+
+    info = psb_success_
+
+    nr  = tmp%get_nrows()
+    nc  = tmp%get_ncols()
+    nza = tmp%get_nzeros()
+
+    hsz_ = 1
+    if (present(hacksize)) then
+      if (hacksize> 1) hsz_ = hacksize
+    end if
+    ! Make ldv a multiple of hacksize 
+    ldv = ((nr+hsz_-1)/hsz_)*hsz_
+
+    ! If it is sorted then we can lessen memory impact 
+    a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
+
+    ! First compute the number of nonzeros in each row.
+    call psb_realloc(nr,a%irn,info)
+    if (info == psb_success_) call psb_realloc(nr+1,idisp,info) 
+    if (info /= psb_success_) return
+    if (timing) t0=psb_wtime()
+
+    a%irn = 0
+    do i=1, nza
+      ir = tmp%ia(i)
+      a%irn(ir) = a%irn(ir) + 1
+    end do
+    nzm = 0
+    a%nzt = 0
+    idisp(1) = 0 
+    do i=1,nr
+      nzm = max(nzm,a%irn(i))
+      a%nzt = a%nzt + a%irn(i)
+      idisp(i+1) = a%nzt
+    end do
+
+  end subroutine psi_d_count_ell_from_coo
+  
 
 
 end subroutine psb_d_cp_elg_from_coo
