@@ -32,7 +32,7 @@ void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hack
 
 __global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza,
 					  int hacksz, int noffs, int isz,
-					  int *rS, int *hackOffs. int *devIdisp, int *devJa,
+					  int *rS, int *hackOffs, int *devIdisp, int *devJa,
 					  double *devVal,  int *rP, double *cM)
 {
   int ir, k, ipnt, rsz;
@@ -46,7 +46,7 @@ __global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza,
     int hackId = i / hacksz;
     int hackLaneId = i % hacksz;
     int hackOffset = hackOffs[hackId] + hackLaneId;
-
+    int nzm = (hackOffs[hackId+1]-hackOffs[hackId])/hacksz;
     rsz=rS[i];
     ipnt=devIdisp[i];
     ir = hackOffset;
