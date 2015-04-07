@@ -30,33 +30,37 @@ void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hack
 #endif
 
 
-#if 0 
- 
-
-__global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza, int hacksz, int ldv, int nzm,
-			  int *rS, int *devIdisp, int *devJa, double *devVal,  int *rP, double *cM)
+__global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza,
+					  int hacksz, int noffs, int isz,
+					  int *rS, int *hackOffs. int *devIdisp, int *devJa,
+					  double *devVal,  int *rP, double *cM)
 {
   int ir, k, ipnt, rsz;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
   int i=ii+ki; 
 
-  if (ki >= nr) return; 
-  if (i >= nr) return; 
+  if (ki >= nrws) return; 
   
 
-  ipnt=devIdisp[i];
-  rsz=rS[i];
-  ir = i;
-  for (k=0; k<rsz; k++) {
-    rP[ir] = devJa[ipnt];
-    cM[ir] = devVal[ipnt];
-    ir += ldv;
-    ipnt++;
-  }
-  for (k=rsz; k<nzm; k++) {
-    rP[ir] = i;
-    cM[ir] = 0.0;
-    ir += ldv;
+  if (i<nr) {
+    int hackId = i / hacksz;
+    int hackLaneId = i % hacksz;
+    int hackOffset = hackOffs[hackId] + hackLaneId;
+
+    rsz=rS[i];
+    ipnt=devIdisp[i];
+    ir = hackOffset;
+    for (k=0; k<rsz; k++) {
+      rP[ir] = devJa[ipnt];
+      cM[ir] = devVal[ipnt];
+      ir += hacksz;
+      ipnt++;
+    }
+    for (k=rsz; k<nzm; k++) {
+      rP[ir] = i;
+      cM[ir] = 0.0;
+      ir += hacksz;
+    }
   }
     
 }    
@@ -65,19 +69,19 @@ __global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza, int
 
 
 
-void _w_Cuda_cpy_coo_2_hlg(spgpuHandle_t handle, int nrws, int i, int nr, int nza, int hacksz, int noffs, int isz,
-			   int *rS, int *hackOffs, int *devIdisp, int *devJa, double *devVal,  int *rP, double *cM)
+void _w_Cuda_cpy_coo_2_hlg(spgpuHandle_t handle, int nrws, int i, int nr, int nza,
+			   int hacksz, int noffs, int isz,
+			   int *rS, int *hackOffs, int *devIdisp, int *devJa,
+			   double *devVal,  int *rP, double *cM)
 {
   dim3 block (THREAD_BLOCK, 1);
   dim3 grid ((nrws + THREAD_BLOCK - 1) / THREAD_BLOCK);
   
   _w_Cuda_cpy_coo_2_hlg_krn 
-    <<< grid, block, 0, handle->currentStream >>>(i,nrws,nr, nza, hacksz, ldv, nzm,
-						  rS,devIdisp,devJa,devVal,rP,cM);
+    <<< grid, block, 0, handle->currentStream >>>(i,nrws,nr, nza, hacksz, noffs, isz,
+						  rS,hackOffs,devIdisp,devJa,devVal,rP,cM);
 
 }
-
-#endif
 
 
 void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int noffs, int isz, 
@@ -90,11 +94,10 @@ void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hack
   //fprintf(stderr,"Loop on j: %d\n",j); 
   for (i=0; i<nr; i+=nrws) {
     nrws = MIN(maxNForACall, nr - i);
-    //fprintf(stderr,"ifirst: %d i : %d nrws: %d i + ifirst + (nrws -1) -1 %d \n",ifirst,i,nrws,i + ifirst + (nrws -1) -1);
-#if 0
+    //fprintf(stderr,"ifirst: %d i : %d nrws: %d i + ifirst + (nrws -1) -1 %d \n",
+    //        ifirst,i,nrws,i + ifirst + (nrws -1) -1);
     _w_Cuda_cpy_coo_2_hlg(handle,nrws,i, nr, nza, hacksz, noffs, isz,
 			  rS, hackOffs, devIdisp, devJa, devVal,  rP, cM);
-#endif
   }
 
 }
