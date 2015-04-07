@@ -33,14 +33,15 @@ void w_cuda_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hack
 
  
 
-__global__ void _w_Cuda_cpy_coo_2_elg_krn(int ii, int nr, int nza, int hacksz, int ldv, int nzm,
+__global__ void _w_Cuda_cpy_coo_2_elg_krn(int ii, int nrws, int nr, int nza, int hacksz, int ldv, int nzm,
 			  int *rS, int *devIdisp, int *devJa, double *devVal,  int *rP, double *cM)
 {
   int ir, k, ipnt, rsz;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
   int i=ii+ki; 
 
-  if (ki >= nr) return; 
+  if (ki >= nrws) return; 
+  if (i >= nr) return; 
 
   ipnt=devIdisp[i];
   rsz=rS[i];
@@ -70,7 +71,7 @@ void _w_Cuda_cpy_coo_2_elg(spgpuHandle_t handle, int nrws, int i, int nr, int nz
   dim3 grid ((nrws + THREAD_BLOCK - 1) / THREAD_BLOCK);
 
   _w_Cuda_cpy_coo_2_elg_krn 
-    <<< grid, block, 0, handle->currentStream >>>(i,nr, nza, hacksz, ldv, nzm,
+    <<< grid, block, 0, handle->currentStream >>>(i,nrws, nr, nza, hacksz, ldv, nzm,
 						  rS,devIdisp,devJa,devVal,rP,cM);
 
 }
