@@ -43,7 +43,8 @@ int allocRemoteBuffer(void** buffer, int count)
     }
   else
     { 
-      fprintf(stderr,"CUDA allocRemoteBuffer Error: %s\n", cudaGetErrorString(err));
+      fprintf(stderr,"CUDA allocRemoteBuffer for %d bytes Error: %s \n",
+	      count, cudaGetErrorString(err));
       if(err == cudaErrorMemoryAllocation)
 	return SPGPU_OUTOFMEMORY;
       else
