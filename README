@@ -12,10 +12,10 @@ This package contains:
 
 The architectural ideas of the GPU plugin are explained in 
 
-D. Barbieri, V. Cardellini, S. Filippone and D. Rouson 
-Design Patterns for Scientific Computations on Sparse Matrices
-M. Alexander et al. (Eds.): Euro-Par 2011 Workshops, Part I, LNCS
-7155, pp. 367--376. Springer, Heidelberg (2012)  
+ V. Cardellini, S. Filippone and D. Rouson
+ Design Patterns for Scientific Computations on
+ Sparse Matrices
+ Scientific Computing, 22(2014), pp. 1--19.
  
 The architecture of the Fortran 2003 sparse BLAS is described in 
 
