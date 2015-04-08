@@ -235,13 +235,17 @@ contains
   function d_hlg_sizeof(a) result(res)
     implicit none 
     class(psb_d_hlg_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_long_int_k_) :: res, isz,nr,nh
     res = 8 
-    res = res + psb_sizeof_dp  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irn)
-    res = res + psb_sizeof_int * size(a%idiag)
-    res = res + psb_sizeof_int * size(a%hkoffs)
-    res = res + psb_sizeof_int * size(a%ja)
+    nr = a%get_nrows()
+    nh = size(a%hkoffs)
+    isz = a%hkoffs(nh) 
+    
+    res = res + psb_sizeof_dp  * isz ! size(a%val)
+    res = res + psb_sizeof_int * nr ! size(a%irn)
+    res = res + psb_sizeof_int * nr ! size(a%idiag)
+    res = res + psb_sizeof_int * nh ! size(a%hkoffs)
+    res = res + psb_sizeof_int * isz !size(a%ja)
     ! Should we account for the shadow data structure
     ! on the GPU device side? 
     ! res = 2*res

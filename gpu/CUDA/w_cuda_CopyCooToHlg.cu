@@ -32,8 +32,9 @@ void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hack
 
 __global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza,
 					  int hacksz, int noffs, int isz,
-					  int *rS, int *hackOffs, int *devIdisp, int *devJa,
-					  double *devVal,  int *rP, double *cM)
+					  int *rS, int *hackOffs, int *devIdisp, 
+					  int *devJa, double *devVal, 
+					  int *rP, double *cM)
 {
   int ir, k, ipnt, rsz;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
@@ -47,12 +48,17 @@ __global__ void _w_Cuda_cpy_coo_2_hlg_krn(int ii, int nrws, int nr, int nza,
     int hackLaneId = i % hacksz;
     int hackOffset = hackOffs[hackId] + hackLaneId;
     int nzm = (hackOffs[hackId+1]-hackOffs[hackId])/hacksz;
-    rsz=rS[i];
-    ipnt=devIdisp[i];
-    ir = hackOffset;
+    rsz  = rS[i];
+    ipnt = devIdisp[i];
+    ir   = hackOffset;
     for (k=0; k<rsz; k++) {
+#if 1
       rP[ir] = devJa[ipnt];
       cM[ir] = devVal[ipnt];
+#else 
+      rP[ir] = ipnt;
+      cM[ir] = 0.0; 
+#endif      
       ir += hacksz;
       ipnt++;
     }
@@ -87,15 +93,14 @@ void _w_Cuda_cpy_coo_2_hlg(spgpuHandle_t handle, int nrws, int i, int nr, int nz
 void w_cuda_CopyCooToHlg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int noffs, int isz, 
 			 int *rS, int *hackOffs, int *devIdisp, int *devJa, double *devVal,
 			 int *rP, double *cM)
-{ int i,j,k, nrws;
+{ int i, nrws;
   //int maxNForACall = THREAD_BLOCK*handle->maxGridSizeX;
   int maxNForACall = max(handle->maxGridSizeX, THREAD_BLOCK*handle->maxGridSizeX);
   
   //fprintf(stderr,"Loop on j: %d\n",j); 
   for (i=0; i<nr; i+=nrws) {
     nrws = MIN(maxNForACall, nr - i);
-    //fprintf(stderr,"ifirst: %d i : %d nrws: %d i + ifirst + (nrws -1) -1 %d \n",
-    //        ifirst,i,nrws,i + ifirst + (nrws -1) -1);
+    //fprintf(stderr,"cpy_coo_2_hlg:  i : %d nrws: %d \n", i,nrws);
     _w_Cuda_cpy_coo_2_hlg(handle,nrws,i, nr, nza, hacksz, noffs, isz,
 			  rS, hackOffs, devIdisp, devJa, devVal,  rP, cM);
   }

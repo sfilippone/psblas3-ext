@@ -54,7 +54,10 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
   character(len=20)   :: name='hll_from_coo'
   Integer(Psb_ipk_)   :: nza, nr, i,j,irw, idl,err_act, nc, isz,irs
   integer(psb_ipk_)   :: nzm, ir, ic, k, hk, mxrwl, noffs, kc
-
+  integer(psb_ipk_), allocatable :: irn(:), ja(:), hko(:)
+  real(psb_dpk_), allocatable :: val(:)
+  logical, parameter :: debug=.false.
+  
   info = psb_success_
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
@@ -72,13 +75,13 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
     nr   = b%get_nrows()
     nc   = b%get_ncols()
     nza  = b%get_nzeros()
-    !write(0,*) 'Copying through GPU'
+    if (debug) write(0,*) 'Copying through GPU'
     call  psi_compute_hckoff_from_coo(a,noffs,isz,hksz,idisp,b,info)
     if (info /=0) then 
       write(0,*) ' Error from psi_compute_hckoff:',info, noffs,isz
       return
     end if
-    !write(0,*) ' From psi_compute_hckoff:',noffs,isz,a%hkoffs(1:min(10,noffs+1))
+    if (debug)write(0,*) ' From psi_compute_hckoff:',noffs,isz,a%hkoffs(1:min(10,noffs+1))
     if (c_associated(a%deviceMat)) then 
       call freeHllDevice(a%deviceMat)
     endif
@@ -86,7 +89,30 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
     if (info == 0) info = psi_copy_coo_to_hlg(nr,nc,nza, hksz,noffs,isz,&
          &  a%irn,a%hkoffs,idisp,b%ja, b%val, a%deviceMat)
 
-
+    if (debug) then 
+      call a%psb_d_hll_sparse_mat%cp_from_coo(b,info)
+      allocate(irn(nr),hko(noffs+1),ja(isz),val(isz))
+      info =  readHllDevice(a%deviceMat,val,ja,hko,irn)
+      write(*,*) 'Checking hlg ',nr,noffs,isz
+      do i=1,noffs+1
+        if (hko(i) /= a%hkoffs(i)) then 
+          write(0,*) 'HKOFFS mismatch',i,hko(i),a%hkoffs(i)
+        end if
+      end do
+      do i=1,nr
+        if (irn(i) /= a%irn(i)) then 
+          write(0,*) 'IRN mismatch',i,irn(i),a%irn(i)
+        end if
+      end do
+      do i=1,min(isz,32*7)
+        if (ja(i) /= a%ja(i)) then 
+          write(0,*) 'JA mismatch',i,ja(i),a%ja(i),b%ja(ja(i)+1)
+        end if
+        if (val(i) /= a%val(i)) then 
+          write(0,*) 'VAL mismatch',i,val(i),a%val(i),b%val(ja(i)+1)
+        end if
+      end do
+    end if
   else
     if (b%is_by_rows()) then 
       call  psi_convert_hll_from_coo(a%psb_d_hll_sparse_mat,hksz,b,info)

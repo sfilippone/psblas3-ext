@@ -105,11 +105,9 @@ psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
-clean: cclean iclean
-	/bin/rm -f  $(FOBJS) *$(.mod) *.a
+clean: iclean
+	/bin/rm -f  $(OBJS) *$(.mod) *.a
 
-cclean: 
-	/bin/rm -f  $(COBJS) 
 iclean:
 	cd impl && $(MAKE) clean
 
