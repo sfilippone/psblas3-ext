@@ -130,6 +130,7 @@ contains
     integer(psb_ipk_)   :: nzm, ir, ic, k, hk, mxrwl, kc
     logical, parameter :: debug=.false.
 
+    info = 0
     nr   = tmp%get_nrows()
     nc   = tmp%get_ncols()
     nza  = tmp%get_nzeros()
