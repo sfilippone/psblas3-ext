@@ -31,7 +31,7 @@
   
 
 subroutine psb_d_mv_hlg_from_coo(a,b,info) 
-  
+
   use psb_base_mod
 #ifdef HAVE_SPGPU
   use hlldev_mod
@@ -51,20 +51,25 @@ subroutine psb_d_mv_hlg_from_coo(a,b,info)
   integer(psb_ipk_) :: hksz
   info = psb_success_
   if (.not.b%is_by_rows()) call b%fix(info) 
+  if (.true.) then
+    call a%cp_from_coo(b,info)
+    call b%free()
+  else
+
 #ifdef HAVE_SPGPU
-  hksz = psb_gpu_WarpSize()
+    hksz = psb_gpu_WarpSize()
 #else 
-  hksz = psi_get_hksz()
+    hksz = psi_get_hksz()
 #endif
-  call psi_convert_hll_from_coo(a%psb_d_hll_sparse_mat,hksz,b,info)
-  if (info /= 0) goto 9999
-  call b%free()
+    call psi_convert_hll_from_coo(a%psb_d_hll_sparse_mat,hksz,b,info)
+    if (info /= 0) goto 9999
+    call b%free()
 
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
+    call a%to_gpu(info)
+    if (info /= 0) goto 9999
 #endif
-
+  end if
   return
 
 9999 continue

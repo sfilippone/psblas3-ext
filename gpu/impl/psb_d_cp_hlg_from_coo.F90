@@ -72,9 +72,13 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
     nr   = b%get_nrows()
     nc   = b%get_ncols()
     nza  = b%get_nzeros()
-
+    !write(0,*) 'Copying through GPU'
     call  psi_compute_hckoff_from_coo(a,noffs,isz,hksz,idisp,b,info)
-    
+    if (info /=0) then 
+      write(0,*) ' Error from psi_compute_hckoff:',info, noffs,isz
+      return
+    end if
+    !write(0,*) ' From psi_compute_hckoff:',noffs,isz,a%hkoffs(1:min(10,noffs+1))
     if (c_associated(a%deviceMat)) then 
       call freeHllDevice(a%deviceMat)
     endif
@@ -120,30 +124,45 @@ contains
     integer(psb_ipk_), allocatable, intent(out) :: idisp(:)
     integer(psb_ipk_), intent(in)               :: hksz
     integer(psb_ipk_), intent(out)             :: info, noffs, isz
-    
+
     !locals
     Integer(Psb_ipk_)   :: nza, nr, i,j,irw, idl,err_act, nc, irs
     integer(psb_ipk_)   :: nzm, ir, ic, k, hk, mxrwl, kc
-    
+    logical, parameter :: debug=.false.
+
     nr   = tmp%get_nrows()
     nc   = tmp%get_ncols()
     nza  = tmp%get_nzeros()
-    
+
     ! If it is sorted then we can lessen memory impact 
     a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
-    
+    if (debug) write(0,*) 'Start compute hckoff_from_coo',nr,nc,nza
     ! First compute the number of nonzeros in each row.
     call psb_realloc(nr,a%irn,info) 
+    if (info == 0) call psb_realloc(nr+1,idisp,info) 
     if (info /= 0) return
     a%irn = 0
-    do i=1, nza
-      a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
-    end do    
+    if (debug) then 
+      do i=1, nza
+        if ((1<=tmp%ia(i)).and.(tmp%ia(i)<= nr)) then 
+          a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
+        else
+          write(0,*) 'Out of bouds IA ',i,tmp%ia(i),nr
+        end if
+      end do
+    else
+      do i=1, nza
+        a%irn(tmp%ia(i)) = a%irn(tmp%ia(i)) + 1
+      end do
+    end if
     a%nzt = nza
+
+
     ! Second. Figure out the block offsets. 
     call a%set_hksz(hksz)
     noffs = (nr+hksz-1)/hksz
     call psb_realloc(noffs+1,a%hkoffs,info) 
+    if (debug) write(0,*) ' noffsets ',noffs,info
     if (info /= 0) return
     a%hkoffs(1) = 0
     j=1
@@ -159,13 +178,13 @@ contains
       a%hkoffs(j+1) = a%hkoffs(j) + mxrwl*hksz
       j = j + 1 
     end do
-    
+
     !
     ! At this point a%hkoffs(noffs+1) contains the allocation
     ! size a%ja a%val. 
     ! 
     isz = a%hkoffs(noffs+1)
-    
+
   end subroutine psi_compute_hckoff_from_coo
 
 end subroutine psb_d_cp_hlg_from_coo

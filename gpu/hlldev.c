@@ -440,18 +440,22 @@ int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int is
   struct HllDevice *devMat = (struct HllDevice *) deviceMat;
   double *devVal;
   int *devIdisp, *devJa;
-
+  //fprintf(stderr,"devMat: %p\n",devMat);
   allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
   allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
   allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(double));
+
+  //fprintf(stderr,"Writing: %d %d %d\n",nr,devMat->rows,devMat->hackOffsLength);
   i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(double));
   if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
-
-  if (i==0) i = w_CopyCooToHlg(nr,nc,nza,hacksz,noffs,isz,(int *) devMat->rS, (int *) devMat->hackOffs,
-			       devIdisp,devJa,devVal,(int *) devMat->rP, (double *)devMat->cM);
+  if (i==0) i = w_CopyCooToHlg(nr,nc,nza,hacksz,noffs,isz,
+			       (int *) devMat->rS, (int *) devMat->hackOffs,
+			       devIdisp,devJa,devVal,
+			       (int *) devMat->rP, (double *)devMat->cM);
+  //fprintf(stderr,"From w_CopyCooToHlg: %d\n",i);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -460,7 +464,8 @@ int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int is
 
   freeRemoteBuffer(devIdisp);
   freeRemoteBuffer(devJa);
-  freeRemoteBuffer(devVal);
+  freeRemoteBuffer(devVal); 
+  //fprintf(stderr,"End of  w_CopyCooToHlg: %d\n",i);
   
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
   if (i != 0) {

@@ -92,6 +92,7 @@ program d_file_spmv
        & tcnvcsr, tcnvc1, tcnvgpu, tcnvg1
   integer :: nrhs, nrow, n_row, dim, nv, ne
   integer, allocatable :: ivg(:), ipv(:)
+  logical, parameter :: dump=.false.
 
 
   call psb_init(ictxt)
@@ -391,6 +392,13 @@ program d_file_spmv
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
+  if (dump) then
+    open(20)
+    do i=1,nr
+      write(20,*) i,xc1(i),xc2(i)
+    end do
+  end if
+  
 #endif
 
 
