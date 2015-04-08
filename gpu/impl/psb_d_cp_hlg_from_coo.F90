@@ -185,7 +185,7 @@ contains
     ! size a%ja a%val. 
     ! 
     isz = a%hkoffs(noffs+1)
-
+!!$    write(*,*) 'End of psi_comput_hckoff ',info
   end subroutine psi_compute_hckoff_from_coo
 
 end subroutine psb_d_cp_hlg_from_coo
