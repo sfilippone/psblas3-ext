@@ -73,7 +73,7 @@ int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
     ret=allocRemoteBuffer((void **)&(tmp->rS), tmp->rows*sizeof(int));
 
   if (ret == SPGPU_SUCCESS)
-    ret=allocRemoteBuffer((void **)&(tmp->hackOffs), (tmp->hackOffsLength*sizeof(int)));
+    ret=allocRemoteBuffer((void **)&(tmp->hackOffs), ((tmp->hackOffsLength+1)*sizeof(int)));
   
   tmp->baseIndex = params->firstIndex;
 
@@ -261,7 +261,7 @@ int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* 
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   //i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceFloat",i);
@@ -280,7 +280,7 @@ int writeHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceDouble",i);
@@ -299,7 +299,7 @@ int writeHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceDouble",i); 
@@ -318,7 +318,7 @@ int writeHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, i
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = writeRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceDouble",i);
@@ -336,7 +336,7 @@ int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* i
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*i = readEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceFloat",i);
@@ -354,7 +354,7 @@ int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int*
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -371,7 +371,7 @@ int readHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int 
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -388,7 +388,7 @@ int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, in
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  i = readRemoteBuffer((void*) hkoffs, (void *)devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -445,11 +445,11 @@ int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int is
   allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
   allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(double));
 
-  //fprintf(stderr,"Writing: %d %d %d\n",nr,devMat->rows,devMat->hackOffsLength);
+  //fprintf(stderr,"Writing: %d %d %d %d %d %d\n",nr,devMat->rows,isz, hoffs[noffs], noffs, devMat->hackOffsLength);
   i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(double));
   if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
-  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, devMat->hackOffsLength*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
   if (i==0) i = w_CopyCooToHlg(nr,nc,nza,hacksz,noffs,isz,
 			       (int *) devMat->rS, (int *) devMat->hackOffs,
