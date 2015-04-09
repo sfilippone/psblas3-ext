@@ -115,7 +115,12 @@ program d_file_spmv
     write(*,*) 'Welcome to PSBLAS version: ',psb_version_string_
     write(*,*) 'This is the ',trim(name),' sample program'
   end if
+#ifdef HAVE_GPU
+  write(*,*) 'Process ',iam,' running on device: ', psb_cuda_getDevice(),' out of', psb_cuda_getDeviceCount()
+  write(*,*) 'Process ',iam,' device ', psb_cuda_getDevice(),' is a: ', trim(psb_gpu_DeviceName())  
+#endif
 
+  
   if (iam == 0) then 
     write(*,*) 'Matrix? '
     call read_data(mtrx_file,psb_inp_unit)
