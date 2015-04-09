@@ -59,7 +59,7 @@ program d_file_spmv
   type(psb_desc_type):: desc_a
 
   integer            :: ictxt, iam, np
-  integer(psb_long_int_k_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
+  integer(psb_long_int_k_) :: amatsize, agmatsize, precsize, descsize,  nbytes, annz
   real(psb_dpk_)   :: err, eps, damatsize, dgmatsize
 
   character(len=5)   :: acfmt, agfmt
@@ -425,12 +425,11 @@ program d_file_spmv
          &'("Memory occupation CPU  (MBytes)  : ",f20.2,"           ")') damatsize
     write(psb_out_unit,&
          &'("Memory occupation GPU  (MBytes)  : ",f20.2,"           ")') dgmatsize
+
+    
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
-    flops  = flops / (t2)
-    tflops = tflops / (tt2)
-    gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
@@ -451,6 +450,11 @@ program d_file_spmv
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
+    
+    flops  = flops / (t2)
+    tflops = tflops / (tt2)
+    gflops = gflops / (gt2)
+
     write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
          &  ntests,t2
     write(psb_out_unit,'("Time per product    (ms)     (CPU)   : ",F20.3)')&
