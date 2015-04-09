@@ -44,7 +44,7 @@ subroutine psi_d_convert_ell_from_coo(a,tmp,info,hacksize)
   Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, &
        & ir, ic, hsz_, ldv
   real(psb_dpk_) :: t0,t1
-  logical, parameter :: timing=.true.
+  logical, parameter :: timing=.false.
   
 
   info = psb_success_
