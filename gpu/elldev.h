@@ -36,7 +36,6 @@
 #if defined(HAVE_SPGPU)
 #include "cintrf.h"
 #include "ell.h"
-#include "ell_conv.h"
 
 
 struct EllDevice
