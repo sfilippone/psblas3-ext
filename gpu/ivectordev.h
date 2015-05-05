@@ -33,55 +33,27 @@
 #pragma once
 #if defined(HAVE_SPGPU)
 //#include "utils.h"
+#include "vectordev.h"
 #include "cuda_runtime.h"
-//#include "common.h"
-#include "cintrf.h"
-#include <complex.h>
-
-struct MultiVectDevice
-{
-  // number of vectors
-  int count_;
-
-  //number of elements for a single vector
-  int size_;
-
-  //pithc in number of elements
-  int pitch_;
-
-  // Vectors in device memory (single allocation)
-  void *v_;
-};
-
-typedef struct MultiVectorDeviceParams
-{			
-	// number on vectors
-	unsigned int count; //1 for a simple vector
-
-	// The resulting allocation will be pitch*s*(size of the elementType)
-	unsigned int elementType;
-	
-	// Pitch (in number of elements)
-	unsigned int pitch;
-
-	// Size of a single vector (in number of elements).
-	unsigned int size; 
-} MultiVectorDeviceParams;
+#include "core.h"
 
 
+int registerMappedInt(void *, void **, int, int);
+int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
+int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
+int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
+int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
 
-int unregisterMapped(void *);
+int geinsMultiVecDeviceInt(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
 
-MultiVectorDeviceParams getMultiVectorDeviceParams(unsigned int count,
-						   unsigned int size,  
-						   unsigned int elementType);
-
-int FallocMultiVecDevice(void** deviceMultiVec, unsigned count, 
-			 unsigned int size, unsigned int elementType);
-void freeMultiVecDevice(void* deviceVec);
-int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *params);
-int getMultiVecDeviceSize(void* deviceVec);
-int getMultiVecDeviceCount(void* deviceVec);
-int getMultiVecDevicePitch(void* deviceVec);
+int igathMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int first,
+			      int n, void* deviceIdx, void* host_values, int indexBase);
+int igathMultiVecDeviceInt(void* deviceVec, int vectorId, int first,
+			      int n, void* indexes, void* host_values, int indexBase);
+int iscatMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
+			      void* host_values, int indexBase, int beta);
+int iscatMultiVecDeviceInt(void* deviceVec, int vectorId, int first, int n, void *indexes,
+			      void* host_values, int indexBase, int  beta);
 
 #endif

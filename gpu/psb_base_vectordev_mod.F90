@@ -54,7 +54,7 @@ module psb_base_vectordev_mod
     end function FallocMultiVecDevice
   end interface
 
-
+#if 0
   ! Integer 
   interface allocateInt
     function allocateInt(didx,n) &
@@ -134,6 +134,7 @@ module psb_base_vectordev_mod
       integer(c_int), value :: dummy
     end function registerMappedInt
   end interface
+#endif
 
   interface 
     subroutine  unregisterMapped(buf) &

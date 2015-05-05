@@ -154,8 +154,9 @@ module psb_s_vectordev_mod
   ! New gather functions
 
   interface 
-    function igathMultiVecDeviceFloat(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
-	& result(res) bind(c,name='igathMultiVecDeviceFloat')
+    function igathMultiVecDeviceFloat(deviceVec, vectorId, first, n, idx, &
+         & hostVec, indexBase) &
+         & result(res) bind(c,name='igathMultiVecDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceVec
@@ -168,8 +169,9 @@ module psb_s_vectordev_mod
   end interface
 
   interface 
-    function igathMultiVecDeviceFloatVecIdx(deviceVec, vectorId, first, n, idx, hostVec, indexBase) &
-	& result(res) bind(c,name='igathMultiVecDeviceFloatVecIdx')
+    function igathMultiVecDeviceFloatVecIdx(deviceVec, vectorId, first, n, idx, &
+         & hostVec, indexBase) &
+         & result(res) bind(c,name='igathMultiVecDeviceFloatVecIdx')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceVec
@@ -183,8 +185,9 @@ module psb_s_vectordev_mod
 
 
   interface 
-    function iscatMultiVecDeviceFloat(deviceVec, vectorId, first, n, idx, hostVec, indexBase, beta) &
-	& result(res) bind(c,name='iscatMultiVecDeviceFloat')
+    function iscatMultiVecDeviceFloat(deviceVec, vectorId, first, n, idx, &
+         & hostVec, indexBase, beta) &
+         & result(res) bind(c,name='iscatMultiVecDeviceFloat')
       use iso_c_binding
       integer(c_int)         :: res
       type(c_ptr), value     :: deviceVec
@@ -199,8 +202,9 @@ module psb_s_vectordev_mod
 
 
   interface 
-    function iscatMultiVecDeviceFloatVecIdx(deviceVec, vectorId, first, n, idx, hostVec, indexBase, beta) &
-	& result(res) bind(c,name='iscatMultiVecDeviceFloatVecIdx')
+    function iscatMultiVecDeviceFloatVecIdx(deviceVec, vectorId, first, n, idx, &
+         & hostVec, indexBase, beta) &
+         & result(res) bind(c,name='iscatMultiVecDeviceFloatVecIdx')
       use iso_c_binding
       integer(c_int)         :: res
       type(c_ptr), value     :: deviceVec
@@ -213,6 +217,19 @@ module psb_s_vectordev_mod
     end function iscatMultiVecDeviceFloatVecIdx
   end interface
 
+
+!!$  interface 
+!!$    function geinsMultiVecDeviceFloat(n,deviceVecIrl,deviceVecVal,&
+!!$         & dupl,indexbase,deviceVecX) &
+!!$         & result(res) bind(c,name='geinsMultiVecDeviceFloat')
+!!$      use iso_c_binding
+!!$      integer(c_int)      :: res
+!!$      integer(c_int), value :: n, dupl,indexbase
+!!$      type(c_ptr), value  :: deviceVecIrl, deviceVecVal, deviceVecX
+!!$    end function geinsMultiVecDeviceDouble
+!!$  end interface
+
+
   interface dotMultiVecDevice
     function dotMultiVecDeviceFloat(res, n,deviceVecA,deviceVecB) &
          & result(val) bind(c,name='dotMultiVecDeviceFloat')
@@ -223,7 +240,6 @@ module psb_s_vectordev_mod
       type(c_ptr), value    :: deviceVecA, deviceVecB
     end function dotMultiVecDeviceFloat
   end interface
-
     
   interface nrm2MultiVecDevice
     function nrm2MultiVecDeviceFloat(res,n,deviceVecA) &
@@ -258,18 +274,6 @@ module psb_s_vectordev_mod
     end function asumMultiVecDeviceFloat
   end interface
 
- 
-
-!!$  interface 
-!!$    function geinsMultiVecDeviceFloat(n,deviceVecIrl,deviceVecVal,&
-!!$         & dupl,indexbase,deviceVecX) &
-!!$         & result(res) bind(c,name='geinsMultiVecDeviceFloat')
-!!$      use iso_c_binding
-!!$      integer(c_int)      :: res
-!!$      integer(c_int), value :: n, dupl,indexbase
-!!$      type(c_ptr), value  :: deviceVecIrl, deviceVecVal, deviceVecX
-!!$    end function geinsMultiVecDeviceDouble
-!!$  end interface
 
   interface axpbyMultiVecDevice
     function axpbyMultiVecDeviceFloat(n,alpha,deviceVecA,beta,deviceVecB) &

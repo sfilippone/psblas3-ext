@@ -142,11 +142,6 @@ int allocMultiVecDevice(void ** remoteMultiVec, struct MultiVectorDeviceParams *
   return SPGPU_SUCCESS; // Success
 }
 
-int registerMappedInt(void  *buff, void **d_p, int n, int dummy)
-{
-  return registerMappedMemory(buff,d_p,n*sizeof(int));
-}
-
 
 int unregisterMapped(void *buff)
 {
@@ -175,52 +170,6 @@ int FallocMultiVecDevice(void** deviceMultiVec, unsigned int count,
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d, %d %d \n","FallocMultiVecDevice",i, count, size);
   }
-  return(i);
-}
-
-int writeMultiVecDeviceInt(void* deviceVec, int* hostVec)
-{ int i;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  // Ex updateFromHost vector function
-  i = writeRemoteBuffer((void*) hostVec, (void *)devVec->v_, devVec->pitch_*devVec->count_*sizeof(int));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceFloat",i);
-  }*/
-  //  cudaSync();
-  return(i);
-}
-
-
-int writeMultiVecDeviceIntR2(void* deviceVec, int* hostVec, int ld)
-{ int i;
-  i = writeMultiVecDeviceInt(deviceVec, (void *) hostVec);
-  if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceFloatR2",i);
-  }
-  //  cudaSync();
-  return(i);
-}
-
-int readMultiVecDeviceInt(void* deviceVec, int* hostVec)
-{ int i;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  i = readRemoteBuffer((void *) hostVec, (void *)devVec->v_, 
-		       devVec->pitch_*devVec->count_*sizeof(int));
-  if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceInt",i);
-  }
-  //  cudaSync();
-  return(i);
-}
-
-
-int readMultiVecDeviceIntR2(void* deviceVec, int* hostVec, int ld)
-{ int i;
-  i = readMultiVecDeviceInt(deviceVec, (void *) hostVec);
-  if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceFloatR2",i);
-  }
-  //  cudaSync();
   return(i);
 }
 

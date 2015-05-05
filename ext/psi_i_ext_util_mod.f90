@@ -104,10 +104,10 @@ contains
     integer(psb_ipk_), intent(out)   :: info
     logical, intent(in), optional    :: initd,cleard
     
-    type(psb_int_heap)             :: heap
-    integer(psb_ipk_)              :: k,i,j,ir,ic, ndiag, id
-    logical                        :: initd_, cleard_
-     character(len=20)              :: name
+    type(psb_i_heap)      :: heap
+    integer(psb_ipk_)     :: k,i,j,ir,ic, ndiag, id
+    logical               :: initd_, cleard_
+     character(len=20)    :: name
     
     info = psb_success_
     initd_ = .true.
@@ -122,28 +122,28 @@ contains
       info = -8
       return
     end if
-    call psb_init_heap(heap,info)
+    call heap%init(info)
     if (info /= psb_success_) return
 
     do i=1,nz
       k = nr+ja(i)-ia(i)
-      if (d(k) == 0) call psb_insert_heap(k,heap,info)
+      if (d(k) == 0) call heap%insert(k,info)
       d(k) = d(k) + 1 
     enddo
-    nd  = psb_howmany_heap(heap)
+    nd  = heap%howmany()
     if (size(offset)<nd) then 
       info = -9 
       return
     end if
     if (cleard_) then 
       do i=1, nd
-        call psb_heap_get_first(id,heap,info)
+        call heap%get_first(id,info)
         offset(i) = id - nr
         d(id) = 0
       end do
     else
       do i=1, nd
-        call psb_heap_get_first(id,heap,info)
+        call heap%get_first(id,info)
         offset(i) = id - nr
         d(id) = i 
       end do

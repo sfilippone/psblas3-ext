@@ -37,7 +37,6 @@ module psb_c_gpu_vect_mod
   use psb_c_vect_mod
   use psb_i_vect_mod
 #ifdef HAVE_SPGPU
-  ! use psb_gpu_env_mod
   use psb_i_gpu_vect_mod
   use psb_c_vectordev_mod
 #endif
@@ -60,18 +59,7 @@ module psb_c_gpu_vect_mod
   contains
     procedure, pass(x) :: get_nrows => c_gpu_get_nrows
     procedure, nopass  :: get_fmt   => c_gpu_get_fmt
-    procedure, pass(x) :: dot_v    => c_gpu_dot_v
-    procedure, pass(x) :: dot_a    => c_gpu_dot_a
-    procedure, pass(y) :: axpby_v  => c_gpu_axpby_v
-    procedure, pass(y) :: axpby_a  => c_gpu_axpby_a
-    procedure, pass(y) :: mlt_v    => c_gpu_mlt_v
-    procedure, pass(y) :: mlt_a    => c_gpu_mlt_a
-    procedure, pass(z) :: mlt_a_2  => c_gpu_mlt_a_2
-    procedure, pass(z) :: mlt_v_2  => c_gpu_mlt_v_2
-    procedure, pass(x) :: scal     => c_gpu_scal
-    procedure, pass(x) :: nrm2     => c_gpu_nrm2
-    procedure, pass(x) :: amax     => c_gpu_amax
-    procedure, pass(x) :: asum     => c_gpu_asum
+
     procedure, pass(x) :: all      => c_gpu_all
     procedure, pass(x) :: zero     => c_gpu_zero
     procedure, pass(x) :: asb      => c_gpu_asb
@@ -87,11 +75,24 @@ module psb_c_gpu_vect_mod
     procedure, pass(x) :: set_host => c_gpu_set_host
     procedure, pass(x) :: set_dev  => c_gpu_set_dev
     procedure, pass(x) :: set_sync => c_gpu_set_sync
-    procedure, pass(x) :: set_scal => c_gpu_set_scal
-    procedure, pass(x) :: set_vect => c_gpu_set_vect
+!!$    procedure, pass(x) :: set_scal => c_gpu_set_scal
+!!$    procedure, pass(x) :: set_vect => c_gpu_set_vect
     procedure, pass(x) :: gthzv_x  => c_gpu_gthzv_x
     procedure, pass(y) :: sctb     => c_gpu_sctb
     procedure, pass(y) :: sctb_x   => c_gpu_sctb_x
+    procedure, pass(x) :: dot_v    => c_gpu_dot_v
+    procedure, pass(x) :: dot_a    => c_gpu_dot_a
+    procedure, pass(y) :: axpby_v  => c_gpu_axpby_v
+    procedure, pass(y) :: axpby_a  => c_gpu_axpby_a
+    procedure, pass(y) :: mlt_v    => c_gpu_mlt_v
+    procedure, pass(y) :: mlt_a    => c_gpu_mlt_a
+    procedure, pass(z) :: mlt_a_2  => c_gpu_mlt_a_2
+    procedure, pass(z) :: mlt_v_2  => c_gpu_mlt_v_2
+    procedure, pass(x) :: scal     => c_gpu_scal
+    procedure, pass(x) :: nrm2     => c_gpu_nrm2
+    procedure, pass(x) :: amax     => c_gpu_amax
+    procedure, pass(x) :: asum     => c_gpu_asum
+
 #ifdef HAVE_FINAL
     final              :: c_gpu_vect_finalize
 #endif
@@ -436,6 +437,169 @@ contains
     character(len=5) :: res
     res = 'cGPU'
   end function c_gpu_get_fmt
+  
+  subroutine c_gpu_all(n, x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    integer(psb_ipk_), intent(in)      :: n
+    class(psb_c_vect_gpu), intent(out) :: x
+    integer(psb_ipk_), intent(out)     :: info
+    
+    call psb_realloc(n,x%v,info)
+    if (info == 0) call x%set_host()
+    if (info == 0) call x%sync_space(info)
+    if (info /= 0) then 
+      info=psb_err_alloc_request_
+      call psb_errpush(info,'c_gpu_all',&
+           & i_err=(/n,n,n,n,n/))
+    end if
+  end subroutine c_gpu_all
+
+  subroutine c_gpu_zero(x)
+    use psi_serial_mod
+    implicit none 
+    class(psb_c_vect_gpu), intent(inout) :: x
+    
+    if (allocated(x%v)) x%v=czero
+    call x%set_host()
+  end subroutine c_gpu_zero
+
+  subroutine c_gpu_asb(n, x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    integer(psb_ipk_), intent(in)        :: n
+    class(psb_c_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)       :: info
+    integer(psb_ipk_) :: nd
+    
+    if (x%is_dev()) then 
+      nd  = getMultiVecDeviceSize(x%deviceVect)
+      if (nd < n) then 
+        call x%sync()
+        call x%psb_c_base_vect_type%asb(n,info)      
+        if (info == psb_success_) call x%sync_space(info)
+        call x%set_host()
+      end if
+    else   !
+      if (x%get_nrows()<n) then 
+        call x%psb_c_base_vect_type%asb(n,info)      
+        if (info == psb_success_) call x%sync_space(info)
+        call x%set_host()      
+      end if
+    end if
+
+  end subroutine c_gpu_asb
+
+  subroutine c_gpu_sync_space(x,info)
+    use psb_base_mod, only : psb_realloc
+    implicit none 
+    class(psb_c_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)       :: info 
+    integer(psb_ipk_) :: nh, nd
+    
+    info = 0
+    if (x%is_dev()) then 
+      ! 
+      if (.not.allocated(x%v)) then 
+        nh = 0
+      else
+        nh    = size(x%v)
+      end if
+      nd  = getMultiVecDeviceSize(x%deviceVect)
+      if (nh < nd ) then 
+        call psb_realloc(nd,x%v,info)
+      end if
+    else  !    if (x%is_host()) then 
+      if (.not.allocated(x%v)) then 
+        nh = 0
+      else
+        nh    = size(x%v)
+      end if
+      if (c_associated(x%deviceVect)) then 
+        nd  = getMultiVecDeviceSize(x%deviceVect)
+        if (nd < nh ) then 
+          call freeMultiVecDevice(x%deviceVect)
+          x%deviceVect=c_null_ptr
+        end if
+      end if
+      if (.not.c_associated(x%deviceVect)) then 
+        info = FallocMultiVecDevice(x%deviceVect,1,nh,spgpu_type_complex_float)
+        if  (info /= 0) then 
+          if (info == spgpu_outofmem) then 
+            info = psb_err_alloc_request_
+          end if
+        end if
+      end if
+    end if
+    
+  end subroutine c_gpu_sync_space
+
+  subroutine c_gpu_sync(x)
+    use psb_base_mod, only : psb_realloc
+    implicit none 
+    class(psb_c_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_) :: n,info
+    
+    info = 0
+    if (x%is_host()) then 
+      if (.not.c_associated(x%deviceVect)) then 
+        n    = size(x%v)
+        info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_complex_float)
+      end if
+      if (info == 0) &
+           & info = writeMultiVecDevice(x%deviceVect,x%v)
+    else if (x%is_dev()) then 
+      n    = getMultiVecDeviceSize(x%deviceVect)
+      if (.not.allocated(x%v)) then 
+!!$        write(0,*) 'Incoherent situation : x%v not allocated'
+        call psb_realloc(n,x%v,info)
+      end if
+      if ((n > size(x%v)).or.(n > x%get_nrows())) then 
+!!$        write(0,*) 'Incoherent situation : sizes',n,size(x%v),x%get_nrows()
+        call psb_realloc(n,x%v,info)
+      end if
+      info = readMultiVecDevice(x%deviceVect,x%v)
+    end if
+    if (info == 0)  call x%set_sync()
+    if (info /= 0) then
+      info=psb_err_internal_error_
+      call psb_errpush(info,'c_gpu_sync')
+    end if
+    
+  end subroutine c_gpu_sync
+
+  subroutine c_gpu_free(x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    class(psb_c_vect_gpu), intent(inout)  :: x
+    integer(psb_ipk_), intent(out)        :: info
+    
+    info = 0
+    if (c_associated(x%deviceVect)) then 
+      call freeMultiVecDevice(x%deviceVect)
+      x%deviceVect=c_null_ptr
+    end if
+    if (allocated(x%pinned_buffer)) then 
+      call inner_unregister(x%pinned_buffer)
+      deallocate(x%pinned_buffer, stat=info)
+    end if
+    if (allocated(x%buffer)) then 
+      deallocate(x%buffer, stat=info)
+    end if
+    if (c_associated(x%d_buf)) &
+         &  call freeFloatComplex(x%d_buf)
+    if (c_associated(x%i_buf)) &
+         &  call freeInt(x%i_buf)
+    x%d_buf_sz=0
+    x%i_buf_sz=0
+
+    if (allocated(x%v)) deallocate(x%v, stat=info)
+    call x%set_sync()
+  end subroutine c_gpu_free
+
 
   function c_gpu_dot_v(n,x,y) result(res)
     implicit none 
@@ -658,28 +822,28 @@ contains
   end subroutine c_gpu_mlt_v_2
 
 
-  subroutine c_gpu_set_scal(x,val)
-    class(psb_c_vect_gpu), intent(inout) :: x
-    complex(psb_spk_), intent(in)           :: val
-        
-    integer(psb_ipk_) :: info
-
-    if (x%is_dev()) call x%sync()
-    call x%psb_c_base_vect_type%set_scal(val)
-    call x%set_host()
-  end subroutine c_gpu_set_scal
-
-  subroutine c_gpu_set_vect(x,val)
-    class(psb_c_vect_gpu), intent(inout) :: x
-    complex(psb_spk_), intent(in)           :: val(:)
-    integer(psb_ipk_) :: nr
-    integer(psb_ipk_) :: info
-
-    if (x%is_dev()) call x%sync()
-    call x%psb_c_base_vect_type%set_vect(val)
-    call x%set_host()
-
-  end subroutine c_gpu_set_vect
+!!$  subroutine c_gpu_set_scal(x,val)
+!!$    class(psb_c_vect_gpu), intent(inout) :: x
+!!$    complex(psb_spk_), intent(in)           :: val
+!!$        
+!!$    integer(psb_ipk_) :: info
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    call x%psb_c_base_vect_type%set_scal(val)
+!!$    call x%set_host()
+!!$  end subroutine c_gpu_set_scal
+!!$
+!!$  subroutine c_gpu_set_vect(x,val)
+!!$    class(psb_c_vect_gpu), intent(inout) :: x
+!!$    complex(psb_spk_), intent(in)           :: val(:)
+!!$    integer(psb_ipk_) :: nr
+!!$    integer(psb_ipk_) :: info
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    call x%psb_c_base_vect_type%set_vect(val)
+!!$    call x%set_host()
+!!$
+!!$  end subroutine c_gpu_set_vect
 
   subroutine c_gpu_scal(alpha, x)
     implicit none 
@@ -727,168 +891,6 @@ contains
     info = asumMultiVecDeviceComplex(res,n,x%deviceVect)
 
   end function c_gpu_asum
-  
-  subroutine c_gpu_all(n, x, info)
-    use psi_serial_mod
-    use psb_realloc_mod
-    implicit none 
-    integer(psb_ipk_), intent(in)      :: n
-    class(psb_c_vect_gpu), intent(out) :: x
-    integer(psb_ipk_), intent(out)     :: info
-    
-    call psb_realloc(n,x%v,info)
-    if (info == 0) call x%set_host()
-    if (info == 0) call x%sync_space(info)
-    if (info /= 0) then 
-      info=psb_err_alloc_request_
-      call psb_errpush(info,'c_gpu_all',&
-           & i_err=(/n,n,n,n,n/))
-    end if
-  end subroutine c_gpu_all
-
-  subroutine c_gpu_zero(x)
-    use psi_serial_mod
-    implicit none 
-    class(psb_c_vect_gpu), intent(inout) :: x
-    
-    if (allocated(x%v)) x%v=czero
-    call x%set_host()
-  end subroutine c_gpu_zero
-
-  subroutine c_gpu_asb(n, x, info)
-    use psi_serial_mod
-    use psb_realloc_mod
-    implicit none 
-    integer(psb_ipk_), intent(in)        :: n
-    class(psb_c_vect_gpu), intent(inout) :: x
-    integer(psb_ipk_), intent(out)       :: info
-    integer(psb_ipk_) :: nd
-    
-    if (x%is_dev()) then 
-      nd  = getMultiVecDeviceSize(x%deviceVect)
-      if (nd < n) then 
-        call x%sync()
-        call x%psb_c_base_vect_type%asb(n,info)      
-        if (info == psb_success_) call x%sync_space(info)
-        call x%set_host()
-      end if
-    else   !
-      if (x%get_nrows()<n) then 
-        call x%psb_c_base_vect_type%asb(n,info)      
-        if (info == psb_success_) call x%sync_space(info)
-        call x%set_host()      
-      end if
-    end if
-
-  end subroutine c_gpu_asb
-
-  subroutine c_gpu_sync_space(x,info)
-    use psb_base_mod, only : psb_realloc
-    implicit none 
-    class(psb_c_vect_gpu), intent(inout) :: x
-    integer(psb_ipk_), intent(out)       :: info 
-    integer(psb_ipk_) :: nh, nd
-    
-    info = 0
-    if (x%is_dev()) then 
-      ! 
-      if (.not.allocated(x%v)) then 
-        nh = 0
-      else
-        nh    = size(x%v)
-      end if
-      nd  = getMultiVecDeviceSize(x%deviceVect)
-      if (nh < nd ) then 
-        call psb_realloc(nd,x%v,info)
-      end if
-    else  !    if (x%is_host()) then 
-      if (.not.allocated(x%v)) then 
-        nh = 0
-      else
-        nh    = size(x%v)
-      end if
-      if (c_associated(x%deviceVect)) then 
-        nd  = getMultiVecDeviceSize(x%deviceVect)
-        if (nd < nh ) then 
-          call freeMultiVecDevice(x%deviceVect)
-          x%deviceVect=c_null_ptr
-        end if
-      end if
-      if (.not.c_associated(x%deviceVect)) then 
-        info = FallocMultiVecDevice(x%deviceVect,1,nh,spgpu_type_complex_float)
-        if  (info /= 0) then 
-          if (info == spgpu_outofmem) then 
-            info = psb_err_alloc_request_
-          end if
-        end if
-      end if
-    end if
-    
-  end subroutine c_gpu_sync_space
-
-  subroutine c_gpu_sync(x)
-    use psb_base_mod, only : psb_realloc
-    implicit none 
-    class(psb_c_vect_gpu), intent(inout) :: x
-    integer(psb_ipk_) :: n,info
-    
-    info = 0
-    if (x%is_host()) then 
-      if (.not.c_associated(x%deviceVect)) then 
-        n    = size(x%v)
-        info = FallocMultiVecDevice(x%deviceVect,1,n,spgpu_type_complex_float)
-      end if
-      if (info == 0) &
-           & info = writeMultiVecDevice(x%deviceVect,x%v)
-    else if (x%is_dev()) then 
-      n    = getMultiVecDeviceSize(x%deviceVect)
-      if (.not.allocated(x%v)) then 
-!!$        write(0,*) 'Incoherent situation : x%v not allocated'
-        call psb_realloc(n,x%v,info)
-      end if
-      if ((n > size(x%v)).or.(n > x%get_nrows())) then 
-!!$        write(0,*) 'Incoherent situation : sizes',n,size(x%v),x%get_nrows()
-        call psb_realloc(n,x%v,info)
-      end if
-      info = readMultiVecDevice(x%deviceVect,x%v)
-    end if
-    if (info == 0)  call x%set_sync()
-    if (info /= 0) then
-      info=psb_err_internal_error_
-      call psb_errpush(info,'d_gpu_sync')
-    end if
-    
-  end subroutine c_gpu_sync
-
-  subroutine c_gpu_free(x, info)
-    use psi_serial_mod
-    use psb_realloc_mod
-    implicit none 
-    class(psb_c_vect_gpu), intent(inout)  :: x
-    integer(psb_ipk_), intent(out)        :: info
-    
-    info = 0
-    if (c_associated(x%deviceVect)) then 
-      call freeMultiVecDevice(x%deviceVect)
-      x%deviceVect=c_null_ptr
-    end if
-    if (allocated(x%pinned_buffer)) then 
-      call inner_unregister(x%pinned_buffer)
-      deallocate(x%pinned_buffer, stat=info)
-    end if
-    if (allocated(x%buffer)) then 
-      deallocate(x%buffer, stat=info)
-    end if
-    if (c_associated(x%d_buf)) &
-         &  call freeFloatComplex(x%d_buf)
-    if (c_associated(x%i_buf)) &
-         &  call freeInt(x%i_buf)
-    x%d_buf_sz=0
-    x%i_buf_sz=0
-
-    if (allocated(x%v)) deallocate(x%v, stat=info)
-    call x%set_sync()
-  end subroutine c_gpu_free
 
 #ifdef HAVE_FINAL
   subroutine c_gpu_vect_finalize(x)
