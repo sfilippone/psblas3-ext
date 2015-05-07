@@ -109,6 +109,41 @@ int readHllDeviceFloatComplex(void* deviceMat, float complex* val,
 			      int* ja, int *hkoffs, int* irn);
 int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
 			       int* ja, int *hkoffs, int* irn);
+
+
+int psiCopyCooToHlgFloat(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			 int *irn, int *hoffs,  int *idisp, int *ja, 
+			 float *val, void *deviceMat);
+int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			  int *irn, int *hoffs,  int *idisp, int *ja, 
+			  double *val, void *deviceMat);
+int psiCopyCooToHlgFloatComplex(int nr, int nc, int nza, int hacksz, 
+				int noffs, int isz, int *irn, 
+				int *hoffs,  int *idisp, int *ja, 
+				float complex *val, void *deviceMat);
+int psiCopyCooToHlgDoubleComplex(int nr, int nc, int nza, int hacksz, 
+				 int noffs, int isz,  int *irn, 
+				 int *hoffs,  int *idisp, int *ja, 
+				 double complex *val, void *deviceMat);
+
+int psi_cuda_s_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
+			    int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp, int *ja, 
+			    float *val, int *rP, float *cM);
+int psi_cuda_d_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
+			    int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp, int *ja, 
+			    double *val, int *rP, double *cM);
+int psi_cuda_c_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
+			    int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp, int *ja, 
+			    float complex *val, int *rP, float complex *cM);
+int psi_cuda_z_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
+			    int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp, int *ja, 
+			    double complex *val, int *rP, double complex *cM);
+
+
 #else
 #define CINTRF_UNSUPPORTED   -1
 #endif

@@ -357,8 +357,6 @@ void cudaReset()
 }
 
 static spgpuHandle_t psb_gpu_handle = NULL;
-static spgpuHandle_t psb_gpu_handle_v = NULL;
-
 
 spgpuHandle_t psb_gpuGetHandle()
 {

@@ -120,6 +120,37 @@ int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
 			       double complex beta, void* deviceY);
 
 
+
+int psiCopyCooToElgFloat(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, float *val, void *deviceMat);
+
+int psiCopyCooToElgDouble(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, double *val, void *deviceMat);
+
+int psiCopyCooToElgFloatComplex(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, float complex *val, void *deviceMat);
+
+int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, int nzm, int *irn,
+			  int *idisp, int *ja, double complex *val, void *deviceMat);
+
+
+void psi_cuda_s_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, float *devVal,
+		   int *rP, float *cM);
+
+void psi_cuda_d_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, double *devVal,
+		   int *rP, double *cM);
+
+void psi_cuda_c_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, float complex *devVal,
+		   int *rP, float complex *cM);
+
+void psi_cuda_z_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
+		   int *rS,int *devIdisp, int *devJa, double complex *devVal,
+		   int *rP, double complex *cM);
+
+
 int getEllDevicePitch(void* deviceMat);
 
 // sparse Ell matrix-vector product

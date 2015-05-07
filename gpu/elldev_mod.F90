@@ -33,7 +33,7 @@
 module elldev_mod
   use iso_c_binding 
   use core_mod 
-
+  
   type, bind(c) :: elldev_parms
     integer(c_int) :: element_type
     integer(c_int) :: pitch
@@ -55,7 +55,7 @@ module elldev_mod
       integer(c_int), value :: rows,maxRowSize,nnzeros,columns,elementType,firstIndex
     end function FgetEllDeviceParams
   end interface
-  
+
 
   interface 
     function FallocEllDevice(deviceMat,rows,maxRowSize,nnzeros,columns,&
@@ -70,7 +70,7 @@ module elldev_mod
 
 
   interface writeEllDevice
- 
+
     function writeEllDeviceFloat(deviceMat,val,ja,ldj,irn) &
          & result(res) bind(c,name='writeEllDeviceFloat')
       use iso_c_binding
@@ -111,7 +111,7 @@ module elldev_mod
       integer(c_int)            :: ja(ldj,*),irn(*)
     end function writeEllDeviceDoubleComplex
 
-  end interface writeEllDevice
+  end interface
 
   interface readEllDevice 
 
@@ -155,7 +155,7 @@ module elldev_mod
       integer(c_int)           :: ja(ldj,*),irn(*)
     end function readEllDeviceDoubleComplex
 
-  end interface readEllDevice
+  end interface
 
   interface 
     subroutine  freeEllDevice(deviceMat) &
@@ -198,6 +198,49 @@ module elldev_mod
   end interface
 
 
+  interface psi_CopyCooToElg
+    function psiCopyCooToElgFloat(nr, nc, nza, hacksz, ldv, nzm, irn, &
+         &  idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToElgFloat')
+      use iso_c_binding
+      integer(c_int)	    :: res
+      integer(c_int), value  :: nr,nc,nza,hacksz,ldv,nzm
+      type(c_ptr), value     :: deviceMat
+      real(c_float)          :: val(*)
+      integer(c_int)	    :: irn(*),idisp(*),ja(*)
+    end function psiCopyCooToElgFloat
+    function psiCopyCooToElgDouble(nr, nc, nza, hacksz, ldv, nzm, irn, &
+         &  idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToElgDouble')
+      use iso_c_binding
+      integer(c_int)	     :: res
+      integer(c_int), value   :: nr,nc,nza,hacksz,ldv,nzm
+      type(c_ptr), value      :: deviceMat
+      real(c_double)          :: val(*)
+      integer(c_int)	     :: irn(*),idisp(*),ja(*)
+    end function psiCopyCooToElgDouble
+    function psiCopyCooToElgFloatComplex(nr, nc, nza, hacksz, ldv, nzm, irn, &
+         &  idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToElgFloatComplex')
+      use iso_c_binding
+      integer(c_int)	      :: res
+      integer(c_int), value    :: nr,nc,nza,hacksz,ldv,nzm
+      type(c_ptr), value       :: deviceMat
+      complex(c_float_complex) :: val(*)
+      integer(c_int)	      :: irn(*),idisp(*),ja(*)
+    end function psiCopyCooToElgFloatComplex
+    function psiCopyCooToElgDoubleComplex(nr, nc, nza, hacksz, ldv, nzm, irn, &
+         &  idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToElgDoubleComplex')
+      use iso_c_binding
+      integer(c_int)	       :: res
+      integer(c_int), value     :: nr,nc,nza,hacksz,ldv,nzm
+      type(c_ptr), value        :: deviceMat
+      complex(c_double_complex) :: val(*)
+      integer(c_int)	       :: irn(*),idisp(*),ja(*)
+    end function psiCopyCooToElgDoubleComplex
+  end interface
+
   interface spmvEllDevice
     function spmvEllDeviceFloat(deviceMat,alpha,x,beta,y) &
          & result(res) bind(c,name='spmvEllDeviceFloat')
@@ -227,8 +270,8 @@ module elldev_mod
       type(c_ptr), value	      :: deviceMat, x, y 
       complex(c_double_complex),value :: alpha,  beta
     end function spmvEllDeviceDoubleComplex
-  end interface spmvEllDevice
-    
+  end interface
+
 #endif  
 
 

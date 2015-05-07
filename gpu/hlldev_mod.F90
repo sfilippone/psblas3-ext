@@ -54,7 +54,7 @@ module hlldev_mod
       integer(c_int), value :: hksize,rows,nzeros,allocsize,elementType,firstIndex
     end function FgetHllDeviceParams
   end interface
-  
+
 
   interface 
     function FallocHllDevice(deviceMat,hksize,rows, nzeros,allocsize, &
@@ -106,7 +106,7 @@ module hlldev_mod
       integer(c_int)           :: ja(*),irn(*),hkoffs(*)
     end function writeHllDeviceDoubleComplex
 
-  end interface writeHllDevice
+  end interface
 
   interface readHllDevice 
 
@@ -146,7 +146,7 @@ module hlldev_mod
       integer(c_int)            :: ja(*),irn(*),hkoffs(*)
     end function readHllDeviceDoubleComplex
 
-  end interface readHllDevice
+  end interface
 
   interface 
     subroutine  freeHllDevice(deviceMat) &
@@ -156,12 +156,57 @@ module hlldev_mod
     end subroutine freeHllDevice
   end interface
 
+
+  interface psi_CopyCooToHlg
+    function psiCopyCooToHlgFloat(nr, nc, nza, hacksz, noffs, isz, irn, &
+         &  hoffs, idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToHlgFloat')
+      use iso_c_binding
+      integer(c_int)	     :: res
+      integer(c_int), value  :: nr,nc,nza,hacksz,noffs,isz
+      type(c_ptr), value     :: deviceMat
+      real(c_float)          :: val(*)
+      integer(c_int)	     :: irn(*),idisp(*),ja(*), hoffs(*)
+    end function psiCopyCooToHlgFloat
+    function psiCopyCooToHlgDouble(nr, nc, nza, hacksz, noffs, isz, irn, &
+         &  hoffs, idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToHlgDouble')
+      use iso_c_binding
+      integer(c_int)          :: res
+      integer(c_int), value   :: nr,nc,nza,hacksz,noffs,isz
+      type(c_ptr), value      :: deviceMat
+      real(c_double)          :: val(*)
+      integer(c_int)	      :: irn(*),idisp(*),ja(*), hoffs(*)
+    end function psiCopyCooToHlgDouble
+    function psiCopyCooToHlgFloatComplex(nr, nc, nza, hacksz, noffs, isz, irn, &
+         &  hoffs, idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToHlgFloatComplex')
+      use iso_c_binding
+      integer(c_int)	       :: res
+      integer(c_int), value    :: nr,nc,nza,hacksz,noffs,isz
+      type(c_ptr), value       :: deviceMat
+      complex(c_float_complex) :: val(*)
+      integer(c_int)	       :: irn(*),idisp(*),ja(*), hoffs(*)
+    end function psiCopyCooToHlgFloatComplex
+    function psiCopyCooToHlgDoubleComplex(nr, nc, nza, hacksz, noffs, isz, irn, &
+         &  hoffs, idisp, ja, val, deviceMat) &
+         & result(res) bind(c,name='psiCopyCooToHlgDoubleComplex')
+      use iso_c_binding
+      integer(c_int)	        :: res
+      integer(c_int), value     :: nr,nc,nza,hacksz,noffs,isz
+      type(c_ptr), value        :: deviceMat
+      complex(c_double_complex) :: val(*)
+      integer(c_int)	        :: irn(*),idisp(*),ja(*), hoffs(*)
+    end function psiCopyCooToHlgDoubleComplex
+  end interface
+
+
   !interface 
-   ! function  getHllDevicePitch(deviceMat) &
-   !      & bind(c,name='getHllDevicePitch') result(res)
-   !   use iso_c_binding
-   !   type(c_ptr), value  :: deviceMat
-   !   integer(c_int)      :: res
+  ! function  getHllDevicePitch(deviceMat) &
+  !      & bind(c,name='getHllDevicePitch') result(res)
+  !   use iso_c_binding
+  !   type(c_ptr), value  :: deviceMat
+  !   integer(c_int)      :: res
   !  end function getHllDevicePitch
   !end interface
 
@@ -209,7 +254,7 @@ module hlldev_mod
     end function spmvHllDeviceDoubleComplex
 
   end interface
-    
+
 #endif  
 
 

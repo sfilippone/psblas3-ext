@@ -44,7 +44,7 @@ COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o  ivectordev.o \
 
 OBJS=$(COBJS) $(FOBJS)
 
-lib: cmp ilib copy
+lib: cmp ilib cudalib copy 
 
 cmp: $(OBJS) 
 	ar cur $(LIBNAME) $(OBJS)
@@ -101,13 +101,17 @@ psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
-clean: cclean iclean
+cudalib: cmp 
+	cd CUDA &&  $(MAKE) LIBNAME=$(LIBNAME)
+clean: cclean iclean cudaclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a
 
 cclean: 
 	/bin/rm -f  $(COBJS) 
 iclean:
 	cd impl && $(MAKE) clean
+cudaclean:
+	cd CUDA && $(MAKE) clean
 
 verycleanlib: 
 	(cd ../..; make veryclean)

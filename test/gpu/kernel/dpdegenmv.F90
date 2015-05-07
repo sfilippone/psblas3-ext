@@ -55,16 +55,16 @@ program pdgenmv
 
   ! miscellaneous 
   real(psb_dpk_), parameter :: one = 1.d0
-  real(psb_dpk_) :: t1, t2, tprec, flops, tflops, tt1, tt2, gt1, gt2, gflops, bdwdth
+  real(psb_dpk_) :: t1, t2, tprec, flops, tflops,&
+       & tt1, tt2, gt1, gt2, gflops, bdwdth,&
+       & tcnvcsr, tcnvc1, tcnvgpu, tcnvg1
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a, agpu
+  type(psb_dspmat_type) :: a, agpu, aux_a
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type), target :: xv, bv, xg, bg, tt
-  class(psb_d_vect_type), pointer  :: pv
-  
+  type(psb_d_vect_type), target :: xv, bv, xg, bg  
 #ifdef HAVE_GPU
   type(psb_d_vect_gpu)  :: vmold
   type(psb_i_vect_gpu)  :: imold
@@ -76,7 +76,7 @@ program pdgenmv
   ! solver parameters
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
-  integer, parameter :: ntests=200, ngpu=50
+  integer, parameter :: ntests=200, ngpu=50, ncnv=20 
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
@@ -97,7 +97,7 @@ program pdgenmv
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
-  integer            :: info, i, nr
+  integer            :: info, i, j, nr
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
 
@@ -207,9 +207,7 @@ program pdgenmv
     write(*,*) 'Unknown format defaulting to HLG'
     agmold => ahlg
   end select
-  call desc_a%cnv(imold)
-  call a%cscnv(agpu,info)
-  call agpu%cscnv(info,mold=agmold)
+  call a%cscnv(agpu,info,mold=agmold)
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
     call psb_error()
@@ -220,11 +218,57 @@ program pdgenmv
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
   call xg%set(done)
 #endif
-  call xv%set(done)
+  call a%cscnv(aux_a,info,mold=acoo)
+  tcnvcsr = 0
+  tcnvgpu = 0
+  call psb_geall(xc1,desc_a,info)
+  do j=1, ncnv
+    call aux_a%cscnv(a,info,mold=acoo)
+    nr = size(xc1)
+    do i=1, nr
+      xc1(i) = 1.0 + (1.0*i)/nr
+    end do
+    call psb_barrier(ictxt)
+    t1 = psb_wtime()
+    call a%cscnv(info,mold=acmold)
+    t2 = psb_Wtime() -t1
+    call psb_amx(ictxt,t2)
+    tcnvcsr = tcnvcsr + t2
+    if (j==1) tcnvc1 = t2
+    nr = size(xc1)
+    do i=1, nr
+      xc1(i) = 1.0 + (1.0*i)/nr
+    end do
+    call psb_geasb(xc1,desc_a,info)
+    call xv%bld(xc1)
+    call psb_geasb(bv,desc_a,info,scratch=.true.)
+    
+#ifdef HAVE_GPU
+    
+    call aux_a%cscnv(agpu,info,mold=acoo)
+    nr = size(xc1)
+    do i=1, nr
+      xc1(i) = 1.0 + (1.0*i)/nr
+    end do
+    call xg%bld(xc1,mold=vmold)
+    call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
+    call psb_barrier(ictxt)
+    t1 = psb_wtime()
+    call agpu%cscnv(info,mold=agmold)
+    call psb_gpu_DeviceSync()
+    t2 = psb_Wtime() -t1
+    call psb_amx(ictxt,t2)
+    if (j==1) tcnvg1 = t2
+    tcnvgpu = tcnvgpu + t2
+#endif
+  end do
+
+
+
   nr       = desc_a%get_local_rows() 
-  allocate(xc1(nr))
+  call psb_realloc(nr,xc1,info)
   do i=1, nr
-    xc1(i) = (6*done*i)/nr-4.5*done
+    xc1(i) = 1.0 + (1.0*i)/nr
   end do
   call xv%set(xc1)
   
@@ -253,11 +297,7 @@ program pdgenmv
       call psb_error()
       stop
     end if
-    xc1 = bv%get_vect()
-    xc2 = bg%get_vect()
-    call tt%bld(bg%get_vect())
-    pv => bg
-    call tt%bld(pv%get_vect())
+
   end do
   call psb_gpu_DeviceSync()
   call psb_barrier(ictxt)
@@ -335,16 +375,31 @@ program pdgenmv
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
-    flops  = flops / (t2)
-    tflops = tflops / (tt2)
-    gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
+    write(psb_out_unit,'("Time to convert A from COO to CPU (1): ",F20.9)')&
+         & tcnvc1
+    write(psb_out_unit,'("Time to convert A from COO to CPU (t): ",F20.9)')&
+         & tcnvcsr
+    write(psb_out_unit,'("Time to convert A from COO to CPU (a): ",F20.9)')&
+         & tcnvcsr/ncnv
+    write(psb_out_unit,'("Time to convert A from COO to GPU (1): ",F20.9)')&
+         & tcnvg1
+    write(psb_out_unit,'("Time to convert A from COO to GPU (t): ",F20.9)')&
+         & tcnvgpu
+    write(psb_out_unit,'("Time to convert A from COO to GPU (a): ",F20.9)')&
+         & tcnvgpu/ncnv
+
 #endif
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
+
+    flops  = flops / (t2)
+    tflops = tflops / (tt2)
+    gflops = gflops / (gt2)
+
     write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
          &  ntests,t2
     write(psb_out_unit,'("Time per product    (ms)     (CPU)   : ",F20.3)')&

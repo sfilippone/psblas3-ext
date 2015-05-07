@@ -398,4 +398,178 @@ int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, in
 #endif
 }
 
+// New copy routines.
+
+int psiCopyCooToHlgFloat(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			 int *irn, int *hoffs,  int *idisp, int *ja, float *val, void *deviceMat)
+{ int i,j;
+#ifdef HAVE_SPGPU
+  spgpuHandle_t handle; 
+  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  float *devVal;
+  int *devIdisp, *devJa;
+  int *tja;
+  //fprintf(stderr,"devMat: %p\n",devMat);
+  allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
+  allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
+  allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(float));
+
+  // fprintf(stderr,"Writing: %d %d %d %d %d %d %d\n",nr,devMat->rows,nza,isz, hoffs[noffs], noffs, devMat->hackOffsLength);
+  i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(float));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
+  //cudaSync();
+
+  handle = psb_gpuGetHandle();
+  psi_cuda_s_CopyCooToHlg(handle, nr,nc,nza,hacksz,noffs,isz,
+			  (int *) devMat->rS, (int *) devMat->hackOffs,
+			  devIdisp,devJa,devVal,
+			  (int *) devMat->rP, (float *)devMat->cM);
+
+  freeRemoteBuffer(devIdisp);
+  freeRemoteBuffer(devJa);
+  freeRemoteBuffer(devVal); 
+  
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","writeHllDeviceFloat",i);
+  }
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			  int *irn, int *hoffs,  int *idisp, int *ja, double *val, void *deviceMat)
+{ int i,j;
+#ifdef HAVE_SPGPU
+  spgpuHandle_t handle; 
+  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  double *devVal;
+  int *devIdisp, *devJa;
+  int *tja;
+  //fprintf(stderr,"devMat: %p\n",devMat);
+  allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
+  allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
+  allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(double));
+
+  // fprintf(stderr,"Writing: %d %d %d %d %d %d %d\n",nr,devMat->rows,nza,isz, hoffs[noffs], noffs, devMat->hackOffsLength);
+  i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(double));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
+  //cudaSync();
+
+  handle = psb_gpuGetHandle();
+  psi_cuda_d_CopyCooToHlg(handle, nr,nc,nza,hacksz,noffs,isz,
+			  (int *) devMat->rS, (int *) devMat->hackOffs,
+			  devIdisp,devJa,devVal,
+			  (int *) devMat->rP, (double *)devMat->cM);
+
+  freeRemoteBuffer(devIdisp);
+  freeRemoteBuffer(devJa);
+  freeRemoteBuffer(devVal); 
+  
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","writeHllDeviceDouble",i);
+  }
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+int psiCopyCooToHlgFloatComplex(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			 int *irn, int *hoffs,  int *idisp, int *ja, float complex *val, void *deviceMat)
+{ int i,j;
+#ifdef HAVE_SPGPU
+  spgpuHandle_t handle; 
+  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  float complex *devVal;
+  int *devIdisp, *devJa;
+  int *tja;
+  //fprintf(stderr,"devMat: %p\n",devMat);
+  allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
+  allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
+  allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(cuFloatComplex));
+
+  // fprintf(stderr,"Writing: %d %d %d %d %d %d %d\n",nr,devMat->rows,nza,isz, hoffs[noffs], noffs, devMat->hackOffsLength);
+  i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(cuFloatComplex));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
+  //cudaSync();
+
+  handle = psb_gpuGetHandle();
+  psi_cuda_c_CopyCooToHlg(handle, nr,nc,nza,hacksz,noffs,isz,
+			  (int *) devMat->rS, (int *) devMat->hackOffs,
+			  devIdisp,devJa,devVal,
+			  (int *) devMat->rP, (float complex *)devMat->cM);
+
+  freeRemoteBuffer(devIdisp);
+  freeRemoteBuffer(devJa);
+  freeRemoteBuffer(devVal); 
+  
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","writeHllDeviceFloatComplex",i);
+  }
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+int psiCopyCooToHlgDoubleComplex(int nr, int nc, int nza, int hacksz, int noffs, int isz,
+			  int *irn, int *hoffs,  int *idisp, int *ja, double complex *val, void *deviceMat)
+{ int i,j;
+#ifdef HAVE_SPGPU
+  spgpuHandle_t handle; 
+  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  double complex *devVal;
+  int *devIdisp, *devJa;
+  int *tja;
+  //fprintf(stderr,"devMat: %p\n",devMat);
+  allocRemoteBuffer((void **)&(devIdisp), (nr+1)*sizeof(int));
+  allocRemoteBuffer((void **)&(devJa), (nza)*sizeof(int));
+  allocRemoteBuffer((void **)&(devVal), (nza)*sizeof(cuDoubleComplex));
+
+  // fprintf(stderr,"Writing: %d %d %d %d %d %d %d\n",nr,devMat->rows,nza,isz, hoffs[noffs], noffs, devMat->hackOffsLength);
+  i = writeRemoteBuffer((void*) val, (void *)devVal, nza*sizeof(cuDoubleComplex));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *) devJa, nza*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) hoffs, (void *) devMat->hackOffs, (devMat->hackOffsLength+1)*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
+  //cudaSync();
+
+  handle = psb_gpuGetHandle();
+  psi_cuda_z_CopyCooToHlg(handle, nr,nc,nza,hacksz,noffs,isz,
+			  (int *) devMat->rS, (int *) devMat->hackOffs,
+			  devIdisp,devJa,devVal,
+			  (int *) devMat->rP, (double complex *)devMat->cM);
+
+  freeRemoteBuffer(devIdisp);
+  freeRemoteBuffer(devJa);
+  freeRemoteBuffer(devVal); 
+  
+  /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","writeHllDeviceDoubleComplex",i);
+  }
+  return SPGPU_SUCCESS;
+#else
+  return SPGPU_UNSUPPORTED;
+#endif
+}
+
+
+
+
+
 #endif
