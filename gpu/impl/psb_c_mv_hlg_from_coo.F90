@@ -47,28 +47,15 @@ subroutine psb_c_mv_hlg_from_coo(a,b,info)
   class(psb_c_coo_sparse_mat), intent(inout) :: b
   integer(psb_ipk_), intent(out)             :: info
 
-  !locals
-  integer(psb_ipk_) :: hksz
+
   info = psb_success_
-  if (.not.b%is_by_rows()) call b%fix(info) 
-#ifdef HAVE_SPGPU
-  hksz = psb_gpu_WarpSize()
-#else 
-  hksz = psi_get_hksz()
-#endif
-  call psi_convert_hll_from_coo(a%psb_c_hll_sparse_mat,hksz,b,info)
-  if (info /= 0) goto 9999
+
+  if (.not.b%is_by_rows()) call b%fix(info)
+  if (info /= psb_success_) return
+
+  call a%cp_from_coo(b,info)
   call b%free()
 
-#ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
-#endif
-
-  return
-
-9999 continue
-  info = psb_err_alloc_dealloc_
   return
 
 end subroutine psb_c_mv_hlg_from_coo

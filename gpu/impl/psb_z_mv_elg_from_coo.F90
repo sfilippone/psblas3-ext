@@ -46,14 +46,6 @@ subroutine psb_z_mv_elg_from_coo(a,b,info)
   class(psb_z_coo_sparse_mat), intent(inout) :: b
   integer(psb_ipk_), intent(out)             :: info
 
-  !locals
-  Integer(Psb_ipk_) :: nza, nr, i,j,k, idl,err_act, nc, nzm, ir, ic, ld
-  character(len=20)  :: name
-#ifdef HAVE_SPGPU
-  type(elldev_parms) :: gpu_parms
-#endif
-
-  info = psb_success_
 
   info = psb_success_
 

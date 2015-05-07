@@ -37,3 +37,5 @@ lib: $(CUDAOBJS)
 .cu.o:
 	$(NVCC)   $(CINCLUDES) $(CDEFINES) $(CUDEFINES) -c $<
 
+clean:
+	/bin/rm -f $(CUDAOBJS)
