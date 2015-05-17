@@ -201,15 +201,15 @@ int gpuInit(int dev)
   
   if ((err=cudaSetDeviceFlags(cudaDeviceMapHost))!=cudaSuccess) 
     fprintf(stderr,"Error On SetDeviceFlags: %d '%s'\n",err,cudaGetErrorString(err));
+  if ((prop=(struct cudaDeviceProp *) malloc(sizeof(struct cudaDeviceProp)))==NULL) {
+    fprintf(stderr,"CUDA Error gpuInit3: not malloced prop\n");
+    return SPGPU_UNSPECIFIED;
+  }
   err = setDevice(dev);
   if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
-  if ((prop=(struct cudaDeviceProp *) malloc(sizeof(struct cudaDeviceProp)))==NULL) 
-        return SPGPU_UNSPECIFIED;
-
-  cudaGetDeviceProperties(prop,dev);
   hasUVA=getDeviceHasUVA();
   
   return err;
@@ -226,23 +226,29 @@ void gpuClose()
 
 int setDevice(int dev)
 {
-
-  int count,err;
+  int count,err,idev;
   
   err = cudaGetDeviceCount(&count);
   if (err != cudaSuccess) {
-    fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
+    fprintf(stderr,"CUDA Error setDevice: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
   
   if ((0<=dev)&&(dev<count))
-    err = cudaSetDevice(dev);
+    idev = dev;
   else
-    err = cudaSetDevice(0);
+    idev = 0;
+  err = cudaSetDevice(idev);
   if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
+  err = cudaGetDeviceProperties(prop,idev);
+  if (err != cudaSuccess) {
+    fprintf(stderr,"CUDA Error gpuInit4: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
+  
   return SPGPU_SUCCESS;
 }
 
