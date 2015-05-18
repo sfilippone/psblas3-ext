@@ -202,6 +202,16 @@ int asumMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMult
   return(i);
 }
 
+int scalMultiVecDeviceDoubleComplex(cuDoubleComplex alpha, void* devMultiVecA)
+{ int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
+  // Note: inner kernel can handle aliased input/output
+  spgpuZscal(handle, (cuDoubleComplex *)devVecA->v_, devVecA->pitch_, 
+	     alpha,  (cuDoubleComplex *)devVecA->v_);
+  return(i);
+}
+
 int dotMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMultiVecA, void* devMultiVecB)
 {int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;

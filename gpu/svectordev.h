@@ -58,6 +58,7 @@ int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n, int fir
 int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int n, int first, void *indexes,
 			      int hfirst, void* host_values, int indexBase, float beta);
 
+int scalMultiVecDeviceFloat(float alpha, void* devMultiVecA);
 int nrm2MultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int asumMultiVecDeviceFloat(float* y_res, int n, void* devVecA);

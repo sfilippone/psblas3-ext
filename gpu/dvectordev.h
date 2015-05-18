@@ -58,6 +58,7 @@ int iscatMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int n, int fi
 int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int n, int first, void *indexes,
 			      int hfirst, void* host_values, int indexBase, double beta);
 
+int scalMultiVecDeviceDouble(double alpha, void* devMultiVecA);
 int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int asumMultiVecDeviceDouble(double* y_res, int n, void* devVecA);

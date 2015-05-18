@@ -204,6 +204,7 @@ program pdgenmv
     call psb_error()
     stop
   end if
+  call desc_a%cnv(mold=imold)
 
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)

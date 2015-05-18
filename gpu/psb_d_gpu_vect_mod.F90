@@ -480,8 +480,6 @@ contains
     real(psb_dpk_) :: beta
     class(psb_d_vect_gpu) :: y
     integer(psb_ipk_) :: info, ni
-    real(psb_dpk_), allocatable :: yv(:)
-    logical, parameter :: debug=.false.
     
 !!$    write(0,*) 'Starting sctb_buf'
     if (.not.allocated(y%combuf)) then 
@@ -489,22 +487,16 @@ contains
       return
     end if
     
-    if (debug) then 
-      yv = y%get_vect()
-      write(0,*) beta,'Before scatter ',yv(:)
-    end if
-      
+
     select type(ii=> idx) 
     class is (psb_i_vect_gpu) 
               
       if (ii%is_host()) call ii%sync()
       if (y%is_host())  call y%sync()
       if (psb_gpu_DeviceHasUVA()) then 
-        if (debug) write(0,*) 'Going IDX%deviceVect  UVA'
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
              & 0, n, i, ii%deviceVect, i, y%dt_p_buf, 1,beta)
       else 
-        if (debug) write(0,*) 'Going IDX%deviceVect no UVA'
         info = writeDouble(i,y%dt_buf,y%combuf(i:),n,1)
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
              & 0, n, i, ii%deviceVect, i, y%dt_buf, 1,beta)
@@ -519,21 +511,13 @@ contains
         info =  allocateInt(y%i_buf,ni)
         y%i_buf_sz=ni
       end if
-      if (debug) write(0,*) 'Calling writeIntFirst',ii%v(i:i+n-1)
       if (info == 0) &
            & info = writeInt(i,y%i_buf,ii%v(i:),n,1)
-      if (debug) write(0,*) 'Done writeIntFirst'
       if (info == 0) &
            & info = writeDouble(i,y%dt_buf,y%combuf(i:),n,1)
-      if (debug) write(0,*) 'Done writeDouble'      
       if (info == 0) info = iscatMultiVecDeviceDouble(y%deviceVect,&
            & 0, n, i, y%i_buf, i, y%dt_buf, 1,beta)
     end select
-    
-    if (debug) then 
-      yv = y%get_vect()
-      write(0,*) beta,'After scatter ',yv(:)
-    end if
 !!$    write(0,*) 'Done sctb_buf'
 
   end subroutine d_gpu_sctb_buf
@@ -1042,10 +1026,11 @@ contains
     implicit none 
     class(psb_d_vect_gpu), intent(inout) :: x
     real(psb_dpk_), intent (in)          :: alpha
+    integer(psb_ipk_) :: info
     
-    if (x%is_dev()) call x%sync()
-    call x%psb_d_base_vect_type%scal(alpha)
-    call x%set_host()
+    if (x%is_host()) call x%sync()
+    info = scalMultiVecDevice(alpha,x%deviceVect)
+    call x%set_dev()
   end subroutine d_gpu_scal
 
 

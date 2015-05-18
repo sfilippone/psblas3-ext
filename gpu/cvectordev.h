@@ -60,6 +60,7 @@ int iscatMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int n, 
 int iscatMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int n, int first, void *indexes,
 			      int hfirst, void* host_values, int indexBase, cuFloatComplex beta);
 
+int scalMultiVecDeviceFloatComplex(cuFloatComplex alpha, void* devMultiVecA);
 int nrm2MultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);
 int asumMultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);

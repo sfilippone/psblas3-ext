@@ -239,6 +239,16 @@ module psb_s_vectordev_mod
   end interface
 
 
+  interface scalMultiVecDevice
+    function scalMultiVecDeviceFloat(alpha,deviceVecA) &
+         & result(val) bind(c,name='scalMultiVecDeviceFloat')
+      use iso_c_binding
+      integer(c_int)        :: res
+      real(c_float), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function scalMultiVecDeviceFloat
+  end interface
+
   interface dotMultiVecDevice
     function dotMultiVecDeviceFloat(res, n,deviceVecA,deviceVecB) &
          & result(val) bind(c,name='dotMultiVecDeviceFloat')

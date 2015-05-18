@@ -239,6 +239,16 @@ module psb_d_vectordev_mod
   end interface
 
 
+  interface scalMultiVecDevice
+    function scalMultiVecDeviceDouble(alpha,deviceVecA) &
+         & result(val) bind(c,name='scalMultiVecDeviceDouble')
+      use iso_c_binding
+      integer(c_int)        :: res
+      real(c_double), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function scalMultiVecDeviceDouble
+  end interface
+
   interface dotMultiVecDevice
     function dotMultiVecDeviceDouble(res, n,deviceVecA,deviceVecB) &
          & result(val) bind(c,name='dotMultiVecDeviceDouble')

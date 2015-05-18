@@ -67,6 +67,7 @@ int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int n,
 				     int hfirst, void* host_values, 
 				     int indexBase, cuDoubleComplex beta);
 
+int scalMultiVecDeviceDoubleComplex(cuDoubleComplex alpha, void* devMultiVecA);
 int nrm2MultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);
 int asumMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);

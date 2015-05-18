@@ -239,6 +239,16 @@ module psb_z_vectordev_mod
   end interface
 
 
+  interface scalMultiVecDevice
+    function scalMultiVecDeviceDoubleComplex(alpha,deviceVecA) &
+         & result(val) bind(c,name='scalMultiVecDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)        :: res
+      complex(c_double_complex), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function scalMultiVecDeviceDoubleComplex
+  end interface
+
   interface dotMultiVecDevice
     function dotMultiVecDeviceDoubleComplex(res, n,deviceVecA,deviceVecB) &
          & result(val) bind(c,name='dotMultiVecDeviceDoubleComplex')

@@ -1026,10 +1026,11 @@ contains
     implicit none 
     class(psb_z_vect_gpu), intent(inout) :: x
     complex(psb_dpk_), intent (in)          :: alpha
+    integer(psb_ipk_) :: info
     
-    if (x%is_dev()) call x%sync()
-    call x%psb_z_base_vect_type%scal(alpha)
-    call x%set_host()
+    if (x%is_host()) call x%sync()
+    info = scalMultiVecDevice(alpha,x%deviceVect)
+    call x%set_dev()
   end subroutine z_gpu_scal
 
 

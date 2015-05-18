@@ -193,6 +193,16 @@ int asumMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
   return(i);
 }
 
+int scalMultiVecDeviceFloat(float alpha, void* devMultiVecA)
+{ int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
+  // Note: inner kernel can handle aliased input/output
+  spgpuSscal(handle, (float *)devVecA->v_, devVecA->pitch_, 
+	     alpha,  (float *)devVecA->v_);
+  return(i);
+}
+
 int dotMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA, void* devMultiVecB)
 {int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;

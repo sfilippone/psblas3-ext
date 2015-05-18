@@ -164,6 +164,15 @@ int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int n, int first, v
   
 }
 
+int scalMultiVecDeviceDouble(double alpha, void* devMultiVecA)
+{ int i=0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
+  // Note: inner kernel can handle aliased input/output
+  spgpuDscal(handle, (double *)devVecA->v_, devVecA->pitch_, 
+	     alpha,  (double *)devVecA->v_);
+  return(i);
+}
 
 int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devMultiVecA)
 { int i=0;
