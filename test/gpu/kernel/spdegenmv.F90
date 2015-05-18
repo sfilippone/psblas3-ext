@@ -315,9 +315,6 @@ program pdgenmv
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
-    flops  = flops / (t2)
-    tflops = tflops / (tt2)
-    gflops = gflops / (gt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
 #ifdef HAVE_GPU
     write(psb_out_unit,'("Storage type for AGPU: ",a)') agpu%get_fmt()
@@ -325,6 +322,9 @@ program pdgenmv
     write(psb_out_unit,&
          & '("Number of flops (",i0," prod)        : ",F20.0,"           ")') &
          &  ntests,flops
+    flops  = flops / (t2)
+    tflops = tflops / (tt2)
+    gflops = gflops / (gt2)
     write(psb_out_unit,'("Time for ",i6," products (s) (CPU)   : ",F20.3)')&
          &  ntests,t2
     write(psb_out_unit,'("Time per product    (ms)     (CPU)   : ",F20.3)')&
