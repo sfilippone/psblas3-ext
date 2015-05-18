@@ -69,6 +69,9 @@ typedef struct MultiVectorDeviceParams
 } MultiVectorDeviceParams;
 
 
+#define INS_OVERWRITE 0
+#define INS_ADD       1
+
 
 int unregisterMapped(void *);
 

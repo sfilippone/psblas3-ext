@@ -48,10 +48,9 @@ int writeMultiVecDeviceFloat(void* deviceVec, float* hostVec)
   struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
   // Ex updateFromHost vector function
   i = writeRemoteBuffer((void*) hostVec, (void *)devVec->v_, devVec->pitch_*devVec->count_*sizeof(float));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceFloat",i);
-  }*/
-  //  cudaSync();
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","FallocMultiVecDevice",i);
+  }
   return(i);
 }
 
@@ -61,25 +60,22 @@ int writeMultiVecDeviceFloatR2(void* deviceVec, float* hostVec, int ld)
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceFloatR2",i);
   }
-  //  cudaSync();
   return(i);
 }
 
 int readMultiVecDeviceFloat(void* deviceVec, float* hostVec)
-{ int i;
+{ int i,j;
   struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
   i = readRemoteBuffer((void *) hostVec, (void *)devVec->v_, 
 		       devVec->pitch_*devVec->count_*sizeof(float));
-  /*if (i != 0) {
+  if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceFloat",i);
-  }*/
-  //  cudaSync();
+  }
   return(i);
 }
 
 int readMultiVecDeviceFloatR2(void* deviceVec, float* hostVec, int ld)
 { int i;
-  //i = readMultiVecDevice(deviceVec, (void *) hostVec);
   i = readMultiVecDeviceFloat(deviceVec, hostVec);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceFloatR2",i);
@@ -87,17 +83,94 @@ int readMultiVecDeviceFloatR2(void* deviceVec, float* hostVec, int ld)
   return(i);
 }
 
+int geinsMultiVecDeviceFloat(int n, void* devMultiVecIrl, void* devMultiVecVal, 
+			      int dupl, int indexBase, void* devMultiVecX)
+{ int j=0, i=0,nmin=0,nmax=0;
+  int pitch = 0;
+  float beta;
+  struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
+  struct MultiVectDevice *devVecIrl = (struct MultiVectDevice *) devMultiVecIrl;
+  struct MultiVectDevice *devVecVal = (struct MultiVectDevice *) devMultiVecVal;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  pitch = devVecIrl->pitch_;
+  if ((n > devVecIrl->size_) || (n>devVecVal->size_ )) 
+    return SPGPU_UNSUPPORTED;
+
+  //fprintf(stderr,"geins: %d %d  %p %p %p\n",dupl,n,devVecIrl->v_,devVecVal->v_,devVecX->v_);
+
+  if (dupl == INS_OVERWRITE) 
+    beta = 0.0;
+  else if (dupl == INS_ADD) 
+    beta = 1.0;
+  else
+    beta = 0.0;
+ 
+  spgpuSscat(handle, (float *) devVecX->v_, n, (float*)devVecVal->v_,
+	     (int*)devVecIrl->v_, indexBase, beta);
+  
+  return(i);
+}
+
+
+int igathMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n,
+				    int first, void* deviceIdx, int hfirst,
+				    void* host_values, int indexBase)
+{
+  int i, *idx;
+  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
+
+  i= igathMultiVecDeviceFloat(deviceVec, vectorId, n,
+			       first, (void*) devIdx->v_, hfirst, host_values, indexBase);
+  return(i);
+}
+
+int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int n,
+			      int first, void* indexes, int hfirst, void* host_values, int indexBase)
+{
+  int i, *idx =(int *) indexes;;
+  float *hv = (float *) host_values;;  
+  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  
+  i=0; 
+  hv  = &(hv[hfirst-indexBase]);
+  idx = &(idx[first-indexBase]);
+  spgpuSgath(handle,hv, n, idx,indexBase, (float *) devVec->v_+vectorId*devVec->pitch_);
+  return(i);
+}
+
+int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n, int first, void *deviceIdx,
+				    int hfirst, void* host_values, int indexBase, float beta)
+{  
+  int i, *idx;
+  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
+  i= iscatMultiVecDeviceFloat(deviceVec, vectorId, n, first, 
+			       (void*) devIdx->v_,  hfirst,host_values, indexBase, beta);
+  return(i);
+}
+
+int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int n, int first, void *indexes,
+			      int hfirst, void* host_values, int indexBase, float beta)
+{ int i=0;
+  float *hv  = (float *) host_values;
+  int *idx=(int *) indexes;
+  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  idx = &(idx[first-indexBase]);
+  hv  = &(hv[hfirst-indexBase]);
+  spgpuSscat(handle, (float *) devVec->v_, n, hv, idx, indexBase, beta);
+  return SPGPU_SUCCESS;
+  
+}
+
+
 int nrm2MultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  __assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
-  spgpuSmnrm2(handle,y_res,n,(float *)devVecA->v_,devVecA->count_,devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","nrm2MultiVecDeviceFloat",i);
-  }*/
+
+  spgpuSmnrm2(handle, y_res, n,(float *)devVecA->v_, devVecA->count_, devVecA->pitch_);
   return(i);
 }
 
@@ -105,10 +178,8 @@ int amaxMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
+
   spgpuSmamax(handle, y_res, n,(float *)devVecA->v_, devVecA->count_, devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
   return(i);
 }
 
@@ -116,16 +187,14 @@ int asumMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
+
   spgpuSmasum(handle, y_res, n,(float *)devVecA->v_, devVecA->count_, devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
+
   return(i);
 }
 
-
 int dotMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA, void* devMultiVecB)
-{ int i = 0;
+{int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) devMultiVecB;
   spgpuHandle_t handle=psb_gpuGetHandle();
@@ -134,38 +203,40 @@ int dotMultiVecDeviceFloat(float* y_res, int n, void* devMultiVecA, void* devMul
   return(i);
 }
 
-int axpbyMultiVecDeviceFloat(int n, float alpha, void* devMultiVecX, float beta, void* devMultiVecY)
-{ int i=0, j=0, pitch=0;
+int axpbyMultiVecDeviceFloat(int n,float alpha, void* devMultiVecX, 
+			      float beta, void* devMultiVecY)
+{ int j=0, i=0;
+  int pitch = 0;
   struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
   struct MultiVectDevice *devVecY = (struct MultiVectDevice *) devMultiVecY;
   spgpuHandle_t handle=psb_gpuGetHandle();
   pitch = devVecY->pitch_;
   if ((n > devVecY->size_) || (n>devVecX->size_ )) 
     return SPGPU_UNSUPPORTED;
+
   for(j=0;j<devVecY->count_;j++)
-    spgpuSaxpby(handle,(float*)devVecY->v_+pitch*j, n, beta,
+    spgpuSaxpby(handle,(float*)devVecY->v_+pitch*j, n, beta, 
 		(float*)devVecY->v_+pitch*j, alpha,(float*) devVecX->v_+pitch*j);
-  return(i); 
+  return(i);
 }
 
 int axyMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, void *deviceVecB)
-{ int i = 0;
+{ int i = 0; 
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
   spgpuHandle_t handle=psb_gpuGetHandle();
   if ((n > devVecA->size_) || (n>devVecB->size_ )) 
     return SPGPU_UNSUPPORTED;
 
-  spgpuSmaxy(handle, (float*)devVecB->v_, n, alpha,
-	     (float*)devVecA->v_,(float *)devVecB->v_,
-	     devVecA->count_, devVecA->pitch_);
-    //i = axyMultiVecDevice((void *) alpha, deviceVecA, deviceVecB, deviceVecB);
+  spgpuSmaxy(handle, (float*)devVecB->v_, n, alpha, (float*)devVecA->v_, 
+	     (float*)devVecB->v_, devVecA->count_, devVecA->pitch_);
+
   return(i);
 }
 
-int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, 
-			     void *deviceVecB, float beta, void *deviceVecZ)
-{ int i = 0;
+int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA,
+			      void *deviceVecB, float beta, void *deviceVecZ)
+{ int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
   struct MultiVectDevice *devVecZ = (struct MultiVectDevice *) deviceVecZ;
@@ -173,62 +244,10 @@ int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA,
 
   if ((n > devVecA->size_) || (n>devVecB->size_ ) || (n>devVecZ->size_ )) 
     return SPGPU_UNSUPPORTED;
-
-  spgpuSmaxypbz(handle, (float*)devVecZ->v_, n, beta, (float*)devVecZ->v_, alpha,
-	       (float*) devVecA->v_, (float*) devVecB->v_, devVecB->count_,
-	       devVecB->pitch_);
-  //i = axybzMultiVecDevice((void *) alpha, deviceVecA, deviceVecB, (float *) beta, deviceVecZ);
+  spgpuSmaxypbz(handle, (float*)devVecZ->v_, n, beta, (float*)devVecZ->v_, 
+	       alpha, (float*) devVecA->v_, (float*) devVecB->v_,
+	       devVecB->count_, devVecB->pitch_);
   return(i);
-}
-
-//New gather functions single and double precision
-
-int igathMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int first,
-			      int n, void* deviceIdx, void* host_values, int indexBase)
-{
-  int i, *idx;
-  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
-  i= igathMultiVecDeviceFloat(deviceVec, vectorId, first,
-			       n, (void*) devIdx->v_,  host_values, indexBase);
-  return(i);
-}
-
-int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int first,
-			      int n, void* indexes, void* host_values, int indexBase)
-{
-  int i, *idx;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-
-  i=0; 
-  idx = (int *) indexes;
-  idx = &(idx[first-indexBase]);
-  spgpuSgath(handle,(float *)host_values, n, idx,
-  	     indexBase, (float *) devVec->v_+vectorId*devVec->pitch_);
-  return(i);
-}
-
-int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
-			      void* host_values, int indexBase, float beta)
-{  
-  int i, *idx;
-  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
-  i= iscatMultiVecDeviceFloat(deviceVec, vectorId, first, n, 
-			       (void*) devIdx->v_,  host_values, indexBase, beta);
-  return(i);
-}
-
-int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int first, int n, void *indexes,
-			     void* host_values, int indexBase, float beta)
-{ int i=0;
-  int *idx=(int *) indexes;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-
-  idx = &(idx[first-indexBase]);
-  spgpuSscat(handle, (float *) devVec->v_, n, (float *) host_values, idx, indexBase, beta);
-  return SPGPU_SUCCESS;
-  
 }
 
 #endif

@@ -37,31 +37,36 @@
 #include "cuda_runtime.h"
 #include "core.h"
 
-
 int registerMappedDouble(void *, void **, int, double);
 int writeMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
 int writeMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
 int readMultiVecDeviceDouble(void* deviceMultiVec, double* hostMultiVec);
 int readMultiVecDeviceDoubleR2(void* deviceMultiVec, double* hostMultiVec, int ld);
+
+int geinsMultiVecDeviceDouble(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
+
+int igathMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int n,
+				    int first, void* deviceIdx, int hfirst,
+				    void* host_values, int indexBase);
+int igathMultiVecDeviceDouble(void* deviceVec, int vectorId, int n,
+			      int first, void* indexes, int hfirst, void* host_values, 
+			      int indexBase);
+int iscatMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int n, int first, 
+				    void *deviceIdx, int hfirst, void* host_values, 
+				    int indexBase, double beta);
+int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int n, int first, void *indexes,
+			      int hfirst, void* host_values, int indexBase, double beta);
+
 int nrm2MultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int asumMultiVecDeviceDouble(double* y_res, int n, void* devVecA);
 int dotMultiVecDeviceDouble(double* y_res, int n, void* devVecA, void* devVecB);
-int geinsMultiVecDeviceDouble(int n, void* devVecIrl, void* devVecVal, 
-			      int dupl, int indexBase, void* devVecX); 
 
 int axpbyMultiVecDeviceDouble(int n, double alpha, void* devVecX, double beta, void* devVecY);
 int axyMultiVecDeviceDouble(int n, double alpha, void *deviceVecA, void *deviceVecB);
 int axybzMultiVecDeviceDouble(int n, double alpha, void *deviceVecA,
 			      void *deviceVecB, double beta, void *deviceVecZ);
 
-int igathMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first,
-			      int n, void* deviceIdx, void* host_values, int indexBase);
-int igathMultiVecDeviceDouble(void* deviceVec, int vectorId, int first,
-			      int n, void* indexes, void* host_values, int indexBase);
-int iscatMultiVecDeviceDoubleVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
-			      void* host_values, int indexBase, double beta);
-int iscatMultiVecDeviceDouble(void* deviceVec, int vectorId, int first, int n, void *indexes,
-			      void* host_values, int indexBase, double beta);
 
 #endif

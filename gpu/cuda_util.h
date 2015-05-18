@@ -83,6 +83,8 @@ int writeInt(void *, int *, int);
 int writeMultiInt(void *, int* , int , int );
 int readInt(void *, int *, int);
 int readMultiInt(void*, int*, int, int );
+int writeIntFirst(int,void *, int *, int,int);
+int readIntFirst(int,void *, int *, int,int);
 void freeInt(void *);
 
 int allocateFloat(void **, int);
@@ -91,6 +93,8 @@ int writeFloat(void *, float *, int);
 int writeMultiFloat(void *, float* , int , int );
 int readFloat(void *, float*, int);
 int readMultiFloat(void*, float*, int, int );
+int writeFloatFirst(int, void *, float*, int, int);
+int readFloatFirst(int, void *, float*, int, int);
 void freeFloat(void *);
 
 int allocateDouble(void **, int);
@@ -99,6 +103,8 @@ int writeDouble(void *, double*, int);
 int writeMultiDouble(void *, double* , int , int );
 int readDouble(void *, double*, int);
 int readMultiDouble(void*, double*, int, int );
+int writeDoubleFirst(int, void *, double*, int, int);
+int readDoubleFirst(int, void *, double*, int, int);
 void freeDouble(void *);
 
 int allocateFloatComplex(void **, int);
@@ -107,6 +113,8 @@ int writeFloatComplex(void *, cuFloatComplex*, int);
 int writeMultiFloatComplex(void *, cuFloatComplex* , int , int );
 int readFloatComplex(void *, cuFloatComplex*, int);
 int readMultiFloatComplex(void*, cuFloatComplex*, int, int );
+int writeFloatComplexFirst(int, void *, cuFloatComplex*, int, int);
+int readFloatComplexFirst(int, void *, cuFloatComplex*, int, int);
 void freeFloatComplex(void *);
 
 int allocateDoubleComplex(void **, int);
@@ -115,6 +123,8 @@ int writeDoubleComplex(void *, cuDoubleComplex*, int);
 int writeMultiDoubleComplex(void *, cuDoubleComplex* , int , int );
 int readDoubleComplex(void *, cuDoubleComplex*, int);
 int readMultiDoubleComplex(void*, cuDoubleComplex*, int, int );
+int writeDoubleComplexFirst(int, void *, cuDoubleComplex*, int, int);
+int readDoubleComplexFirst(int, void *, cuDoubleComplex*, int, int);
 void freeDoubleComplex(void *);
 
 double etime();

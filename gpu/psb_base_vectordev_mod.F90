@@ -54,6 +54,7 @@ module psb_base_vectordev_mod
     end function FallocMultiVecDevice
   end interface
 
+
   interface 
     subroutine  unregisterMapped(buf) &
          & bind(c,name='unregisterMapped')

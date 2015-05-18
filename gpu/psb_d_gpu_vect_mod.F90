@@ -38,6 +38,7 @@ module psb_d_gpu_vect_mod
   use psb_i_vect_mod
 #ifdef HAVE_SPGPU
   use psb_i_gpu_vect_mod
+  use psb_i_vectordev_mod
   use psb_d_vectordev_mod
 #endif
 
@@ -50,10 +51,10 @@ module psb_d_gpu_vect_mod
     integer     :: state      = is_host
     type(c_ptr) :: deviceVect = c_null_ptr
     real(c_double), allocatable :: pinned_buffer(:)
-    type(c_ptr) :: d_p_buf = c_null_ptr
+    type(c_ptr) :: dt_p_buf = c_null_ptr
     real(c_double), allocatable :: buffer(:)
-    type(c_ptr) :: d_buf = c_null_ptr
-    integer :: d_buf_sz = 0
+    type(c_ptr) :: dt_buf = c_null_ptr
+    integer :: dt_buf_sz = 0
     type(c_ptr) :: i_buf = c_null_ptr
     integer :: i_buf_sz = 0
   contains
@@ -69,6 +70,7 @@ module psb_d_gpu_vect_mod
     procedure, pass(x) :: bld_n    => d_gpu_bld_n
     procedure, pass(x) :: free     => d_gpu_free
     procedure, pass(x) :: ins_a    => d_gpu_ins_a
+    procedure, pass(x) :: ins_v    => d_gpu_ins_v
     procedure, pass(x) :: is_host  => d_gpu_is_host
     procedure, pass(x) :: is_dev   => d_gpu_is_dev
     procedure, pass(x) :: is_sync  => d_gpu_is_sync
@@ -80,6 +82,11 @@ module psb_d_gpu_vect_mod
     procedure, pass(x) :: gthzv_x  => d_gpu_gthzv_x
     procedure, pass(y) :: sctb     => d_gpu_sctb
     procedure, pass(y) :: sctb_x   => d_gpu_sctb_x
+    procedure, pass(x) :: gthzbuf  => d_gpu_gthzbuf
+    procedure, pass(y) :: sctb_buf => d_gpu_sctb_buf
+    procedure, pass(x) :: new_buffer   => d_gpu_new_buffer
+    procedure, nopass  :: device_wait  => d_gpu_device_wait
+    procedure, pass(x) :: free_buffer  => d_gpu_free_buffer
     procedure, pass(x) :: dot_v    => d_gpu_dot_v
     procedure, pass(x) :: dot_a    => d_gpu_dot_a
     procedure, pass(y) :: axpby_v  => d_gpu_axpby_v
@@ -119,6 +126,73 @@ contains
     
 #ifdef HAVE_SPGPU
 
+  subroutine d_gpu_device_wait()
+    call psb_cudaSync()
+  end subroutine d_gpu_device_wait
+
+  subroutine d_gpu_new_buffer(n,x,info)
+    use psb_realloc_mod
+    use psb_gpu_env_mod
+    implicit none 
+    class(psb_d_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(in)              :: n
+    integer(psb_ipk_), intent(out)             :: info
+
+    
+    if (psb_gpu_DeviceHasUVA()) then       
+      if (allocated(x%combuf)) then 
+        if (size(x%combuf)<n) then 
+          call inner_unregister(x%combuf)
+          deallocate(x%combuf,stat=info)
+        end if
+      end if
+      if (.not.allocated(x%combuf)) then 
+        call psb_realloc(n,x%combuf,info)
+        if (info == 0) info = inner_register(x%combuf,x%dt_p_buf)        
+      end if
+    else
+      call psb_realloc(n,x%combuf,info)
+    end if
+    if (c_associated(x%dt_buf)) then 
+      call freeDouble(x%dt_buf)
+    end if
+    info       =  allocateDouble(x%dt_buf,n)
+    x%dt_buf_sz = n
+    if (c_associated(x%i_buf)) then 
+      call freeInt(x%i_buf)
+    end if
+    info       =  allocateInt(x%i_buf,n)
+    x%i_buf_sz = n
+    
+  end subroutine d_gpu_new_buffer
+
+  subroutine d_gpu_free_buffer(x,info)
+    use psb_realloc_mod
+    use psb_gpu_env_mod
+    implicit none 
+    class(psb_d_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)             :: info
+    
+    if (allocated(x%pinned_buffer)) then 
+      call inner_unregister(x%pinned_buffer)
+      deallocate(x%pinned_buffer, stat=info)
+    end if
+    if (allocated(x%buffer)) then 
+      deallocate(x%buffer, stat=info)
+    end if
+    if (c_associated(x%dt_buf)) then 
+      call freeDouble(x%dt_buf)
+      x%dt_buf  = c_null_ptr
+    end if
+    if (c_associated(x%i_buf)) then 
+      call freeInt(x%i_buf)
+      x%i_buf = c_null_ptr
+    end if
+    x%dt_buf_sz=0
+    x%i_buf_sz=0
+
+  end subroutine d_gpu_free_buffer
+
   subroutine d_gpu_gthzv_x(i,n,idx,x,y)
     use psb_gpu_env_mod
     use psi_serial_mod
@@ -149,12 +223,12 @@ contains
 
         if (.not.allocated(x%pinned_buffer)) then
           allocate(x%pinned_buffer(n),stat=info)
-          if (info == 0) info = inner_register(x%pinned_buffer,x%d_p_buf)        
+          if (info == 0) info = inner_register(x%pinned_buffer,x%dt_p_buf)        
           if (info /= 0) &
                & write(0,*) 'Error from inner_register ',info
         endif
         info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
-             & 0, i, n, ii%deviceVect, x%d_p_buf, 1)
+             & 0, n, i, ii%deviceVect, 1, x%dt_p_buf, 1)
         call psb_cudaSync()
         y(1:n) = x%pinned_buffer(1:n)
 
@@ -169,18 +243,18 @@ contains
           allocate(x%buffer(n),stat=info)
         end if
 
-        if (x%d_buf_sz < n) then 
-          if (c_associated(x%d_buf)) then 
-            call freeDouble(x%d_buf)
+        if (x%dt_buf_sz < n) then 
+          if (c_associated(x%dt_buf)) then 
+            call freeDouble(x%dt_buf)
           end if
-          info =  allocateDouble(x%d_buf,n)
-          x%d_buf_sz=n
+          info =  allocateDouble(x%dt_buf,n)
+          x%dt_buf_sz=n
         end if
         if (info == 0) &
              & info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
-             & 0, i, n, ii%deviceVect, x%d_buf, 1)
+             & 0, n, i, ii%deviceVect, 1, x%dt_buf, 1)
         if (info == 0) &
-             &  info = readDouble(x%d_buf,y,n)
+             &  info = readDouble(x%dt_buf,y,n)
 
       endif
 
@@ -205,26 +279,78 @@ contains
         allocate(x%buffer(n),stat=info)
       end if
 
-      if (x%d_buf_sz < n) then 
-        if (c_associated(x%d_buf)) then 
-          call freeDouble(x%d_buf)
+      if (x%dt_buf_sz < n) then 
+        if (c_associated(x%dt_buf)) then 
+          call freeDouble(x%dt_buf)
         end if
-        info =  allocateDouble(x%d_buf,n)
-        x%d_buf_sz=n
+        info =  allocateDouble(x%dt_buf,n)
+        x%dt_buf_sz=n
       end if
 
       if (info == 0) &
            & info = writeInt(x%i_buf,ii%v,ni)
       if (info == 0) &
            & info = igathMultiVecDeviceDouble(x%deviceVect,&
-           & 0, i, n, x%i_buf, x%d_buf, 1)
+           & 0, n, i, x%i_buf, 1, x%dt_buf, 1)
       if (info == 0) &
-           &  info = readDouble(x%d_buf,y,n)
+           &  info = readDouble(x%dt_buf,y,n)
 
     end select
     
   end subroutine d_gpu_gthzv_x
 
+  subroutine d_gpu_gthzbuf(i,n,idx,x)
+    use psb_gpu_env_mod
+    use psi_serial_mod
+    integer(psb_ipk_) :: i,n
+    class(psb_i_base_vect_type) :: idx
+    class(psb_d_vect_gpu)       :: x
+    integer ::  info, ni
+
+    info = 0 
+!!$    write(0,*) 'Starting gth_zbuf'
+    if (.not.allocated(x%combuf)) then
+      call psb_errpush(psb_err_alloc_dealloc_,'gthzbuf')
+      return
+    end if
+
+    select type(ii=> idx) 
+    class is (psb_i_vect_gpu) 
+      if (ii%is_host()) call ii%sync()
+      if (x%is_host())  call x%sync()
+
+      if (psb_gpu_DeviceHasUVA()) then 
+        info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
+             & 0, n, i, ii%deviceVect, i,x%dt_p_buf, 1)
+
+      else
+        info = igathMultiVecDeviceDoubleVecIdx(x%deviceVect,&
+             & 0, n, i, ii%deviceVect, i,x%dt_buf, 1)
+        if (info == 0) &
+             &  info = readDouble(i,x%dt_buf,x%combuf(i:),n,1)
+      endif
+
+    class default
+      ! Do not go for brute force, but move the index vector
+      ni = size(ii%v)
+      info = 0 
+      if (.not.c_associated(x%i_buf)) then 
+        info =  allocateInt(x%i_buf,ni)
+        x%i_buf_sz=ni
+      end if
+      if (info == 0) &
+           & info = writeInt(i,x%i_buf,ii%v(i:),n,1)
+
+      if (info == 0) &
+           & info = igathMultiVecDeviceDouble(x%deviceVect,&
+           & 0, n, i, x%i_buf, i,x%dt_buf, 1)
+      
+      if (info == 0) &
+           &  info = readDouble(i,x%dt_buf,x%combuf(i:),n,1)
+
+    end select
+
+  end subroutine d_gpu_gthzbuf
 
   subroutine d_gpu_sctb(n,idx,x,beta,y)
     implicit none
@@ -268,13 +394,13 @@ contains
 
         if (.not.allocated(y%pinned_buffer)) then
           allocate(y%pinned_buffer(n),stat=info)
-          if (info == 0) info = inner_register(y%pinned_buffer,y%d_p_buf)        
+          if (info == 0) info = inner_register(y%pinned_buffer,y%dt_p_buf)        
           if (info /= 0) &
                & write(0,*) 'Error from inner_register ',info
         endif
         y%pinned_buffer(1:n) = x(1:n) 
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
-             & 0, i, n, ii%deviceVect, y%d_p_buf, 1,beta)
+             & 0, n, i, ii%deviceVect, 1, y%dt_p_buf, 1,beta)
       else
         
         if (allocated(y%buffer)) then 
@@ -287,16 +413,16 @@ contains
           allocate(y%buffer(n),stat=info)
         end if
 
-        if (y%d_buf_sz < n) then 
-          if (c_associated(y%d_buf)) then 
-            call freeDouble(y%d_buf)
+        if (y%dt_buf_sz < n) then 
+          if (c_associated(y%dt_buf)) then 
+            call freeDouble(y%dt_buf)
           end if
-          info =  allocateDouble(y%d_buf,n)
-          y%d_buf_sz=n
+          info =  allocateDouble(y%dt_buf,n)
+          y%dt_buf_sz=n
         end if
-        info = writeDouble(y%d_buf,x,n)
+        info = writeDouble(y%dt_buf,x,n)
         info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
-             & 0, i, n, ii%deviceVect, y%d_buf, 1,beta)
+             & 0, n, i, ii%deviceVect, 1, y%dt_buf, 1,beta)
 
       end if
       
@@ -320,19 +446,19 @@ contains
         allocate(y%buffer(n),stat=info)
       end if
 
-      if (y%d_buf_sz < n) then 
-        if (c_associated(y%d_buf)) then 
-          call freeDouble(y%d_buf)
+      if (y%dt_buf_sz < n) then 
+        if (c_associated(y%dt_buf)) then 
+          call freeDouble(y%dt_buf)
         end if
-        info =  allocateDouble(y%d_buf,n)
-        y%d_buf_sz=n
+        info =  allocateDouble(y%dt_buf,n)
+        y%dt_buf_sz=n
       end if
 
       if (info == 0) &
            & info = writeInt(y%i_buf,ii%v(i:i+n-1),n)
-      info = writeDouble(y%d_buf,x,n)
+      info = writeDouble(y%dt_buf,x,n)
       info = iscatMultiVecDeviceDouble(y%deviceVect,&
-           & 0, 1, n, y%i_buf, y%d_buf, 1,beta)
+           & 0, n, 1, y%i_buf, 1, y%dt_buf, 1,beta)
 
 
     end select
@@ -344,6 +470,73 @@ contains
     call y%set_dev()
 
   end subroutine d_gpu_sctb_x
+
+  subroutine d_gpu_sctb_buf(i,n,idx,beta,y)
+    use psi_serial_mod
+    use psb_gpu_env_mod
+    implicit none 
+    integer(psb_ipk_) :: i, n
+    class(psb_i_base_vect_type) :: idx
+    real(psb_dpk_) :: beta
+    class(psb_d_vect_gpu) :: y
+    integer(psb_ipk_) :: info, ni
+    real(psb_dpk_), allocatable :: yv(:)
+    logical, parameter :: debug=.false.
+    
+!!$    write(0,*) 'Starting sctb_buf'
+    if (.not.allocated(y%combuf)) then 
+      call psb_errpush(psb_err_alloc_dealloc_,'sctb_buf')
+      return
+    end if
+    
+    if (debug) then 
+      yv = y%get_vect()
+      write(0,*) beta,'Before scatter ',yv(:)
+    end if
+      
+    select type(ii=> idx) 
+    class is (psb_i_vect_gpu) 
+              
+      if (ii%is_host()) call ii%sync()
+      if (y%is_host())  call y%sync()
+      if (psb_gpu_DeviceHasUVA()) then 
+        if (debug) write(0,*) 'Going IDX%deviceVect  UVA'
+        info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
+             & 0, n, i, ii%deviceVect, i, y%dt_p_buf, 1,beta)
+      else 
+        if (debug) write(0,*) 'Going IDX%deviceVect no UVA'
+        info = writeDouble(i,y%dt_buf,y%combuf(i:),n,1)
+        info = iscatMultiVecDeviceDoubleVecIdx(y%deviceVect,&
+             & 0, n, i, ii%deviceVect, i, y%dt_buf, 1,beta)
+
+      end if
+
+    class default
+      !call y%sct(n,ii%v(i:),x,beta)
+      ni = size(ii%v)
+      info = 0 
+      if (.not.c_associated(y%i_buf)) then 
+        info =  allocateInt(y%i_buf,ni)
+        y%i_buf_sz=ni
+      end if
+      if (debug) write(0,*) 'Calling writeIntFirst',ii%v(i:i+n-1)
+      if (info == 0) &
+           & info = writeInt(i,y%i_buf,ii%v(i:),n,1)
+      if (debug) write(0,*) 'Done writeIntFirst'
+      if (info == 0) &
+           & info = writeDouble(i,y%dt_buf,y%combuf(i:),n,1)
+      if (debug) write(0,*) 'Done writeDouble'      
+      if (info == 0) info = iscatMultiVecDeviceDouble(y%deviceVect,&
+           & 0, n, i, y%i_buf, i, y%dt_buf, 1,beta)
+    end select
+    
+    if (debug) then 
+      yv = y%get_vect()
+      write(0,*) beta,'After scatter ',yv(:)
+    end if
+!!$    write(0,*) 'Done sctb_buf'
+
+  end subroutine d_gpu_sctb_buf
 
 
   subroutine d_gpu_bld_x(x,this)
@@ -589,11 +782,11 @@ contains
     if (allocated(x%buffer)) then 
       deallocate(x%buffer, stat=info)
     end if
-    if (c_associated(x%d_buf)) &
-         &  call freeDouble(x%d_buf)
+    if (c_associated(x%dt_buf)) &
+         &  call freeDouble(x%dt_buf)
     if (c_associated(x%i_buf)) &
          &  call freeInt(x%i_buf)
-    x%d_buf_sz=0
+    x%dt_buf_sz=0
     x%i_buf_sz=0
 
     if (allocated(x%v)) deallocate(x%v, stat=info)
@@ -905,6 +1098,49 @@ contains
   end subroutine d_gpu_vect_finalize
 #endif
 
+  subroutine d_gpu_ins_v(n,irl,val,dupl,x,info)
+    use psi_serial_mod
+    implicit none 
+    class(psb_d_vect_gpu), intent(inout)        :: x
+    integer(psb_ipk_), intent(in)               :: n, dupl
+    class(psb_i_base_vect_type), intent(inout)  :: irl
+    class(psb_d_base_vect_type), intent(inout)  :: val
+    integer(psb_ipk_), intent(out)              :: info
+
+    integer(psb_ipk_) :: i, isz
+    logical :: done_gpu
+
+    info = 0
+    if (psb_errstatus_fatal()) return 
+
+    done_gpu = .false. 
+    select type(virl => irl)
+    class is (psb_i_vect_gpu) 
+      select type(vval => val)
+      class is (psb_d_vect_gpu) 
+        if (vval%is_host()) call vval%sync()
+        if (virl%is_host()) call virl%sync()
+        if (x%is_host())    call x%sync()
+        info = geinsMultiVecDeviceDouble(n,virl%deviceVect,&
+             & vval%deviceVect,dupl,1,x%deviceVect)
+        call x%set_dev()
+        done_gpu=.true.
+      end select
+    end select
+
+    if (.not.done_gpu) then 
+      if (irl%is_dev()) call irl%sync()
+      if (val%is_dev()) call val%sync()
+      call x%ins(n,irl%v,val%v,dupl,info)
+    end if
+
+    if (info /= 0) then 
+      call psb_errpush(info,'gpu_vect_ins')
+      return
+    end if
+
+  end subroutine d_gpu_ins_v
+  
   subroutine d_gpu_ins_a(n,irl,val,dupl,x,info)
     use psi_serial_mod
     implicit none 

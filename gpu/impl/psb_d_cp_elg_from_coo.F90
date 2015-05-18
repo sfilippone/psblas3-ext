@@ -55,13 +55,10 @@ subroutine psb_d_cp_elg_from_coo(a,b,info)
   character(len=20)   :: name
   type(psb_d_coo_sparse_mat)  :: tmp
   integer(psb_ipk_), allocatable  :: idisp(:)
-#ifdef HAVE_SPGPU
-  type(elldev_parms) :: gpu_parms
-#endif
 
   info = psb_success_
 #ifdef HAVE_SPGPU
-  hacksize = psb_gpu_WarpSize()
+  hacksize = max(1,psb_gpu_WarpSize())
 #else
   hacksize = 1
 #endif

@@ -33,9 +33,9 @@
 #include <stdio.h>
 #include <complex.h>
 #if defined(HAVE_SPGPU)
-#include "zvectordev.h"
 //#include "utils.h"
 //#include "common.h"
+#include "zvectordev.h"
 
 
 int registerMappedDoubleComplex(void  *buff, void **d_p, int n, cuDoubleComplex dummy)
@@ -47,11 +47,11 @@ int writeMultiVecDeviceDoubleComplex(void* deviceVec, cuDoubleComplex* hostVec)
 { int i;
   struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
   // Ex updateFromHost vector function
-  i = writeRemoteBuffer((void*) hostVec, (void *)devVec->v_, devVec->pitch_*devVec->count_*sizeof(cuDoubleComplex));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceDouble",i);
-  }*/
-  //  cudaSync();
+  i = writeRemoteBuffer((void*) hostVec, (void *)devVec->v_, 
+			devVec->pitch_*devVec->count_*sizeof(cuDoubleComplex));
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","FallocMultiVecDevice",i);
+  }
   return(i);
 }
 
@@ -59,113 +59,196 @@ int writeMultiVecDeviceDoubleComplexR2(void* deviceVec, cuDoubleComplex* hostVec
 { int i;
   i = writeMultiVecDeviceDoubleComplex(deviceVec, (void *) hostVec);
   if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceDoubleR2",i);
+    fprintf(stderr,"From routine : %s : %d \n","writeMultiVecDeviceDoubleComplexR2",i);
   }
-  //  cudaSync();
   return(i);
 }
 
-int readMultiVecDeviceDoubleComplex(void* deviceVec, double complex* hostVec)
-{ int i;
+int readMultiVecDeviceDoubleComplex(void* deviceVec, cuDoubleComplex* hostVec)
+{ int i,j;
   struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  i = readRemoteBuffer((void *) hostVec, (void *)devVec->v_, devVec->pitch_*devVec->count_*sizeof(cuDoubleComplex));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceDouble",i);
-  }*/
+  i = readRemoteBuffer((void *) hostVec, (void *)devVec->v_, 
+		       devVec->pitch_*devVec->count_*sizeof(cuDoubleComplex));
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceDoubleComplex",i);
+  }
   return(i);
 }
 
-int readMultiVecDeviceDoubleComplexR2(void* deviceVec, double complex* hostVec, int ld)
+int readMultiVecDeviceDoubleComplexR2(void* deviceVec, cuDoubleComplex* hostVec, int ld)
 { int i;
-  //i = readMultiVecDevice(deviceVec, (void *) hostVec);
   i = readMultiVecDeviceDoubleComplex(deviceVec, hostVec);
   if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceDoubleR2",i);
+    fprintf(stderr,"From routine : %s : %d \n","readMultiVecDeviceDoubleComplexR2",i);
   }
   return(i);
 }
 
-int nrm2MultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
+int geinsMultiVecDeviceDoubleComplex(int n, void* devMultiVecIrl, void* devMultiVecVal, 
+				     int dupl, int indexBase, void* devMultiVecX)
+{ int j=0, i=0,nmin=0,nmax=0;
+  int pitch = 0;
+  cuDoubleComplex beta;
+  struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
+  struct MultiVectDevice *devVecIrl = (struct MultiVectDevice *) devMultiVecIrl;
+  struct MultiVectDevice *devVecVal = (struct MultiVectDevice *) devMultiVecVal;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  pitch = devVecIrl->pitch_;
+  if ((n > devVecIrl->size_) || (n>devVecVal->size_ )) 
+    return SPGPU_UNSUPPORTED;
+
+  //fprintf(stderr,"geins: %d %d  %p %p %p\n",dupl,n,devVecIrl->v_,devVecVal->v_,devVecX->v_);
+  if (dupl == INS_OVERWRITE) 
+    beta =  make_cuDoubleComplex(0.0, 0.0);
+  else if (dupl == INS_ADD) 
+    beta =  make_cuDoubleComplex(1.0, 0.0);
+  else
+    beta = make_cuDoubleComplex(0.0, 0.0);
+ 
+  spgpuZscat(handle, (cuDoubleComplex *) devVecX->v_, n, (cuDoubleComplex*)devVecVal->v_,
+	     (int*)devVecIrl->v_, indexBase, beta);
+  
+  return(i);
+}
+
+
+int igathMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int n,
+				    int first, void* deviceIdx, int hfirst,
+				    void* host_values, int indexBase)
+{
+  int i, *idx;
+  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
+
+  i= igathMultiVecDeviceDoubleComplex(deviceVec, vectorId, n,
+				      first, (void*) devIdx->v_, 
+				      hfirst, host_values, indexBase);
+  return(i);
+}
+
+int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int n,
+				     int first, void* indexes, int hfirst, 
+				     void* host_values, int indexBase)
+{
+  int i, *idx =(int *) indexes;;
+  cuDoubleComplex *hv = (cuDoubleComplex *) host_values;;  
+  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  
+  i=0; 
+  hv  = &(hv[hfirst-indexBase]);
+  idx = &(idx[first-indexBase]);
+  spgpuZgath(handle,hv, n, idx,indexBase, 
+	     (cuDoubleComplex *) devVec->v_+vectorId*devVec->pitch_);
+  return(i);
+}
+
+int iscatMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int n, 
+					   int first, void *deviceIdx,
+					   int hfirst, void* host_values, 
+					   int indexBase, cuDoubleComplex beta)
+{  
+  int i, *idx;
+  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
+  i= iscatMultiVecDeviceDoubleComplex(deviceVec, vectorId, n, first, 
+			       (void*) devIdx->v_,  hfirst,host_values, indexBase, beta);
+  return(i);
+}
+
+int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int n, 
+				     int first, void *indexes,
+				     int hfirst, void* host_values,
+				     int indexBase, cuDoubleComplex beta)
+{ int i=0;
+  cuDoubleComplex *hv  = (cuDoubleComplex *) host_values;
+  int *idx=(int *) indexes;
+  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  idx = &(idx[first-indexBase]);
+  hv  = &(hv[hfirst-indexBase]);
+  spgpuZscat(handle, (cuDoubleComplex *) devVec->v_, n, hv, idx, indexBase, beta);
+  return SPGPU_SUCCESS;
+  
+}
+
+
+int nrm2MultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
+
   spgpuZmnrm2(handle, y_res, n,(cuDoubleComplex *)devVecA->v_, devVecA->count_, devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
   return(i);
 }
 
-int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
+int amaxMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
-  spgpuZmamax(handle, y_res, n,(cuDoubleComplex *)devVecA->v_, devVecA->count_, devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
+
+  spgpuZmamax(handle, y_res, n,(cuDoubleComplex *)devVecA->v_, 
+	      devVecA->count_, devVecA->pitch_);
   return(i);
 }
 
-int asumMultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA)
+int asumMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMultiVecA)
 { int i=0;
   spgpuHandle_t handle=psb_gpuGetHandle();
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
-  //__assert(n <= devVecA->size_ , "ERROR: wrong N for norm2 ");
-  //chiamata alla nuova libreria
-  spgpuZmasum(handle, y_res, n,(cuDoubleComplex *)devVecA->v_, devVecA->count_, devVecA->pitch_);
-  //i = nrm2MultiVecDevice((void *) y_res, n, devMultiVecA);
+
+  spgpuZmasum(handle, y_res, n,(cuDoubleComplex *)devVecA->v_, 
+	      devVecA->count_, devVecA->pitch_);
+
   return(i);
 }
 
-int dotMultiVecDeviceDoubleComplex(double complex* y_res, int n, void* devMultiVecA, void* devMultiVecB)
+int dotMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devMultiVecA, void* devMultiVecB)
 {int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) devMultiVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) devMultiVecB;
   spgpuHandle_t handle=psb_gpuGetHandle();
-  spgpuZmdot(handle, (cuDoubleComplex*)y_res, n, (cuDoubleComplex*)devVecA->v_,
+
+  spgpuZmdot(handle, y_res, n, (cuDoubleComplex*)devVecA->v_,
 	     (cuDoubleComplex*)devVecB->v_,devVecA->count_,devVecB->pitch_);
-  return(0);
+  return(i);
 }
 
-int axpbyMultiVecDeviceDoubleComplex(int n, double complex alpha, void* devMultiVecX, 
-				     double complex beta, void* devMultiVecY)
-{ int i = 0, j=0;
+int axpbyMultiVecDeviceDoubleComplex(int n,cuDoubleComplex alpha, void* devMultiVecX, 
+			      cuDoubleComplex beta, void* devMultiVecY)
+{ int j=0, i=0;
   int pitch = 0;
   struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
   struct MultiVectDevice *devVecY = (struct MultiVectDevice *) devMultiVecY;
   spgpuHandle_t handle=psb_gpuGetHandle();
-  cuDoubleComplex a, b;
-  a = make_cuDoubleComplex(crealf(alpha),cimagf(alpha));
-  b = make_cuDoubleComplex(crealf(beta),cimagf(beta));
   pitch = devVecY->pitch_;
   if ((n > devVecY->size_) || (n>devVecX->size_ )) 
     return SPGPU_UNSUPPORTED;
+
   for(j=0;j<devVecY->count_;j++)
-    spgpuZaxpby(handle,(cuDoubleComplex*)devVecY->v_+pitch*j, n, b, 
-		(cuDoubleComplex*)devVecY->v_+pitch*j, a,(cuDoubleComplex*) devVecX->v_+pitch*j);
+    spgpuZaxpby(handle,(cuDoubleComplex*)devVecY->v_+pitch*j, n, beta, 
+		(cuDoubleComplex*)devVecY->v_+pitch*j, alpha,
+		(cuDoubleComplex*) devVecX->v_+pitch*j);
   return(i);
 }
 
-int axyMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA, void *deviceVecB)
-{ int i = 0;
+int axyMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, 
+				   void *deviceVecA, void *deviceVecB)
+{ int i = 0; 
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
   spgpuHandle_t handle=psb_gpuGetHandle();
   if ((n > devVecA->size_) || (n>devVecB->size_ )) 
     return SPGPU_UNSUPPORTED;
 
-  cuDoubleComplex a = make_cuDoubleComplex(creal(alpha),cimag(alpha));
-  spgpuZmaxy(handle, (cuDoubleComplex *)devVecB->v_, n, a,
-	     (cuDoubleComplex *)devVecA->v_, (cuDoubleComplex *)devVecB->v_,
-	     devVecA->count_, devVecA->pitch_);
-  //i = axyMultiVecDevice((void *) alpha, deviceVecA, deviceVecB, deviceVecB);
+  spgpuZmaxy(handle, (cuDoubleComplex*)devVecB->v_, n, alpha,
+	     (cuDoubleComplex*)devVecA->v_, 
+	     (cuDoubleComplex*)devVecB->v_, devVecA->count_, devVecA->pitch_);
+
   return(i);
 }
 
-int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA,
-				     void *deviceVecB, double complex beta, 
-				     void *deviceVecZ)
+int axybzMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, void *deviceVecA,
+			      void *deviceVecB, cuDoubleComplex beta, void *deviceVecZ)
 { int i=0;
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
   struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
@@ -174,67 +257,11 @@ int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVe
 
   if ((n > devVecA->size_) || (n>devVecB->size_ ) || (n>devVecZ->size_ )) 
     return SPGPU_UNSUPPORTED;
-
-  cuDoubleComplex a = make_cuDoubleComplex(creal(alpha),cimag(alpha));
-  cuDoubleComplex b = make_cuDoubleComplex(creal(beta),cimag(beta));
-  spgpuZmaxypbz(handle, (cuDoubleComplex *)devVecZ->v_, n, b, (cuDoubleComplex *)devVecZ->v_, 
-	       a, (cuDoubleComplex *) devVecA->v_, (cuDoubleComplex *) devVecB->v_,
+  spgpuZmaxypbz(handle, (cuDoubleComplex*)devVecZ->v_, n, beta, 
+		(cuDoubleComplex*)devVecZ->v_, 
+	       alpha, (cuDoubleComplex*) devVecA->v_, (cuDoubleComplex*) devVecB->v_,
 	       devVecB->count_, devVecB->pitch_);
   return(i);
-}
-
-//New gather functions single and double precision
-
-int igathMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first,
-			     int n, void* deviceIdx, void* host_values, int indexBase)
-{
-  int i, *idx;
-  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
-  i= igathMultiVecDeviceDoubleComplex(deviceVec, vectorId, first,
-			       n, (void*) devIdx->v_,  host_values, indexBase);
-  return(i);
-}
-
-int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first,
-			     int n, void* indexes, void* host_values, int indexBase)
-{
-  int i, *idx;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-
-  i=0; 
-  idx = (int *) indexes;
-  idx = &(idx[first-indexBase]);
-  spgpuZgath(handle,(cuDoubleComplex *)host_values, n, idx,
-  	     indexBase, (cuDoubleComplex *) devVec->v_+vectorId*devVec->pitch_);
-  return(i);
-}
-
-
-int iscatMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first,
-			     int n, void* deviceIdx, void* host_values, int indexBase, double complex beta)
-{
-  int i, *idx;
-  struct MultiVectDevice *devIdx = (struct MultiVectDevice *) deviceIdx;
-  i= iscatMultiVecDeviceDoubleComplex(deviceVec, vectorId, first,
-				     n, (void*) devIdx->v_,  host_values, indexBase, beta);
-  return(i);
-}
-
-int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
-				    void* host_values, int indexBase, double complex beta)
-{ int i=0;
-  int *idx=(int *) indexes;
-  struct MultiVectDevice *devVec = (struct MultiVectDevice *) deviceVec;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  cuDoubleComplex cuBeta;
-
-  cuBeta = make_cuDoubleComplex(crealf(beta),cimagf(beta));
-  idx = &(idx[first-indexBase]);
-  spgpuZscat(handle, (cuDoubleComplex *) devVec->v_, n, (cuDoubleComplex *) host_values, 
-	     idx, indexBase, cuBeta);
-  return SPGPU_SUCCESS;
-  
 }
 
 #endif

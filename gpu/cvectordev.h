@@ -32,34 +32,43 @@
 
 #pragma once
 #if defined(HAVE_SPGPU)
-#include "cuComplex.h"
+//#include "utils.h"
+#include <complex.h>
 #include "vectordev.h"
+#include "cuComplex.h"
 #include "cuda_runtime.h"
 #include "core.h"
 
 int registerMappedFloatComplex(void *, void **, int, cuFloatComplex);
+int writeMultiVecDeviceFloatComplex(void* deviceMultiVec, cuFloatComplex* hostMultiVec);
+int writeMultiVecDeviceFloatComplexR2(void* deviceMultiVec, cuFloatComplex* hostMultiVec, int ld);
+int readMultiVecDeviceFloatComplex(void* deviceMultiVec, cuFloatComplex* hostMultiVec);
+int readMultiVecDeviceFloatComplexR2(void* deviceMultiVec, cuFloatComplex* hostMultiVec, int ld);
 
-int writeMultiVecDeviceFloatComplex(void* deviceVec, cuFloatComplex* hostVec);
-int writeMultiVecDeviceFloatComplexR2(void* deviceVec, cuFloatComplex* hostVec, int ld);
-int readMultiVecDeviceFloatComplex(void* deviceVec, float complex* hostVec);
-int readMultiVecDeviceFloatComplexR2(void* deviceMultiVec, float complex* hostMultiVec, int ld);
-int nrm2MultiVecDeviceFloatComplex(float* y_res, int n, void* devMultiVecA);
-int amaxMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
-int asumMultiVecDeviceFloatComplex(float* y_res, int n, void* devVecA);
-int dotMultiVecDeviceFloatComplex(float complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
-int axpbyMultiVecDeviceFloatComplex(int n, float complex alpha, void* devMultiVecX, 
-				    float complex beta, void* devMultiVecY);
-int axyMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA, void *deviceVecB);
-int axybzMultiVecDeviceFloatComplex(int n, float complex alpha, void *deviceVecA,
-				    void *deviceVecB, float complex beta, 
-				    void *deviceVecZ);
-int igathMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int first,
-				    int n, void* indexes, void* host_values, int indexBase);
-int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first,
-				    int n, void* indexes, void* host_values, int indexBase);
-int iscatMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int first, int n, void *indexes,
-				    void* host_values, int indexBase, float complex beta);
-int iscatMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
-				    void* host_values, int indexBase, float complex beta);
+int geinsMultiVecDeviceFloatComplex(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
+
+int igathMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int n,
+				    int first, void* deviceIdx, int hfirst,
+				    void* host_values, int indexBase);
+int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int n,
+			      int first, void* indexes, int hfirst, void* host_values, 
+			      int indexBase);
+int iscatMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int n, int first, 
+				    void *deviceIdx, int hfirst, void* host_values, 
+				    int indexBase, cuFloatComplex beta);
+int iscatMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int n, int first, void *indexes,
+			      int hfirst, void* host_values, int indexBase, cuFloatComplex beta);
+
+int nrm2MultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);
+int asumMultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA);
+int dotMultiVecDeviceFloatComplex(cuFloatComplex* y_res, int n, void* devVecA, void* devVecB);
+
+int axpbyMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void* devVecX, cuFloatComplex beta, void* devVecY);
+int axyMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA, void *deviceVecB);
+int axybzMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA,
+			      void *deviceVecB, cuFloatComplex beta, void *deviceVecZ);
+
 
 #endif

@@ -162,7 +162,8 @@ int writeRemoteBuffer(void* hostSrc, void* buffer, int count)
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
   else {
-    fprintf(stderr,"CUDA Error writeRemoteBuffer: %s: %p %p %d\n", cudaGetErrorString(err),buffer,hostSrc,count);
+    fprintf(stderr,"CUDA Error writeRemoteBuffer: %s  %p %p %d\n", 
+	    cudaGetErrorString(err),buffer, hostSrc, count);
     return SPGPU_UNSPECIFIED;
   }
 }
@@ -201,15 +202,15 @@ int gpuInit(int dev)
   
   if ((err=cudaSetDeviceFlags(cudaDeviceMapHost))!=cudaSuccess) 
     fprintf(stderr,"Error On SetDeviceFlags: %d '%s'\n",err,cudaGetErrorString(err));
+  if ((prop=(struct cudaDeviceProp *) malloc(sizeof(struct cudaDeviceProp)))==NULL) {
+    fprintf(stderr,"CUDA Error gpuInit3: not malloced prop\n");
+    return SPGPU_UNSPECIFIED;
+  }
   err = setDevice(dev);
   if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
-  if ((prop=(struct cudaDeviceProp *) malloc(sizeof(struct cudaDeviceProp)))==NULL) 
-        return SPGPU_UNSPECIFIED;
-
-  cudaGetDeviceProperties(prop,dev);
   hasUVA=getDeviceHasUVA();
   
   return err;
@@ -226,23 +227,29 @@ void gpuClose()
 
 int setDevice(int dev)
 {
-
-  int count,err;
+  int count,err,idev;
   
   err = cudaGetDeviceCount(&count);
   if (err != cudaSuccess) {
-    fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
+    fprintf(stderr,"CUDA Error setDevice: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
   
   if ((0<=dev)&&(dev<count))
-    err = cudaSetDevice(dev);
+    idev = dev;
   else
-    err = cudaSetDevice(0);
+    idev = 0;
+  err = cudaSetDevice(idev);
   if (err != cudaSuccess) {
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
+  err = cudaGetDeviceProperties(prop,idev);
+  if (err != cudaSuccess) {
+    fprintf(stderr,"CUDA Error gpuInit4: %s\n", cudaGetErrorString(err));
+    return SPGPU_UNSPECIFIED;
+  }
+  
   return SPGPU_SUCCESS;
 }
 
@@ -401,18 +408,30 @@ int writeInt(void *d_int, int* h_int, int n)
   int i,j;
   int *di;
   i = writeRemoteBuffer((void*)h_int, (void*)d_int, n*sizeof(int));
-  /* fprintf(stderr,"End of writeInt: "); */
-  /* di = (int *)d_int; */
-  /* for (j=0; j<n; j++) */
-  /*   fprintf(stderr,"%d ",di[j]); */
-  /* fprintf(stderr,"\n"); */
-  //cudaSync();
   return i;
 }
 
 int readInt(void* d_int, int* h_int, int n)
 { int i;
   i = readRemoteBuffer((void *) h_int, (void *) d_int, n*sizeof(int));
+  //cudaSync();
+  return(i);
+}
+
+int writeIntFirst(int first, void *d_int, int* h_int, int n, int IndexBase)
+{
+  int i,j;
+  int *di=(int *) d_int;
+  di = &(di[first-IndexBase]);
+  i = writeRemoteBuffer((void*)h_int, (void*)di, n*sizeof(int));
+  return i;
+}
+
+int readIntFirst(int first,void* d_int, int* h_int, int n, int IndexBase)
+{ int i;
+  int *di=(int *) d_int;
+  di = &(di[first-IndexBase]);
+  i = readRemoteBuffer((void *) h_int, (void *) di, n*sizeof(int));
   //cudaSync();
   return(i);
 }
@@ -427,12 +446,6 @@ int writeMultiInt(void *d_int, int* h_int, int m, int n)
   int i,j;
   int *di;
   i = writeRemoteBuffer((void*)h_int, (void*)d_int, m*n*sizeof(int));
-  /* fprintf(stderr,"End of writeInt: "); */
-  /* di = (int *)d_int; */
-  /* for (j=0; j<n; j++) */
-  /*   fprintf(stderr,"%d ",di[j]); */
-  /* fprintf(stderr,"\n"); */
-  //cudaSync();
   return i;
 }
 
@@ -472,6 +485,28 @@ int readFloat(void* d_float, float* h_float, int n)
 
   return(i);
 }
+
+int writeFloatFirst(int df, void *d_float, float* h_float, int n, int IndexBase)
+{
+  int i;
+
+  float *dv=(float *) d_float;
+  dv = &dv[df-IndexBase];
+  i = writeRemoteBuffer((void*)h_float, (void*)dv, n*sizeof(float));
+
+  return i;
+}
+
+int readFloatFirst(int df, void* d_float, float* h_float, int n, int IndexBase)
+{ int i;
+  float *dv=(float *) d_float;
+  dv = &dv[df-IndexBase];    
+  //fprintf(stderr,"readFloatFirst: %d %p %p %p %d \n",df,d_float,dv,h_float,n);
+  i = readRemoteBuffer((void *) h_float, (void *) dv, n*sizeof(float));
+
+  return(i);
+}
+
 
 int allocateMultiFloat(void **d_float, int m, int n)
 {
@@ -516,6 +551,27 @@ int writeDouble(void *d_double, double* h_double, int n)
 int readDouble(void* d_double, double* h_double, int n)
 { int i;
   i = readRemoteBuffer((void *) h_double, (void *) d_double, n*sizeof(double));
+
+  return(i);
+}
+
+int writeDoubleFirst(int df, void *d_double, double* h_double, int n, int IndexBase)
+{
+  int i;
+
+  double *dv=(double *) d_double;
+  dv = &dv[df-IndexBase];
+  i = writeRemoteBuffer((void*)h_double, (void*)dv, n*sizeof(double));
+
+  return i;
+}
+
+int readDoubleFirst(int df, void* d_double, double* h_double, int n, int IndexBase)
+{ int i;
+  double *dv=(double *) d_double;
+  dv = &dv[df-IndexBase];    
+  //fprintf(stderr,"readDoubleFirst: %d %p %p %p %d \n",df,d_double,dv,h_double,n);
+  i = readRemoteBuffer((void *) h_double, (void *) dv, n*sizeof(double));
 
   return(i);
 }
@@ -586,6 +642,28 @@ int readMultiFloatComplex(void* d_FloatComplex, cuFloatComplex* h_FloatComplex, 
   return(i);
 }
 
+int writeFloatComplexFirst(int df, void *d_floatComplex,
+			   cuFloatComplex* h_floatComplex, int n, int IndexBase)
+{
+  int i;
+  
+  cuFloatComplex *dv=(cuFloatComplex *) d_floatComplex;
+  dv = &dv[df-IndexBase];
+  i = writeRemoteBuffer((void*)h_floatComplex, (void*)dv, n*sizeof(cuFloatComplex));
+
+  return i;
+}
+
+int readFloatComplexFirst(int df, void* d_floatComplex, cuFloatComplex* h_floatComplex,
+			  int n, int IndexBase)
+{ int i;
+  cuFloatComplex *dv=(cuFloatComplex *) d_floatComplex;
+  dv = &dv[df-IndexBase];    
+  i = readRemoteBuffer((void *) h_floatComplex, (void *) dv, n*sizeof(cuFloatComplex));
+
+  return(i);
+}
+
 void freeFloatComplex(void *d_FloatComplex)
 {
   freeRemoteBuffer(d_FloatComplex);
@@ -611,6 +689,28 @@ int writeDoubleComplex(void *d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, 
 int readDoubleComplex(void* d_DoubleComplex, cuDoubleComplex* h_DoubleComplex, int n)
 { int i;
   i = readRemoteBuffer((void *) h_DoubleComplex, (void *) d_DoubleComplex, n*sizeof(cuDoubleComplex));
+
+  return(i);
+}
+
+int writeDoubleComplexFirst(int df, void *d_doubleComplex,
+			   cuDoubleComplex* h_doubleComplex, int n, int IndexBase)
+{
+  int i;
+  
+  cuDoubleComplex *dv=(cuDoubleComplex *) d_doubleComplex;
+  dv = &dv[df-IndexBase];
+  i = writeRemoteBuffer((void*)h_doubleComplex, (void*)dv, n*sizeof(cuDoubleComplex));
+
+  return i;
+}
+
+int readDoubleComplexFirst(int df, void* d_doubleComplex, cuDoubleComplex* h_doubleComplex,
+			  int n, int IndexBase)
+{ int i;
+  cuDoubleComplex *dv=(cuDoubleComplex *) d_doubleComplex;
+  dv = &dv[df-IndexBase];    
+  i = readRemoteBuffer((void *) h_doubleComplex, (void *) dv, n*sizeof(cuDoubleComplex));
 
   return(i);
 }

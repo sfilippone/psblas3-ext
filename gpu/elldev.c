@@ -80,6 +80,7 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
   allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
   tmp->columns = params->columns;
   tmp->baseIndex = params->firstIndex;
+  //fprintf(stderr,"allocEllDevice: %d %d %d \n",tmp->pitch, params->maxRowSize, params->avgRowSize);
   if (params->elementType == SPGPU_TYPE_FLOAT)
     allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(float));
   else if (params->elementType == SPGPU_TYPE_DOUBLE)
@@ -209,9 +210,14 @@ int spmvEllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
 
 #ifdef HAVE_SPGPU
-  /*spgpuDellspmv (handle, (double*) y->v_, (double*)y->v_, alpha, (double*) devMat->cM, devMat->rP, devMat->cMPitch, devMat->rPPitch, devMat->rS, devMat->rows, (double*)x->v_, beta, devMat->baseIndex);*/ 
-  dspmdmm_gpu ((double *)y->v_, y->count_, y->pitch_, (double *)y->v_, alpha, (double *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
+  /*spgpuDellspmv (handle, (double*) y->v_, (double*)y->v_, alpha, (double*) devMat->cM, devMat->rP, devMat->cMPitch, devMat->rPPitch, devMat->rS, devMat->rows, (double*)x->v_, beta, devMat->baseIndex);*/
+  /* fprintf(stderr,"From spmvEllDouble: mat %d %d %d %d y %d %d \n", */
+  /* 	  devMat->avgRowSize, devMat->maxRowSize, devMat->rows, */
+  /* 	  devMat->pitch, y->count_, y->pitch_); */
+  dspmdmm_gpu ((double *)y->v_, y->count_, y->pitch_, (double *)y->v_,
+	       alpha, (double *)devMat->cM, 
+	       devMat->rP, devMat->rS, devMat->avgRowSize,
+	       devMat->maxRowSize, devMat->rows, devMat->pitch,
 	       (double *)x->v_, beta, devMat->baseIndex);
   
   return SPGPU_SUCCESS;

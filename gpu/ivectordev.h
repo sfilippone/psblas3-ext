@@ -37,7 +37,6 @@
 #include "cuda_runtime.h"
 #include "core.h"
 
-
 int registerMappedInt(void *, void **, int, int);
 int writeMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
 int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
@@ -47,13 +46,16 @@ int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
 int geinsMultiVecDeviceInt(int n, void* devVecIrl, void* devVecVal, 
 			      int dupl, int indexBase, void* devVecX); 
 
-int igathMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int first,
-			      int n, void* deviceIdx, void* host_values, int indexBase);
-int igathMultiVecDeviceInt(void* deviceVec, int vectorId, int first,
-			      int n, void* indexes, void* host_values, int indexBase);
-int iscatMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
-			      void* host_values, int indexBase, int beta);
-int iscatMultiVecDeviceInt(void* deviceVec, int vectorId, int first, int n, void *indexes,
-			      void* host_values, int indexBase, int  beta);
+int igathMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int n,
+				 int first, void* deviceIdx, int hfirst,
+				 void* host_values, int indexBase);
+int igathMultiVecDeviceInt(void* deviceVec, int vectorId, int n,
+			   int first, void* indexes, int hfirst, void* host_values, 
+			   int indexBase);
+int iscatMultiVecDeviceIntVecIdx(void* deviceVec, int vectorId, int n, int first, 
+				 void *deviceIdx, int hfirst, void* host_values, 
+				 int indexBase, int beta);
+int iscatMultiVecDeviceInt(void* deviceVec, int vectorId, int n, int first, void *indexes,
+			   int hfirst, void* host_values, int indexBase, int beta);
 
 #endif

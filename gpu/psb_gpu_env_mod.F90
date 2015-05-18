@@ -198,13 +198,17 @@ contains
     integer, intent(in), optional :: dev
 
     integer :: np, npavail, iam, info, count, dev_
+    Integer(Psb_ipk_)  :: err_act
 
+    info = psb_success_
+    call psb_erractionsave(err_act)
 #if defined (HAVE_CUDA)
 #if defined(SERIAL_MPI) 
     iam = 0
 #else
     call psb_info(ictxt,iam,np)
 #endif
+
     count = psb_cuda_getDeviceCount()
 
     if (present(dev)) then 
@@ -217,9 +221,19 @@ contains
       end if
       info = psb_C_gpu_init(dev_)
     end if
-    info = initFcusparse()
+    if (info == 0) info = initFcusparse()
+    if (info /= 0) then 
+      call psb_errpush(psb_err_internal_error_,'psb_gpu_init')
+      goto 9999
+    end if
     call psb_gpuCreateHandle()
 #endif
+    call psb_erractionrestore(err_act)
+    return
+9999 call psb_error_handler(ictxt,err_act)
+
+    return
+
   end subroutine psb_gpu_init
 
 

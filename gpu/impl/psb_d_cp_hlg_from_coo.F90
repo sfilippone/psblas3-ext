@@ -62,7 +62,7 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
 #ifdef HAVE_SPGPU
-  hksz = psb_gpu_WarpSize()
+  hksz = max(1,psb_gpu_WarpSize())
 #else
   hksz = psi_get_hksz()
 #endif

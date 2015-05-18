@@ -33,37 +33,53 @@
 #pragma once
 #if defined(HAVE_SPGPU)
 //#include "utils.h"
-#include "cuda_runtime.h"
-//#include "common.h"
-#include "cintrf.h"
 #include <complex.h>
-#include "cuComplex.h"
 #include "vectordev.h"
+#include "cuComplex.h"
 #include "cuda_runtime.h"
 #include "core.h"
 
 int registerMappedDoubleComplex(void *, void **, int, cuDoubleComplex);
-int writeMultiVecDeviceDoubleComplex(void* deviceVec, cuDoubleComplex* hostVec);
-int writeMultiVecDeviceDoubleComplexR2(void* deviceVec, cuDoubleComplex* hostVec, int ld);
-int readMultiVecDeviceDoubleComplex(void* deviceVec, double complex* hostVec);
-int readMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, double complex* hostMultiVec, int ld);
-int nrm2MultiVecDeviceDoubleComplex(double* y_res, int n, void* devMultiVecA);
-int amaxMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
-int asumMultiVecDeviceDoubleComplex(double* y_res, int n, void* devVecA);
-int dotMultiVecDeviceDoubleComplex(double complex* y_res, int n, void* devMultiVecA, void* devMultiVecB);
-int axpbyMultiVecDeviceDoubleComplex(int n, double complex alpha, void* devMultiVecX, 
-				     double complex beta, void* devMultiVecY);
-int axyMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA, void *deviceVecB);
-int axybzMultiVecDeviceDoubleComplex(int n, double complex alpha, void *deviceVecA,
-				     void *deviceVecB, double complex beta, 
+int writeMultiVecDeviceDoubleComplex(void* deviceMultiVec, cuDoubleComplex* hostMultiVec);
+int writeMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, 
+				       cuDoubleComplex* hostMultiVec, int ld);
+int readMultiVecDeviceDoubleComplex(void* deviceMultiVec, cuDoubleComplex* hostMultiVec);
+int readMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, 
+				      cuDoubleComplex* hostMultiVec, int ld);
+
+int geinsMultiVecDeviceDoubleComplex(int n, void* devVecIrl, void* devVecVal, 
+				     int dupl, int indexBase, void* devVecX); 
+
+int igathMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int n,
+					   int first, void* deviceIdx, int hfirst,
+					   void* host_values, int indexBase);
+int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int n,
+				     int first, void* indexes, 
+				     int hfirst, void* host_values, 
+				     int indexBase);
+int iscatMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, 
+					   int n, int first, 
+					   void *deviceIdx, int hfirst, 
+					   void* host_values, 
+					   int indexBase, cuDoubleComplex beta);
+int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int n, 
+				     int first, void *indexes,
+				     int hfirst, void* host_values, 
+				     int indexBase, cuDoubleComplex beta);
+
+int nrm2MultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);
+int amaxMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);
+int asumMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, void* devVecA);
+int dotMultiVecDeviceDoubleComplex(cuDoubleComplex* y_res, int n, 
+				   void* devVecA, void* devVecB);
+
+int axpbyMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, void* devVecX, 
+				     cuDoubleComplex beta, void* devVecY);
+int axyMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, 
+				   void *deviceVecA, void *deviceVecB);
+int axybzMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, void *deviceVecA,
+				     void *deviceVecB, cuDoubleComplex beta, 
 				     void *deviceVecZ);
-int igathMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first,
-				    int n, void* indexes, void* host_values, int indexBase);
-int igathMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first,
-				    int n, void* indexes, void* host_values, int indexBase);
-int iscatMultiVecDeviceDoubleComplexVecIdx(void* deviceVec, int vectorId, int first, int n, void *indexes,
-				    void* host_values, int indexBase, double complex beta);
-int iscatMultiVecDeviceDoubleComplex(void* deviceVec, int vectorId, int first, int n, void *indexes,
-				    void* host_values, int indexBase, double complex beta);
+
 
 #endif

@@ -33,9 +33,6 @@
 #pragma once
 #if defined(HAVE_SPGPU)
 //#include "utils.h"
-#include "cuda_runtime.h"
-//#include "common.h"
-#include "cintrf.h"
 #include "vectordev.h"
 #include "cuda_runtime.h"
 #include "core.h"
@@ -45,21 +42,31 @@ int writeMultiVecDeviceFloat(void* deviceMultiVec, float* hostMultiVec);
 int writeMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld);
 int readMultiVecDeviceFloat(void* deviceMultiVec, float* hostMultiVec);
 int readMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld);
+
+int geinsMultiVecDeviceFloat(int n, void* devVecIrl, void* devVecVal, 
+			      int dupl, int indexBase, void* devVecX); 
+
+int igathMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n,
+				    int first, void* deviceIdx, int hfirst,
+				    void* host_values, int indexBase);
+int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int n,
+			      int first, void* indexes, int hfirst, void* host_values, 
+			      int indexBase);
+int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n, int first, 
+				    void *deviceIdx, int hfirst, void* host_values, 
+				    int indexBase, float beta);
+int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int n, int first, void *indexes,
+			      int hfirst, void* host_values, int indexBase, float beta);
+
 int nrm2MultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int amaxMultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int asumMultiVecDeviceFloat(float* y_res, int n, void* devVecA);
 int dotMultiVecDeviceFloat(float* y_res, int n, void* devVecA, void* devVecB);
+
 int axpbyMultiVecDeviceFloat(int n, float alpha, void* devVecX, float beta, void* devVecY);
 int axyMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, void *deviceVecB);
-int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA, 
-			     void *deviceVecB, float beta, void *deviceVecZ);
-int igathMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int first,
-			      int n, void* deviceIdx, void* host_values, int indexBase);
-int igathMultiVecDeviceFloat(void* deviceVec, int vectorId, int first,
-			      int n, void* indexes, void* host_values, int indexBase);
-int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int first, int n, void *deviceIdx,
-			      void* host_values, int indexBase, float beta);
-int iscatMultiVecDeviceFloat(void* deviceVec, int vectorId, int first, int n, void *indexes,
-			      void* host_values, int indexBase, float beta);
+int axybzMultiVecDeviceFloat(int n, float alpha, void *deviceVecA,
+			      void *deviceVecB, float beta, void *deviceVecZ);
+
 
 #endif
