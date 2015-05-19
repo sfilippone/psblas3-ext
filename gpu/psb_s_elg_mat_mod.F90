@@ -295,6 +295,8 @@ contains
     implicit none 
     class(psb_s_elg_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
+
+    if (a%is_dev()) call a%sync()
     res = 8 
     res = res + psb_sizeof_sp  * size(a%val)
     res = res + psb_sizeof_int * size(a%irn)
@@ -334,19 +336,10 @@ contains
     logical, intent(in), optional :: clear
     integer(psb_ipk_) :: isz
   
-    
-!!$    if (a%is_repeatable_updates()) then       
-!!$      if (a%updidx%get_nrows() < a%get_size()) then 
-!!$        call a%updidx%free(info)
-!!$        isz = 1.25*a%get_size()
-!!$        call a%updidx%bld(isz)
-!!$        call a%updidx%set_scal(-ione)
-!!$        call a%updidx%sync()
-!!$      end if
-!!$      a%updcnt = 0
-!!$    end if
-    
+    if (a%is_dev()) call a%sync()
+
     call a%psb_s_ell_sparse_mat%reinit(clear)
+    call a%set_host()
 
     return
 

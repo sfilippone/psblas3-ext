@@ -55,6 +55,7 @@ subroutine psb_z_mv_elg_from_fmt(a,b,info)
 
   info = psb_success_
 
+  if (b%is_dev()) call b%sync()
   select type (b)
   type is (psb_z_coo_sparse_mat) 
     call a%mv_from_coo(b,info)

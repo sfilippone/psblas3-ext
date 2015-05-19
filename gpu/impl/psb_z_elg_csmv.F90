@@ -96,6 +96,7 @@ subroutine psb_z_elg_csmv(alpha,a,x,beta,y,info,trans)
 
 #ifdef HAVE_SPGPU
   if (tra) then 
+    if (a%is_dev()) call a%sync()
     call a%psb_z_ell_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
   else
     !

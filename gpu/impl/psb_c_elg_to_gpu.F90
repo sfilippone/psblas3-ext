@@ -56,7 +56,7 @@ subroutine psb_c_elg_to_gpu(a,info,nzrm)
   if ((.not.allocated(a%val)).or.(.not.allocated(a%ja))) return
   
   m   = a%get_nrows()
-  nzm = size(a%val,2)
+  nzm = psb_size(a%val,2)
   n   = a%get_ncols()
   nzt = a%get_nzeros()
   if (present(nzrm)) nzm = max(nzm,nzrm)
@@ -80,14 +80,14 @@ subroutine psb_c_elg_to_gpu(a,info,nzrm)
     maxrowsize = getEllDeviceMaxRowSize(a%deviceMat)
   end if
   if (info == 0) then 
-    if ((pitch /= size(a%val,1)).or.(maxrowsize /= size(a%val,2))) then 
+    if ((pitch /= psb_size(a%val,1)).or.(maxrowsize /= psb_size(a%val,2))) then 
       call psb_realloc(pitch,maxrowsize,a%val,info)
       if (info == 0) call psb_realloc(pitch,maxrowsize,a%ja,info)
     end if
   end if
   if (info == 0)  info = &
        & writeEllDevice(a%deviceMat,a%val,a%ja,size(a%ja,1),a%irn)
-!!$  if (info /= 0) goto 9999
+  call a%set_sync()
 #endif
 
 end subroutine psb_c_elg_to_gpu

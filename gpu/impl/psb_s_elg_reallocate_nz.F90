@@ -53,6 +53,7 @@ subroutine  psb_s_elg_reallocate_nz(nz,a)
   !
   ! What should this really do??? 
   ! 
+  if (a%is_dev()) call a%sync()
   m    = a%get_nrows()
   nzrm = (nz+m-1)/m
   ld = size(a%ja,1)

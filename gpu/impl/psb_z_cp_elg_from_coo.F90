@@ -62,6 +62,7 @@ subroutine psb_z_cp_elg_from_coo(a,b,info)
 #else
   hacksize = 1
 #endif
+  if (b%is_dev()) call b%sync()
 
   if (b%is_by_rows()) then
 
@@ -80,11 +81,11 @@ subroutine psb_z_cp_elg_from_coo(a,b,info)
 
     if (info == 0) info = psi_CopyCooToElg(nr,nc,nza, hacksize,ldv,nzm, &
          & a%irn,idisp,b%ja,b%val, a%deviceMat)
-
+    call a%set_dev()
 #else
 
     call psi_z_convert_ell_from_coo(a,b,info,hacksize=hacksize)
-
+    call a%set_host()
 #endif
 
   else
@@ -105,10 +106,11 @@ subroutine psb_z_cp_elg_from_coo(a,b,info)
     if (info == 0) info = psi_CopyCooToElg(nr,nc,nza, hacksize,ldv,nzm, &
          & a%irn,idisp,tmp%ja,tmp%val, a%deviceMat)
 
+    call a%set_dev()
 #else
 
     call psi_z_convert_ell_from_coo(a,tmp,info,hacksize=hacksize)
-
+    call a%set_host()
 #endif
   end if
 
@@ -179,6 +181,4 @@ contains
 
   end subroutine psi_z_count_ell_from_coo
   
-
-
 end subroutine psb_z_cp_elg_from_coo

@@ -54,6 +54,8 @@ subroutine psb_d_elg_scal(d,a,info,side)
   info  = psb_success_
   call psb_erractionsave(err_act)
 
+  if (a%is_dev()) call a%sync()
+
   if (a%is_unit()) then 
     call a%make_nonunit()
   end if

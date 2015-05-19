@@ -45,9 +45,6 @@ subroutine psb_s_elg_from_gpu(a,info)
   integer(psb_ipk_), intent(out)             :: info
 
   integer(psb_ipk_)  :: m, nzm, n, pitch,maxrowsize
-#ifdef HAVE_SPGPU
-  type(elldev_parms) :: gpu_parms
-#endif
 
   info = 0
 
@@ -56,24 +53,22 @@ subroutine psb_s_elg_from_gpu(a,info)
     call a%free()
     return
   end if
-
   
   m   = a%get_nrows()
-  nzm = size(a%val,2)
+  nzm = psb_size(a%val,2)
   n   = a%get_ncols()
-  
-!!$  gpu_parms = FgetEllDeviceParams(m,nzm,n,spgpu_type_double,1)
   
   pitch      = getEllDevicePitch(a%deviceMat)
   maxrowsize = getEllDeviceMaxRowSize(a%deviceMat)
 
-  if ((pitch /= size(a%val,1)).or.(maxrowsize /= size(a%val,2))) then 
+  if ((pitch /= psb_size(a%val,1)).or.(maxrowsize /= psb_size(a%val,2))) then 
     call psb_realloc(pitch,maxrowsize,a%val,info)
     if (info == 0) call psb_realloc(pitch,maxrowsize,a%ja,info)
+    if (info == 0) call psb_realloc(pitch,a%irn,info)
   end if
   if (info == 0)  info = &
-       & readEllDevice(a%deviceMat,a%val,a%ja,size(a%ja,1),a%irn)
-!!$  if (info /= 0) goto 9999
+       & readEllDevice(a%deviceMat,a%val,a%ja,pitch,a%irn)
+  call a%set_sync()
 #endif
 
 end subroutine psb_s_elg_from_gpu

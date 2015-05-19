@@ -51,7 +51,7 @@ subroutine psb_c_mv_elg_from_coo(a,b,info)
 
   if (.not.b%is_by_rows()) call b%fix(info)
   if (info /= psb_success_) return
-
+  if (b%is_dev()) call b%sync()
   call a%cp_from_coo(b,info)
   call b%free()
 

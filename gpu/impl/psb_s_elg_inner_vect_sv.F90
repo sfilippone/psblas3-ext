@@ -59,6 +59,7 @@ subroutine psb_s_elg_inner_vect_sv(alpha,a,x,beta,y,info,trans)
   ! so we throw an error.
   info = psb_success_
 
+  if (a%is_dev()) call a%sync()
   if (.false.) then 
     rx = x%get_vect()
     ry = y%get_vect()

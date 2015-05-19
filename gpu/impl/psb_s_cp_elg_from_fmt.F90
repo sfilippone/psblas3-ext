@@ -56,13 +56,14 @@ subroutine psb_s_cp_elg_from_fmt(a,b,info)
 #endif
 
   info = psb_success_
+  if (b%is_dev()) call b%sync()
  
   select type (b)
   type is (psb_s_coo_sparse_mat) 
     call a%cp_from_coo(b,info)
 
   class is (psb_s_ell_sparse_mat) 
-    nzm = size(b%ja,2)  
+    nzm = psb_size(b%ja,2)  
     m   = b%get_nrows()
     nc  = b%get_ncols()
     nza = b%get_nzeros()

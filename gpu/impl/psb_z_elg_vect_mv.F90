@@ -73,6 +73,7 @@ subroutine psb_z_elg_vect_mv(alpha,a,x,beta,y,info,trans)
   tra = (psb_toupper(trans_) == 'T').or.(psb_toupper(trans_)=='C')
 #ifdef HAVE_SPGPU
   if (tra) then 
+    if (a%is_dev()) call a%sync()
     if (.not.x%is_host()) call x%sync()
     if (beta /= zzero) then 
       if (.not.y%is_host()) call y%sync()
@@ -84,6 +85,7 @@ subroutine psb_z_elg_vect_mv(alpha,a,x,beta,y,info,trans)
     type is (psb_z_vect_gpu)
       select type(yy => y) 
       type is (psb_z_vect_gpu)
+        if (a%is_host()) call a%sync()
         if (xx%is_host()) call xx%sync()
         if (beta /= zzero) then 
           if (yy%is_host()) call yy%sync()
@@ -98,12 +100,14 @@ subroutine psb_z_elg_vect_mv(alpha,a,x,beta,y,info,trans)
         end if
         call yy%set_dev()
       class default
+        if (a%is_dev()) call a%sync()
         rx = xx%get_vect()
         ry = y%get_vect()
         call a%spmm(alpha,rx,beta,ry,info)
         call y%bld(ry)
       end select
     class default
+      if (a%is_dev()) call a%sync()
       rx = x%get_vect()
       ry = y%get_vect()
       call a%spmm(alpha,rx,beta,ry,info)
@@ -112,6 +116,7 @@ subroutine psb_z_elg_vect_mv(alpha,a,x,beta,y,info,trans)
 
   end if
 #else
+  if (a%is_dev()) call a%sync()    
   call a%psb_z_ell_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
 #endif
   if (info /= 0) goto 9999
