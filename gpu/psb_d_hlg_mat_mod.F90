@@ -58,8 +58,8 @@ module psb_d_hlg_mat_mod
     procedure, pass(a) :: scalv         => psb_d_hlg_scal
     procedure, pass(a) :: reallocate_nz => psb_d_hlg_reallocate_nz
     procedure, pass(a) :: allocate_mnnz => psb_d_hlg_allocate_mnnz
-    ! Note: we do *not* need the TO methods, because the parent type
-    ! methods will work. 
+    ! Note: we *do* need the TO methods, because of the need to invoke SYNC
+    ! 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_hlg_from_coo
     procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hlg_from_fmt
     procedure, pass(a) :: mv_from_coo   => psb_d_mv_hlg_from_coo

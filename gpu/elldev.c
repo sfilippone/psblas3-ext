@@ -227,7 +227,8 @@ int spmvEllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 }
 
 void
-cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y, cuFloatComplex alpha, cuFloatComplex* cM,
+cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y,  
+	     cuFloatComplex alpha, cuFloatComplex* cM,
 	     int* rP, int* rS, int avgRowSize, int maxRowSize, int rows, int pitch,
 	     cuFloatComplex *x, cuFloatComplex beta, int firstIndex)
 {
@@ -647,5 +648,26 @@ int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, i
 #endif
 }
 
+
+int dev_csputEllDeviceDouble(void* deviceMat, int nnz, void *ia, void *ja, void *val)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
+  struct MultiVectDevice *devVal = (struct MultiVectDevice *) val;
+  struct MultiVectDevice *devIa = (struct MultiVectDevice *) ia;
+  struct MultiVectDevice *devJa = (struct MultiVectDevice *) ja;
+  double  alpha=1.0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if (nnz <=0) return SPGPU_SUCCESS; 
+  //fprintf(stderr,"Going through csputEllDeviceDouble %d %p %d\n",nnz,devUpdIdx,cnt);
+  
+  spgpuDellcsput(handle,alpha,(double *) devMat->cM,
+		 devMat->rP,devMat->pitch, devMat->pitch, devMat->rS,
+		 nnz, devIa->v_, devJa->v_, (double *) devVal->v_, 1);
+
+#endif
+  return SPGPU_SUCCESS; 
+}
 
 #endif

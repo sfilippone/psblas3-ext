@@ -151,6 +151,9 @@ void psi_cuda_z_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int 
 		   int *rP, double complex *cM);
 
 
+
+int dev_csputEllDeviceDouble(void* deviceMat, int nnz, void *ia, void *ja, void *val);
+
 int getEllDevicePitch(void* deviceMat);
 
 // sparse Ell matrix-vector product
