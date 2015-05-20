@@ -51,7 +51,7 @@ cmp: $(OBJS)
 
 copy: cmp ilib
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
-	/bin/cp -p *$(.mod) $(INCDIR)
+	/bin/cp -p *$(.mod) *.h $(INCDIR)
 
 hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
 psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o
