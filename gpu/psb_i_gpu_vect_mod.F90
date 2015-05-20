@@ -840,3 +840,785 @@ contains
 #endif
 
 end module psb_i_gpu_vect_mod
+
+
+!
+! Multivectors
+! 
+
+
+
+module psb_i_gpu_multivect_mod
+  use iso_c_binding
+  use psb_const_mod
+  use psb_error_mod
+  use psb_i_multivect_mod
+  use psb_i_base_multivect_mod
+
+#ifdef HAVE_SPGPU
+  use psb_i_vectordev_mod
+#endif
+
+  integer(psb_ipk_), parameter, private :: is_host = -1
+  integer(psb_ipk_), parameter, private :: is_sync = 0 
+  integer(psb_ipk_), parameter, private :: is_dev  = 1 
+  
+  type, extends(psb_i_base_multivect_type) ::  psb_i_multivect_gpu
+#ifdef HAVE_SPGPU
+    
+    integer(psb_ipk_)  :: state      = is_host, m_nrows=0, m_ncols=0
+    type(c_ptr) :: deviceVect = c_null_ptr
+    real(c_double), allocatable :: buffer(:,:)
+    type(c_ptr) :: dt_buf = c_null_ptr
+  contains
+    procedure, pass(x) :: get_nrows => i_gpu_multi_get_nrows
+    procedure, pass(x) :: get_ncols => i_gpu_multi_get_ncols
+    procedure, nopass  :: get_fmt   => i_gpu_multi_get_fmt
+!!$    procedure, pass(x) :: dot_v    => i_gpu_multi_dot_v
+!!$    procedure, pass(x) :: dot_a    => i_gpu_multi_dot_a
+!!$    procedure, pass(y) :: axpby_v  => i_gpu_multi_axpby_v
+!!$    procedure, pass(y) :: axpby_a  => i_gpu_multi_axpby_a
+!!$    procedure, pass(y) :: mlt_v    => i_gpu_multi_mlt_v
+!!$    procedure, pass(y) :: mlt_a    => i_gpu_multi_mlt_a
+!!$    procedure, pass(z) :: mlt_a_2  => i_gpu_multi_mlt_a_2
+!!$    procedure, pass(z) :: mlt_v_2  => i_gpu_multi_mlt_v_2
+!!$    procedure, pass(x) :: scal     => i_gpu_multi_scal
+!!$    procedure, pass(x) :: nrm2     => i_gpu_multi_nrm2
+!!$    procedure, pass(x) :: amax     => i_gpu_multi_amax
+!!$    procedure, pass(x) :: asum     => i_gpu_multi_asum
+    procedure, pass(x) :: all      => i_gpu_multi_all
+    procedure, pass(x) :: zero     => i_gpu_multi_zero
+    procedure, pass(x) :: asb      => i_gpu_multi_asb
+    procedure, pass(x) :: sync     => i_gpu_multi_sync
+    procedure, pass(x) :: sync_space => i_gpu_multi_sync_space
+    procedure, pass(x) :: bld_x    => i_gpu_multi_bld_x
+    procedure, pass(x) :: bld_n    => i_gpu_multi_bld_n
+    procedure, pass(x) :: free     => i_gpu_multi_free
+    procedure, pass(x) :: ins      => i_gpu_multi_ins
+    procedure, pass(x) :: is_host  => i_gpu_multi_is_host
+    procedure, pass(x) :: is_dev   => i_gpu_multi_is_dev
+    procedure, pass(x) :: is_sync  => i_gpu_multi_is_sync
+    procedure, pass(x) :: set_host => i_gpu_multi_set_host
+    procedure, pass(x) :: set_dev  => i_gpu_multi_set_dev
+    procedure, pass(x) :: set_sync => i_gpu_multi_set_sync
+    procedure, pass(x) :: set_scal => i_gpu_multi_set_scal
+    procedure, pass(x) :: set_vect => i_gpu_multi_set_vect
+!!$    procedure, pass(x) :: gthzv_x  => i_gpu_multi_gthzv_x
+!!$    procedure, pass(y) :: sctb     => i_gpu_multi_sctb
+!!$    procedure, pass(y) :: sctb_x   => i_gpu_multi_sctb_x
+#ifdef HAVE_FINAL
+    final              :: i_gpu_multi_vect_finalize
+#endif
+#endif
+  end type psb_i_multivect_gpu
+
+  public  :: psb_i_multivect_gpu
+  private :: constructor
+  interface psb_i_multivect_gpu
+    module procedure constructor
+  end interface
+
+contains
+  
+  function constructor(x) result(this)
+    integer(psb_ipk_)       :: x(:,:)
+    type(psb_i_multivect_gpu) :: this
+    integer(psb_ipk_) :: info
+
+    this%v = x
+    call this%asb(size(x,1),size(x,2),info)
+
+  end function constructor
+    
+#ifdef HAVE_SPGPU
+
+!!$  subroutine i_gpu_multi_gthzv_x(i,n,idx,x,y)
+!!$    use psi_serial_mod
+!!$    integer(psb_ipk_) :: i,n
+!!$    class(psb_i_base_multivect_type) :: idx
+!!$    integer(psb_ipk_) ::  y(:)
+!!$    class(psb_i_multivect_gpu) :: x
+!!$
+!!$    select type(ii=> idx) 
+!!$    class is (psb_i_vect_gpu) 
+!!$      if (ii%is_host()) call ii%sync()
+!!$      if (x%is_host())  call x%sync()
+!!$
+!!$      if (allocated(x%buffer)) then 
+!!$        if (size(x%buffer) < n) then 
+!!$          call inner_unregister(x%buffer)
+!!$          deallocate(x%buffer, stat=info)
+!!$        end if
+!!$      end if
+!!$      
+!!$      if (.not.allocated(x%buffer)) then
+!!$        allocate(x%buffer(n),stat=info)
+!!$        if (info == 0) info = inner_register(x%buffer,x%dt_buf)        
+!!$      endif
+!!$      info = igathMultiVecDeviceDouble(x%deviceVect,&
+!!$           & 0, i, n, ii%deviceVect, x%dt_buf, 1)
+!!$      call psb_cudaSync()
+!!$      y(1:n) = x%buffer(1:n)
+!!$      
+!!$    class default
+!!$      call x%gth(n,ii%v(i:),y)
+!!$    end select
+!!$
+!!$
+!!$  end subroutine i_gpu_multi_gthzv_x
+!!$
+!!$
+!!$
+!!$  subroutine i_gpu_multi_sctb(n,idx,x,beta,y)
+!!$    implicit none
+!!$    !use psb_const_mod
+!!$    integer(psb_ipk_)     :: n, idx(:)
+!!$    integer(psb_ipk_)        :: beta, x(:)
+!!$    class(psb_i_multivect_gpu) :: y
+!!$    integer(psb_ipk_)     :: info
+!!$
+!!$    if (n == 0) return
+!!$    
+!!$    if (y%is_dev())  call y%sync()
+!!$          
+!!$    call y%psb_i_base_multivect_type%sctb(n,idx,x,beta)
+!!$    call y%set_host()
+!!$
+!!$  end subroutine i_gpu_multi_sctb
+!!$
+!!$  subroutine i_gpu_multi_sctb_x(i,n,idx,x,beta,y)
+!!$    use psi_serial_mod
+!!$    integer(psb_ipk_) :: i, n
+!!$    class(psb_i_base_multivect_type) :: idx
+!!$    integer(psb_ipk_) :: beta, x(:)
+!!$    class(psb_i_multivect_gpu) :: y
+!!$
+!!$    select type(ii=> idx) 
+!!$    class is (psb_i_vect_gpu) 
+!!$      if (ii%is_host()) call ii%sync()
+!!$      if (y%is_host())  call y%sync()
+!!$
+!!$      if (allocated(y%buffer)) then 
+!!$        if (size(y%buffer) < n) then 
+!!$          call inner_unregister(y%buffer)
+!!$          deallocate(y%buffer, stat=info)
+!!$        end if
+!!$      end if
+!!$      
+!!$      if (.not.allocated(y%buffer)) then
+!!$        allocate(y%buffer(n),stat=info)
+!!$        if (info == 0) info = inner_register(y%buffer,y%dt_buf)        
+!!$      endif
+!!$      y%buffer(1:n) = x(1:n) 
+!!$      info = iscatMultiVecDeviceDouble(y%deviceVect,&
+!!$           & 0, i, n, ii%deviceVect, y%dt_buf, 1,beta)
+!!$
+!!$      call y%set_dev()
+!!$      call psb_cudaSync()   
+!!$      
+!!$    class default
+!!$      call y%sct(n,ii%v(i:),x,beta)
+!!$    end select
+!!$
+!!$  end subroutine i_gpu_multi_sctb_x
+
+
+  subroutine i_gpu_multi_bld_x(x,this)
+    use psb_base_mod
+    integer(psb_ipk_), intent(in)           :: this(:,:)
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_) :: info, m, n
+    
+    m=size(this,1)
+    n=size(this,2)
+    x%m_nrows = m
+    x%m_ncols = n
+    call psb_realloc(m,n,x%v,info)
+    if (info /= 0) then 
+      info=psb_err_alloc_request_
+      call psb_errpush(info,'i_gpu_multi_bld_x',&
+           & i_err=(/size(this,1),size(this,2),izero,izero,izero,izero/))
+    end if
+    x%v(1:m,1:n)  = this(1:m,1:n) 
+    call x%set_host()
+    call x%sync()
+
+  end subroutine i_gpu_multi_bld_x
+
+  subroutine i_gpu_multi_bld_n(x,m,n)
+    integer(psb_ipk_), intent(in) :: m,n
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_) :: info
+
+    call x%all(m,n,info)
+    if (info /= 0) then 
+      call psb_errpush(info,'i_gpu_multi_bld_n',i_err=(/m,n,n,n,n/))
+    end if
+    
+  end subroutine i_gpu_multi_bld_n
+
+
+  subroutine i_gpu_multi_set_host(x)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    
+    x%state = is_host
+  end subroutine i_gpu_multi_set_host
+
+  subroutine i_gpu_multi_set_dev(x)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    
+    x%state = is_dev
+  end subroutine i_gpu_multi_set_dev
+
+  subroutine i_gpu_multi_set_sync(x)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    
+    x%state = is_sync
+  end subroutine i_gpu_multi_set_sync
+
+  function i_gpu_multi_is_dev(x) result(res)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(in) :: x
+    logical  :: res
+  
+    res = (x%state == is_dev)
+  end function i_gpu_multi_is_dev
+  
+  function i_gpu_multi_is_host(x) result(res)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(in) :: x
+    logical  :: res
+
+    res = (x%state == is_host)
+  end function i_gpu_multi_is_host
+
+  function i_gpu_multi_is_sync(x) result(res)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(in) :: x
+    logical  :: res
+
+    res = (x%state == is_sync)
+  end function i_gpu_multi_is_sync
+
+  
+  function i_gpu_multi_get_nrows(x) result(res)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(in) :: x
+    integer(psb_ipk_) :: res
+
+    res = x%m_nrows
+
+  end function i_gpu_multi_get_nrows
+  
+  function i_gpu_multi_get_ncols(x) result(res)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(in) :: x
+    integer(psb_ipk_) :: res
+
+    res = x%m_ncols
+
+  end function i_gpu_multi_get_ncols
+
+  function i_gpu_multi_get_fmt() result(res)
+    implicit none 
+    character(len=5) :: res
+    res = 'iGPU'
+  end function i_gpu_multi_get_fmt
+
+!!$  function i_gpu_multi_dot_v(n,x,y) result(res)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout)       :: x
+!!$    class(psb_i_base_multivect_type), intent(inout) :: y
+!!$    integer(psb_ipk_), intent(in)              :: n
+!!$    integer(psb_ipk_)                :: res
+!!$    integer(psb_ipk_), external      :: ddot
+!!$    integer(psb_ipk_) :: info
+!!$    
+!!$    res = dzero
+!!$    !
+!!$    ! Note: this is the gpu implementation.
+!!$    !  When we get here, we are sure that X is of
+!!$    !  TYPE psb_i_vect
+!!$    !
+!!$    select type(yy => y)
+!!$    type is (psb_i_base_multivect_type)
+!!$      if (x%is_dev()) call x%sync()
+!!$      res = ddot(n,x%v,1,yy%v,1)
+!!$    type is (psb_i_multivect_gpu)
+!!$      if (x%is_host()) call x%sync()
+!!$      if (yy%is_host()) call yy%sync()
+!!$      info = dotMultiVecDevice(res,n,x%deviceVect,yy%deviceVect)
+!!$      if (info /= 0) then 
+!!$        info = psb_err_internal_error_
+!!$        call psb_errpush(info,'i_gpu_multi_dot_v')
+!!$      end if
+!!$
+!!$    class default
+!!$      ! y%sync is done in dot_a
+!!$      call x%sync()      
+!!$      res = y%dot(n,x%v)
+!!$    end select
+!!$
+!!$  end function i_gpu_multi_dot_v
+!!$
+!!$  function i_gpu_multi_dot_a(n,x,y) result(res)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent(in)           :: y(:)
+!!$    integer(psb_ipk_), intent(in)        :: n
+!!$    integer(psb_ipk_)                :: res
+!!$    integer(psb_ipk_), external      :: ddot
+!!$    
+!!$    if (x%is_dev()) call x%sync()
+!!$    res = ddot(n,y,1,x%v,1)
+!!$
+!!$  end function i_gpu_multi_dot_a
+!!$    
+!!$  subroutine i_gpu_multi_axpby_v(m,alpha, x, beta, y, info)
+!!$    use psi_serial_mod
+!!$    implicit none 
+!!$    integer(psb_ipk_), intent(in)              :: m
+!!$    class(psb_i_base_multivect_type), intent(inout) :: x
+!!$    class(psb_i_multivect_gpu), intent(inout)       :: y
+!!$    integer(psb_ipk_), intent (in)                :: alpha, beta
+!!$    integer(psb_ipk_), intent(out)             :: info
+!!$    integer(psb_ipk_) :: nx, ny
+!!$
+!!$    info = psb_success_
+!!$
+!!$    select type(xx => x)
+!!$    type is (psb_i_base_multivect_type)
+!!$      if ((beta /= dzero).and.(y%is_dev()))&
+!!$           & call y%sync()
+!!$      call psb_geaxpby(m,alpha,xx%v,beta,y%v,info)
+!!$      call y%set_host()
+!!$    type is (psb_i_multivect_gpu)
+!!$      ! Do something different here 
+!!$      if ((beta /= dzero).and.y%is_host())&
+!!$           &  call y%sync()
+!!$      if (xx%is_host()) call xx%sync()
+!!$      nx = getMultiVecDeviceSize(xx%deviceVect)
+!!$      ny = getMultiVecDeviceSize(y%deviceVect)
+!!$      if ((nx<m).or.(ny<m)) then
+!!$        info = psb_err_internal_error_
+!!$        info = psb_err_internal_error_
+!!$      else
+!!$        info = axpbyMultiVecDevice(m,alpha,xx%deviceVect,beta,y%deviceVect)
+!!$      end if
+!!$      call y%set_dev()
+!!$    class default
+!!$      call x%sync()
+!!$      call y%axpby(m,alpha,x%v,beta,info)
+!!$    end select
+!!$
+!!$  end subroutine i_gpu_multi_axpby_v
+!!$
+!!$  subroutine i_gpu_multi_axpby_a(m,alpha, x, beta, y, info)
+!!$    use psi_serial_mod
+!!$    implicit none 
+!!$    integer(psb_ipk_), intent(in)        :: m
+!!$    integer(psb_ipk_), intent(in)           :: x(:)
+!!$    class(psb_i_multivect_gpu), intent(inout) :: y
+!!$    integer(psb_ipk_), intent (in)          :: alpha, beta
+!!$    integer(psb_ipk_), intent(out)       :: info
+!!$
+!!$    if (y%is_dev()) call y%sync()
+!!$    call psb_geaxpby(m,alpha,x,beta,y%v,info)
+!!$    call y%set_host()
+!!$  end subroutine i_gpu_multi_axpby_a
+!!$
+!!$  subroutine i_gpu_multi_mlt_v(x, y, info)
+!!$    use psi_serial_mod
+!!$    implicit none 
+!!$    class(psb_i_base_multivect_type), intent(inout) :: x
+!!$    class(psb_i_multivect_gpu), intent(inout)       :: y
+!!$    integer(psb_ipk_), intent(out)             :: info
+!!$
+!!$    integer(psb_ipk_) :: i, n
+!!$    
+!!$    info = 0    
+!!$    n = min(x%get_nrows(),y%get_nrows())
+!!$    select type(xx => x)
+!!$    type is (psb_i_base_multivect_type)
+!!$      if (y%is_dev()) call y%sync()
+!!$      do i=1, n
+!!$        y%v(i) = y%v(i) * xx%v(i)
+!!$      end do
+!!$      call y%set_host()
+!!$    type is (psb_i_multivect_gpu)
+!!$      ! Do something different here 
+!!$      if (y%is_host())  call y%sync()
+!!$      if (xx%is_host()) call xx%sync()
+!!$      info = axyMultiVecDevice(n,done,xx%deviceVect,y%deviceVect)
+!!$      call y%set_dev()
+!!$    class default
+!!$      call xx%sync()
+!!$      call y%mlt(xx%v,info)
+!!$      call y%set_host()
+!!$    end select
+!!$
+!!$  end subroutine i_gpu_multi_mlt_v
+!!$
+!!$  subroutine i_gpu_multi_mlt_a(x, y, info)
+!!$    use psi_serial_mod
+!!$    implicit none 
+!!$    integer(psb_ipk_), intent(in)           :: x(:)
+!!$    class(psb_i_multivect_gpu), intent(inout) :: y
+!!$    integer(psb_ipk_), intent(out)       :: info
+!!$    integer(psb_ipk_) :: i, n
+!!$    
+!!$    info = 0    
+!!$    call y%sync()
+!!$    call y%psb_i_base_multivect_type%mlt(x,info)
+!!$    call y%set_host()
+!!$  end subroutine i_gpu_multi_mlt_a
+!!$
+!!$  subroutine i_gpu_multi_mlt_a_2(alpha,x,y,beta,z,info)
+!!$    use psi_serial_mod
+!!$    implicit none 
+!!$    integer(psb_ipk_), intent(in)           :: alpha,beta
+!!$    integer(psb_ipk_), intent(in)           :: x(:)
+!!$    integer(psb_ipk_), intent(in)           :: y(:)
+!!$    class(psb_i_multivect_gpu), intent(inout) :: z
+!!$    integer(psb_ipk_), intent(out)       :: info
+!!$    integer(psb_ipk_) :: i, n
+!!$    
+!!$    info = 0    
+!!$    if (z%is_dev()) call z%sync()
+!!$    call z%psb_i_base_multivect_type%mlt(alpha,x,y,beta,info)
+!!$    call z%set_host()
+!!$  end subroutine i_gpu_multi_mlt_a_2
+!!$
+!!$  subroutine i_gpu_multi_mlt_v_2(alpha,x,y, beta,z,info,conjgx,conjgy)
+!!$    use psi_serial_mod
+!!$    use psb_string_mod
+!!$    implicit none 
+!!$    integer(psb_ipk_), intent(in)                 :: alpha,beta
+!!$    class(psb_i_base_multivect_type), intent(inout) :: x
+!!$    class(psb_i_base_multivect_type), intent(inout) :: y
+!!$    class(psb_i_multivect_gpu), intent(inout)       :: z
+!!$    integer(psb_ipk_), intent(out)             :: info
+!!$    character(len=1), intent(in), optional     :: conjgx, conjgy
+!!$    integer(psb_ipk_) :: i, n
+!!$    logical :: conjgx_, conjgy_
+!!$
+!!$    if (.false.) then 
+!!$      ! These are present just for coherence with the
+!!$      ! complex versions; they do nothing here. 
+!!$      conjgx_=.false.
+!!$      if (present(conjgx)) conjgx_ = (psb_toupper(conjgx)=='C')
+!!$      conjgy_=.false.
+!!$      if (present(conjgy)) conjgy_ = (psb_toupper(conjgy)=='C')
+!!$    end if
+!!$    
+!!$    n = min(x%get_nrows(),y%get_nrows(),z%get_nrows())
+!!$    
+!!$    !
+!!$    ! Need to reconsider BETA in the GPU side
+!!$    !  of things.
+!!$    !
+!!$    info = 0    
+!!$    select type(xx => x) 
+!!$    type is (psb_i_multivect_gpu)
+!!$      select type (yy => y) 
+!!$      type is (psb_i_multivect_gpu)
+!!$        if (xx%is_host()) call xx%sync()
+!!$        if (yy%is_host()) call yy%sync()
+!!$        ! Z state is irrelevant: it will be done on the GPU. 
+!!$        info = axybzMultiVecDevice(n,alpha,xx%deviceVect,&
+!!$             & yy%deviceVect,beta,z%deviceVect)
+!!$        call z%set_dev()
+!!$      class default
+!!$        call xx%sync()
+!!$        call yy%sync()
+!!$        call z%psb_i_base_multivect_type%mlt(alpha,xx,yy,beta,info)
+!!$        call z%set_host()
+!!$      end select
+!!$      
+!!$    class default
+!!$      call x%sync()
+!!$      call y%sync()
+!!$      call z%psb_i_base_multivect_type%mlt(alpha,x,y,beta,info)
+!!$      call z%set_host()
+!!$    end select
+!!$  end subroutine i_gpu_multi_mlt_v_2
+
+
+  subroutine i_gpu_multi_set_scal(x,val)
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(in)           :: val
+        
+    integer(psb_ipk_) :: info
+
+    if (x%is_dev()) call x%sync()
+    call x%psb_i_base_multivect_type%set_scal(val)
+    call x%set_host()
+  end subroutine i_gpu_multi_set_scal
+
+  subroutine i_gpu_multi_set_vect(x,val)
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(in)           :: val(:,:)
+    integer(psb_ipk_) :: nr
+    integer(psb_ipk_) :: info
+
+    if (x%is_dev()) call x%sync()
+    call x%psb_i_base_multivect_type%set_vect(val)
+    call x%set_host()
+
+  end subroutine i_gpu_multi_set_vect
+
+
+
+!!$  subroutine i_gpu_multi_scal(alpha, x)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent (in)          :: alpha
+!!$    
+!!$    if (x%is_dev()) call x%sync()
+!!$    call x%psb_i_base_multivect_type%scal(alpha)
+!!$    call x%set_host()
+!!$  end subroutine i_gpu_multi_scal
+!!$
+!!$
+!!$  function i_gpu_multi_nrm2(n,x) result(res)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent(in)        :: n
+!!$    integer(psb_ipk_)                       :: res
+!!$    integer(psb_ipk_) :: info
+!!$    ! WARNING: this should be changed. 
+!!$    if (x%is_host()) call x%sync()
+!!$    info = nrm2MultiVecDevice(res,n,x%deviceVect)
+!!$    
+!!$  end function i_gpu_multi_nrm2
+!!$  
+!!$  function i_gpu_multi_amax(n,x) result(res)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent(in)        :: n
+!!$    integer(psb_ipk_)                :: res
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    res =  maxval(abs(x%v(1:n)))
+!!$
+!!$  end function i_gpu_multi_amax
+!!$
+!!$  function i_gpu_multi_asum(n,x) result(res)
+!!$    implicit none 
+!!$    class(psb_i_multivect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent(in)        :: n
+!!$    integer(psb_ipk_)                :: res
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    res =  sum(abs(x%v(1:n)))
+!!$
+!!$  end function i_gpu_multi_asum
+  
+  subroutine i_gpu_multi_all(m,n, x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    integer(psb_ipk_), intent(in)      :: m,n
+    class(psb_i_multivect_gpu), intent(out) :: x
+    integer(psb_ipk_), intent(out)     :: info
+    
+    call psb_realloc(m,n,x%v,info,pad=izero)
+    x%m_nrows = m
+    x%m_ncols = n
+    if (info == 0) call x%set_host()
+    if (info == 0) call x%sync_space(info)
+    if (info /= 0) then 
+      info=psb_err_alloc_request_
+      call psb_errpush(info,'i_gpu_multi_all',&
+           & i_err=(/m,n,n,n,n/))
+    end if
+  end subroutine i_gpu_multi_all
+
+  subroutine i_gpu_multi_zero(x)
+    use psi_serial_mod
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    
+    if (allocated(x%v)) x%v=dzero
+    call x%set_host()
+  end subroutine i_gpu_multi_zero
+
+  subroutine i_gpu_multi_asb(m,n, x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    integer(psb_ipk_), intent(in)        :: m,n
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)       :: info
+    integer(psb_ipk_) :: nd, nc
+
+
+    x%m_nrows = m
+    x%m_ncols = n
+    if (x%is_host()) then 
+      call x%psb_i_base_multivect_type%asb(m,n,info)
+      if (info == psb_success_) call x%sync_space(info)
+    else if (x%is_dev()) then 
+      nd  = getMultiVecDevicePitch(x%deviceVect)
+      nc  = getMultiVecDeviceCount(x%deviceVect)
+      if ((nd < m).or.(nc<n)) then 
+        call x%sync()
+        call x%psb_i_base_multivect_type%asb(m,n,info)      
+        if (info == psb_success_) call x%sync_space(info)
+        call x%set_host()
+      end if
+    end if
+  end subroutine i_gpu_multi_asb
+
+  subroutine i_gpu_multi_sync_space(x,info)
+    use psb_realloc_mod
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)       :: info 
+    integer(psb_ipk_) :: mh,nh,md,nd
+    
+    info = 0
+    if (x%is_host()) then 
+      if (allocated(x%v)) then 
+        mh = size(x%v,1)
+        nh = size(x%v,2)
+      else
+        mh=0
+        nh=0
+      end if
+      if (c_associated(x%deviceVect)) then 
+        md  = getMultiVecDevicePitch(x%deviceVect)
+        nd  = getMultiVecDeviceCount(x%deviceVect)
+        if ((md < mh).or.(nd<nh)) then 
+          call freeMultiVecDevice(x%deviceVect)
+          x%deviceVect=c_null_ptr
+        end if
+      end if
+
+      if (.not.c_associated(x%deviceVect)) then 
+        info = FallocMultiVecDevice(x%deviceVect,nh,mh,spgpu_type_int)
+        if (info == 0) &
+             & call psb_realloc(getMultiVecDevicePitch(x%deviceVect),&
+             & getMultiVecDeviceCount(x%deviceVect),x%v,info,pad=izero)
+        if  (info /= 0) then 
+!!$          write(0,*) 'Error from FallocMultiVecDevice',info,n
+          if (info == spgpu_outofmem) then 
+            info = psb_err_alloc_request_
+          end if
+        end if
+        
+      end if
+    else if (x%is_dev()) then 
+      ! 
+      if (allocated(x%v)) then 
+        mh = size(x%v,1)
+        nh = size(x%v,2)
+      else
+        mh=0
+        nh=0
+      end if
+      md  = getMultiVecDevicePitch(x%deviceVect)
+      nd  = getMultiVecDeviceCount(x%deviceVect)
+      if ((mh /= md).or.(nh /= nd)) then 
+        call psb_realloc(getMultiVecDevicePitch(x%deviceVect),&
+             & getMultiVecDeviceCount(x%deviceVect),x%v,info,pad=izero)
+      end if
+      
+    end if
+    
+  end subroutine i_gpu_multi_sync_space
+
+  subroutine i_gpu_multi_sync(x)
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_) :: n,info
+    
+    info = 0
+    if (x%is_host()) then 
+      if (.not.c_associated(x%deviceVect)) then 
+        call x%sync_space(info)
+      end if
+      if (info == 0) &
+           & info = writeMultiVecDevice(x%deviceVect,x%v,size(x%v,1))
+    else if (x%is_dev()) then 
+      info = readMultiVecDevice(x%deviceVect,x%v,size(x%v,1))
+    end if
+    if (info == 0)  call x%set_sync()
+    if (info /= 0) then
+      info=psb_err_internal_error_
+      call psb_errpush(info,'i_gpu_multi_sync')
+    end if
+    
+  end subroutine i_gpu_multi_sync
+
+  subroutine i_gpu_multi_free(x, info)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout)  :: x
+    integer(psb_ipk_), intent(out)        :: info
+    
+    info = 0
+    if (c_associated(x%deviceVect)) then 
+      call freeMultiVecDevice(x%deviceVect)
+      x%deviceVect=c_null_ptr
+    end if
+    if (allocated(x%buffer)) then 
+!!$      call inner_unregister(x%buffer)
+      deallocate(x%buffer, stat=info)
+    end if
+
+    if (allocated(x%v)) deallocate(x%v, stat=info)
+    call x%set_sync()
+  end subroutine i_gpu_multi_free
+
+#ifdef HAVE_FINAL
+  subroutine i_gpu_multi_vect_finalize(x)
+    use psi_serial_mod
+    use psb_realloc_mod
+    implicit none 
+    type(psb_i_multivect_gpu), intent(inout)  :: x
+    integer(psb_ipk_)        :: info
+    
+    info = 0
+    if (c_associated(x%deviceVect)) then 
+      call freeMultiVecDevice(x%deviceVect)
+      x%deviceVect=c_null_ptr
+    end if
+    if (allocated(x%buffer)) then 
+!!$      call inner_unregister(x%buffer)
+      deallocate(x%buffer, stat=info)
+    end if
+
+    if (allocated(x%v)) deallocate(x%v, stat=info)
+    call x%set_sync()
+  end subroutine i_gpu_multi_vect_finalize
+#endif
+
+  subroutine i_gpu_multi_ins(n,irl,val,dupl,x,info)
+    use psi_serial_mod
+    implicit none 
+    class(psb_i_multivect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(in)        :: n, dupl
+    integer(psb_ipk_), intent(in)        :: irl(:)
+    integer(psb_ipk_), intent(in)           :: val(:,:)
+    integer(psb_ipk_), intent(out)       :: info
+
+    integer(psb_ipk_) :: i
+
+    info = 0
+    if (x%is_dev()) call x%sync()
+    call x%psb_i_base_multivect_type%ins(n,irl,val,dupl,info)
+    call x%set_host()
+
+  end subroutine i_gpu_multi_ins
+
+#endif
+
+end module psb_i_gpu_multivect_mod
+
+
+
