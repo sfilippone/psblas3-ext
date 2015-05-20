@@ -57,6 +57,7 @@ subroutine psb_s_dia_csmv(alpha,a,x,beta,y,info,trans)
     goto 9999
   endif
 
+  if (a%is_dev()) call a%sync()
 
   if (present(trans)) then
     trans_ = trans

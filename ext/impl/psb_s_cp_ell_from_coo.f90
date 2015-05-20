@@ -50,6 +50,7 @@ subroutine psb_s_cp_ell_from_coo(a,b,info)
 
   info = psb_success_
   ! This is to have fix_coo called behind the scenes
+  if (b%is_dev()) call b%sync()
   if (b%is_by_rows()) then
     call psi_s_convert_ell_from_coo(a,b,info)
   else
@@ -58,6 +59,7 @@ subroutine psb_s_cp_ell_from_coo(a,b,info)
     if (info == psb_success_)  call tmp%free()
   end if
   if (info /= psb_success_) goto 9999
+  call a%set_host()
   
   return
 

@@ -89,6 +89,7 @@ subroutine psb_d_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     info = psb_err_invalid_mat_state_
 
   else  if (a%is_upd()) then 
+    if (a%is_dev()) call a%sync()
     call  psb_d_ell_srch_upd(nz,ia,ja,val,a,&
          & imin,imax,jmin,jmax,info,gtl)
 
@@ -100,6 +101,7 @@ subroutine psb_d_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
            & ': Discarded entries not  belonging to us.'                    
       info = psb_success_
     end if
+    call a%set_host()
   else 
     ! State is wrong.
     info = psb_err_invalid_mat_state_

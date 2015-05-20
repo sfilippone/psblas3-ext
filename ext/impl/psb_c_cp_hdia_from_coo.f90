@@ -44,6 +44,7 @@ subroutine psb_c_cp_hdia_from_coo(a,b,info)
   type(psb_c_coo_sparse_mat) :: tmp
 
   info = psb_success_
+  if (b%is_dev()) call b%sync()
   if (b%is_by_rows()) then 
     call inner_cp_hdia_from_coo(a,b,info)
     if (info /= psb_success_)  goto 9999
@@ -56,7 +57,7 @@ subroutine psb_c_cp_hdia_from_coo(a,b,info)
     if (info /= psb_success_)  goto 9999
     call tmp%free()
   end if
-    
+  call a%set_host()
 
   return
 

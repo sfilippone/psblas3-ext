@@ -46,6 +46,7 @@ function psb_c_ell_csnmi(a) result(res)
   logical, parameter :: debug=.false.
 
 
+  if (a%is_dev()) call a%sync()
   res = szero
   is_unit = a%is_unit()
   do i = 1, a%get_nrows()

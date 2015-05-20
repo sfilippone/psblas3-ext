@@ -445,6 +445,7 @@ contains
     implicit none 
     class(psb_c_ell_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
+    if (a%is_dev()) call a%sync()
     res = 8 
     res = res + (2*psb_sizeof_sp)  * size(a%val)
     res = res + psb_sizeof_int * size(a%irn)
@@ -472,6 +473,7 @@ contains
     integer(psb_ipk_) :: res
 
     res = -1
+    if (a%is_dev()) call a%sync()
     
     if (allocated(a%ja)) then 
       if (res >= 0) then 
@@ -500,6 +502,7 @@ contains
     integer(psb_ipk_)                       :: res
     
     res = 0 
+    if (a%is_dev()) call a%sync()
  
     if ((1<=idx).and.(idx<=a%get_nrows())) then 
       res = a%irn(idx)

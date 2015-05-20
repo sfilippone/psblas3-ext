@@ -38,6 +38,7 @@ function psb_d_hll_maxval(a) result(res)
   class(psb_d_hll_sparse_mat), intent(in) :: a
   real(psb_dpk_)     :: res
 
+  if (a%is_dev()) call a%sync()
   res = maxval(abs(a%val(:)))
   if (a%is_unit()) res = max(res,done)
  

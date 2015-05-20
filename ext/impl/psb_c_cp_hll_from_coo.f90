@@ -48,6 +48,7 @@ subroutine psb_c_cp_hll_from_coo(a,b,info)
   info = psb_success_
   debug_unit  = psb_get_debug_unit()
   debug_level = psb_get_debug_level()
+  if (b%is_dev()) call b%sync()
   hksz = psi_get_hksz()
   if (b%is_by_rows()) then 
     call  psi_convert_hll_from_coo(a,hksz,b,info)
@@ -62,6 +63,7 @@ subroutine psb_c_cp_hll_from_coo(a,b,info)
     call tmp%free()
   end if
   if (info /= 0) goto 9999
+  call a%set_host()
 
   return
 

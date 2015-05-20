@@ -48,6 +48,7 @@ subroutine psb_z_cp_hll_to_coo(a,b,info)
 
   info = psb_success_
 
+  if (a%is_dev()) call a%sync()
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nza = a%get_nzeros()
@@ -75,6 +76,7 @@ subroutine psb_z_cp_hll_to_coo(a,b,info)
   enddo
 
   call b%set_nzeros(nza)
+  call b%set_host()
   call b%fix(info)
 
 contains

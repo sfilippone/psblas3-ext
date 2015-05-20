@@ -65,7 +65,7 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info,trans)
     trans_ = 'N'
   end if
 
-
+  if (a%is_dev()) call a%sync()
   tra  = (psb_toupper(trans_) == 'T')
   ctra = (psb_toupper(trans_) == 'C')
   if (tra.or.ctra) then 

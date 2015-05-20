@@ -97,6 +97,7 @@ subroutine psb_z_dia_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     goto 9999
   end if
 
+  if (a%is_dev()) call a%sync()
   call dia_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,&
        & append_,info,iren)
   if (info /= psb_success_) goto 9999

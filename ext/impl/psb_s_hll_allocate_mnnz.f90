@@ -80,6 +80,7 @@ subroutine  psb_s_hll_allocate_mnnz(m,n,a,nz)
     call a%set_unit(.false.)
     call a%set_dupl(psb_dupl_def_)
     call a%set_hksz(psb_hksz_def_)
+    call a%set_host()
   end if
   if (info /= psb_success_) goto 9999
 

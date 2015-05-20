@@ -58,6 +58,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
     write(iout,'(a)') '%'    
     write(iout,'(a,a)') '% COO'
   endif
+  if (a%is_dev()) call a%sync()
 
   nr  = a%get_nrows()
   nc  = a%get_ncols()

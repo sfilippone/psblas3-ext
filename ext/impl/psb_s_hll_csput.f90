@@ -87,6 +87,8 @@ subroutine psb_s_hll_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     info = psb_err_invalid_mat_state_
 
   else  if (a%is_upd()) then 
+    if (a%is_dev()) call a%sync()
+
     call  psb_s_hll_srch_upd(nz,ia,ja,val,a,&
          & imin,imax,jmin,jmax,info,gtl)
 
@@ -94,6 +96,7 @@ subroutine psb_s_hll_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
 
       info = psb_err_invalid_mat_state_
     end if
+    call a%set_host()
 
   else 
     ! State is wrong.

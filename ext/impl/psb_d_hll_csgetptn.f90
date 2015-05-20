@@ -95,7 +95,7 @@ subroutine psb_d_hll_csgetptn(imin,imax,a,nz,ia,ja,info,&
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
     goto 9999
   end if
-
+  if (a%is_dev()) call a%sync()
   call hll_getptn(imin,imax,jmin_,jmax_,a,nz,ia,ja,nzin_,append_,info,iren)
   
   if (rscale_) then 

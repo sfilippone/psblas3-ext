@@ -96,6 +96,7 @@ subroutine psb_s_ell_csgetptn(imin,imax,a,nz,ia,ja,info,&
     goto 9999
   end if
 
+  if (a%is_dev()) call a%sync()
   call ell_getptn(imin,imax,jmin_,jmax_,a,nz,ia,ja,nzin_,append_,info,iren)
   
   if (rscale_) then 

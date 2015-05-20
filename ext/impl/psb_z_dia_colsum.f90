@@ -43,6 +43,7 @@ subroutine psb_z_dia_colsum(d,a)
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
+  if (a%is_dev()) call a%sync()
 
   m = a%get_nrows()
   n = a%get_ncols()

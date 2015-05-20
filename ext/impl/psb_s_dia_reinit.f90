@@ -58,8 +58,11 @@ subroutine psb_s_dia_reinit(a,clear)
     ! do nothing
     return
   else if (a%is_asb()) then 
+    if (a%is_dev()) call a%sync()
     if (clear_) a%data(:,:) = szero
     call a%set_upd()
+    call a%set_host()
+
   else
     info = psb_err_invalid_mat_state_
     call psb_errpush(info,name)

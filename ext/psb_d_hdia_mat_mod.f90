@@ -424,6 +424,7 @@ contains
      integer(psb_long_int_k_) :: res
      integer(psb_ipk_) :: i
 
+     if (a%is_dev()) call a%sync()
      res = 0
      
      res = res + psb_size(a%hackOffsets)*psb_sizeof_int

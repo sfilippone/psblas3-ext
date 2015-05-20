@@ -62,7 +62,10 @@ subroutine psb_d_hll_cssm(alpha,a,x,beta,y,info,trans)
     goto 9999
   endif
   info = psb_err_missing_override_method_
+  call psb_errpush(info,name)
+  goto 9999
 
+  if (a%is_dev()) call a%sync()
   tra  = (psb_toupper(trans_) == 'T')
   ctra = (psb_toupper(trans_) == 'C')
   m    = a%get_nrows()

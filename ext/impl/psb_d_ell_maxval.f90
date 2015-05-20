@@ -45,6 +45,7 @@ function psb_d_ell_maxval(a) result(res)
   character(len=20)  :: name='d_csnmi'
   logical, parameter :: debug=.false.
 
+  if (a%is_dev()) call a%sync()
   if (a%is_unit()) then 
     res = done
   else

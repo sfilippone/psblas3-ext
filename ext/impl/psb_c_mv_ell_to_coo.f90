@@ -44,6 +44,7 @@ subroutine psb_c_mv_ell_to_coo(a,b,info)
   Integer(Psb_ipk_)   :: nza, nr, nc,i,j,k,irw, idl,err_act
 
   info = psb_success_
+  if (a%is_dev()) call a%sync()
 
   nr  = a%get_nrows()
   nc  = a%get_ncols()
@@ -78,6 +79,7 @@ subroutine psb_c_mv_ell_to_coo(a,b,info)
   end do
   call a%free()
   call b%set_nzeros(nza)
+  call b%set_host()
   call b%fix(info)
   return
 

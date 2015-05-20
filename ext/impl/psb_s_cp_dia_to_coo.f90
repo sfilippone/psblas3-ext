@@ -44,6 +44,7 @@ subroutine psb_s_cp_dia_to_coo(a,b,info)
   integer(psb_ipk_)   :: i, j, k,nr,nza,nc, nzd
 
   info = psb_success_
+  if (a%is_dev()) call a%sync()
 
   nr  = a%get_nrows()
   nc  = a%get_ncols()
@@ -58,6 +59,7 @@ subroutine psb_s_cp_dia_to_coo(a,b,info)
        & a%data,a%offset,info)
   
   call b%set_nzeros(nza)
+  call b%set_host()
   call b%fix(info)
 
 end subroutine psb_s_cp_dia_to_coo

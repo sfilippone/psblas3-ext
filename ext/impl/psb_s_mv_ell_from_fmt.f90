@@ -50,12 +50,14 @@ subroutine psb_s_mv_ell_from_fmt(a,b,info)
     call a%mv_from_coo(b,info)
 
   type is (psb_s_ell_sparse_mat) 
+    if (b%is_dev()) call b%sync()
     a%psb_s_base_sparse_mat = b%psb_s_base_sparse_mat
     call move_alloc(b%irn,   a%irn)
     call move_alloc(b%idiag, a%idiag)
     call move_alloc(b%ja,    a%ja)
     call move_alloc(b%val,   a%val)
     call b%free()
+    call a%set_host()
 
   class default
     call b%mv_to_coo(tmp,info)

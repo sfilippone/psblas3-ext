@@ -50,6 +50,7 @@ subroutine psb_d_cp_hll_to_fmt(a,b,info)
     call a%cp_to_coo(b,info)
 
   type is (psb_d_hll_sparse_mat) 
+    if (a%is_dev()) call a%sync()
     b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
     if (info == 0) call psb_safe_cpy( a%hkoffs, b%hkoffs , info)
     if (info == 0) call psb_safe_cpy( a%idiag, b%idiag , info)
@@ -57,6 +58,7 @@ subroutine psb_d_cp_hll_to_fmt(a,b,info)
     if (info == 0) call psb_safe_cpy( a%ja ,   b%ja  , info)
     if (info == 0) call psb_safe_cpy( a%val,   b%val , info)
     if (info == 0) b%hksz = a%hksz
+    call b%set_host()
 
   class default
     call a%cp_to_coo(tmp,info)

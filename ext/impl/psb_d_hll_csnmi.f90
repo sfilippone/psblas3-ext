@@ -48,6 +48,7 @@ function psb_d_hll_csnmi(a) result(res)
 
   info = 0
   res = dzero 
+  if (a%is_dev()) call a%sync()
   
   n = a%get_ncols()
   m = a%get_nrows()

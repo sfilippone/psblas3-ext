@@ -46,6 +46,7 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
        &  ib, ir, kfirst, klast1, hackfirst, hacknext
 
   info = psb_success_
+  if (a%is_dev()) call a%sync()
 
   nr  = a%get_nrows()
   nc  = a%get_ncols()
@@ -77,7 +78,7 @@ subroutine psb_d_cp_hdia_to_coo(a,b,info)
     info = -8 
     return 
   end if
-
+  call b%set_host()
   call b%fix(info)
 
 end subroutine psb_d_cp_hdia_to_coo

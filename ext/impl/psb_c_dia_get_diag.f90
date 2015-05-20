@@ -43,6 +43,7 @@ subroutine psb_c_dia_get_diag(a,d,info)
 
   info  = psb_success_
   call psb_erractionsave(err_act)
+  if (a%is_dev()) call a%sync()
 
   mnm = min(a%get_nrows(),a%get_ncols())
   if (size(d) < mnm) then 

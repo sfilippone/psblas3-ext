@@ -47,6 +47,7 @@ function psb_d_ell_csnm1(a) result(res)
   logical, parameter :: debug=.false.
 
 
+  if (a%is_dev()) call a%sync()
   res = dzero 
   nnz = a%get_nzeros()
   m   = a%get_nrows()

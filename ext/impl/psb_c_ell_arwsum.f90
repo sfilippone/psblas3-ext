@@ -45,6 +45,7 @@ subroutine psb_c_ell_arwsum(d,a)
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
+  if (a%is_dev()) call a%sync()
 
   m = a%get_nrows()
   if (size(d) < m) then 

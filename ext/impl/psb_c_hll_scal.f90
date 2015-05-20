@@ -49,8 +49,11 @@ subroutine psb_c_hll_scal(d,a,info,side)
   info  = psb_success_
   call psb_erractionsave(err_act)
 
+  if (a%is_dev()) call a%sync()
 
   info = psb_err_missing_override_method_
+  call psb_errpush(info,name,i_err=ierr)
+  goto 9999
 
   side_ = 'L'
   if (present(side)) then 

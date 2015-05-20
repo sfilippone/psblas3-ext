@@ -50,6 +50,7 @@ subroutine psb_z_mv_hll_from_fmt(a,b,info)
     call a%mv_from_coo(b,info)
 
   type is (psb_z_hll_sparse_mat) 
+    if (b%is_dev()) call b%sync()
     a%psb_z_base_sparse_mat = b%psb_z_base_sparse_mat
     call move_alloc(b%irn,   a%irn)
     call move_alloc(b%idiag, a%idiag)
@@ -59,6 +60,7 @@ subroutine psb_z_mv_hll_from_fmt(a,b,info)
     a%hksz = b%hksz
     a%nzt  = b%nzt
     call b%free()
+    call a%set_host()
 
   class default
     call b%mv_to_coo(tmp,info)

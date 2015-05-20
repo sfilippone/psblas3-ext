@@ -62,6 +62,7 @@ subroutine psb_z_hll_csmm(alpha,a,x,beta,y,info,trans)
 
   ldx = size(x,1)
   ldy = size(y,1)
+  if (a%is_dev()) call a%sync()
   
   tra  = (psb_toupper(trans_) == 'T')
   ctra = (psb_toupper(trans_) == 'C')

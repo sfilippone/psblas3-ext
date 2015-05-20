@@ -97,6 +97,7 @@ subroutine psb_z_hll_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     goto 9999
   end if
 
+  if (a%is_dev()) call a%sync()
   call hll_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,append_,info,&
        & iren)
   

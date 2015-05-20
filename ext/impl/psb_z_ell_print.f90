@@ -57,6 +57,7 @@ subroutine psb_z_ell_print(iout,a,iv,head,ivr,ivc)
     write(iout,'(a,a)') '% ELL'
   endif
 
+  if (a%is_dev()) call a%sync()
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nz  = a%get_nzeros()

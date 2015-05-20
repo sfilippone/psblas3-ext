@@ -60,6 +60,7 @@ subroutine psb_d_dia_csmm(alpha,a,x,beta,y,info,trans)
     call psb_errpush(info,name)
     goto 9999
   endif
+  if (a%is_dev()) call a%sync()
 
   tra  = (psb_toupper(trans_) == 'T')
   ctra = (psb_toupper(trans_) == 'C')

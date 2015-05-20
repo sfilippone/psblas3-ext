@@ -435,6 +435,7 @@ contains
     implicit none 
     class(psb_z_hll_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_)                :: res
+    if (a%is_dev()) call a%sync()
     res = 8 
     res = res + (2*psb_sizeof_dp)  * size(a%val)
     res = res + psb_sizeof_int * size(a%irn)
@@ -461,6 +462,8 @@ contains
     implicit none 
     class(psb_z_hll_sparse_mat), intent(in) :: a
     integer(psb_ipk_)                       :: res
+
+    if (a%is_dev()) call a%sync()
 
     res = -1
     

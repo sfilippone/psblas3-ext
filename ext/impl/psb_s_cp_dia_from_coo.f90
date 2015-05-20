@@ -45,6 +45,7 @@ subroutine psb_s_cp_dia_from_coo(a,b,info)
   character(len=20)              :: name
 
   info = psb_success_
+  if (b%is_dev()) call b%sync()
   if (b%is_by_rows()) then 
     call  psi_convert_dia_from_coo(a,b,info)
   else
@@ -58,6 +59,7 @@ subroutine psb_s_cp_dia_from_coo(a,b,info)
     call tmp%free()
   end if
   if (info /= 0) goto 9999
+  call a%set_host()
 
   return
 

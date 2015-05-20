@@ -45,6 +45,7 @@ subroutine psb_z_cp_ell_to_coo(a,b,info)
 
   info = psb_success_
 
+  if (a%is_dev()) call a%sync()
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nza = a%get_nzeros()
@@ -63,5 +64,6 @@ subroutine psb_z_cp_ell_to_coo(a,b,info)
   end do
   call b%set_nzeros(a%get_nzeros())
   call b%fix(info)
+  call b%set_host()
 
 end subroutine psb_z_cp_ell_to_coo

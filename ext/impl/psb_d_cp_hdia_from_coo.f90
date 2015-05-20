@@ -44,6 +44,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
   type(psb_d_coo_sparse_mat) :: tmp
 
   info = psb_success_
+  if (b%is_dev()) call b%sync()
   if (b%is_by_rows()) then 
     call inner_cp_hdia_from_coo(a,b,info)
     if (info /= psb_success_)  goto 9999
@@ -56,7 +57,7 @@ subroutine psb_d_cp_hdia_from_coo(a,b,info)
     if (info /= psb_success_)  goto 9999
     call tmp%free()
   end if
-    
+  call a%set_host()
 
   return
 
@@ -94,7 +95,7 @@ contains
     a%nhacks = (nr+hacksize-1)/hacksize
     nhacks   = a%nhacks
 
-    ndiag = nr+nc-1 
+    ndiag = nr+nc-1
     if (info == psb_success_) call psb_realloc(nr,irsz,info)
     if (info == psb_success_) call psb_realloc(ndiag,d,info)
     if (info == psb_success_) call psb_realloc(ndiag,offset,info)
@@ -172,14 +173,14 @@ contains
       write(*,*) 'NZEROS: ',a%nzeros, nza
       write(*,*) 'diaoffsets: ',a%diaOffsets(1:iszd)
       write(*,*) 'values: '
-!!$      j=0
-!!$      do k=1,nhacks
-!!$        write(*,*) 'Hack No. ',k
-!!$        do i=1,hacksize*(iszd/nhacks)
-!!$          j = j + 1
-!!$          write(*,*) j, a%val(j)
-!!$        end do
-!!$      end do
+      j=0
+      do k=1,nhacks
+        write(*,*) 'Hack No. ',k
+        do i=1,hacksize*(iszd/nhacks)
+          j = j + 1
+          write(*,*) j, a%val(j)
+        end do
+      end do
     end if
   end subroutine inner_cp_hdia_from_coo
   

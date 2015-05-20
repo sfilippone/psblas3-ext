@@ -45,7 +45,7 @@ subroutine psb_z_ell_get_diag(a,d,info)
 
   info  = psb_success_
   call psb_erractionsave(err_act)
-
+  if (a%is_dev()) call a%sync()
   mnm = min(a%get_nrows(),a%get_ncols())
   if (size(d) < mnm) then 
     info=psb_err_input_asize_invalid_i_

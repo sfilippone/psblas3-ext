@@ -420,6 +420,7 @@ contains
      implicit none 
      class(psb_d_dia_sparse_mat), intent(in) :: a
      integer(psb_long_int_k_) :: res
+     if (a%is_dev()) call a%sync()
      res = 8 
      res = res + psb_sizeof_dp  * size(a%data)
      res = res + psb_sizeof_int * size(a%offset)

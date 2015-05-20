@@ -47,6 +47,7 @@ subroutine psb_s_dia_scal(d,a,info,side)
   info  = psb_success_
   call psb_erractionsave(err_act)
 
+  if (a%is_dev()) call a%sync()
 
   if (a%is_unit()) then 
     call a%make_nonunit()
@@ -96,6 +97,8 @@ subroutine psb_s_dia_scal(d,a,info,side)
     enddo
     
   end if
+  call a%set_host()
+
   call psb_erractionrestore(err_act)
   return
 

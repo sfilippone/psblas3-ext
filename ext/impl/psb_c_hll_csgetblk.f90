@@ -70,6 +70,7 @@ subroutine psb_c_hll_csgetblk(imin,imax,a,b,info,&
   if (info /= psb_success_) goto 9999
 
   call b%set_nzeros(nzin+nzout)
+  call b%set_host()
   call b%fix(info)
   if (info /= psb_success_) goto 9999
 

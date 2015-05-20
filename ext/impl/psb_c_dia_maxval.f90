@@ -42,6 +42,7 @@ function psb_c_dia_maxval(a) result(res)
   character(len=20)  :: name='c_maxval'
   logical, parameter :: debug=.false.
 
+  if (a%is_dev()) call a%sync()
   if (a%is_unit()) then 
     res = sone
   else

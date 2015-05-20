@@ -50,6 +50,7 @@ subroutine psb_s_mv_hll_to_fmt(a,b,info)
     call a%mv_to_coo(b,info)
     ! Need to fix trivial copies! 
   type is (psb_s_hll_sparse_mat) 
+    if (a%is_dev()) call a%sync()
     b%psb_s_base_sparse_mat = a%psb_s_base_sparse_mat
     call move_alloc(a%irn,   b%irn)
     call move_alloc(a%hkoffs, b%hkoffs)
@@ -58,6 +59,7 @@ subroutine psb_s_mv_hll_to_fmt(a,b,info)
     call move_alloc(a%val,   b%val)
     b%hksz = a%hksz
     call a%free()
+    call b%set_host()
     
   class default
     call a%mv_to_coo(tmp,info)

@@ -62,6 +62,7 @@ subroutine psb_z_hdia_print(iout,a,iv,head,ivr,ivc)
     write(iout,'(a,a)') '% HDIA'
   endif
 
+  if (a%is_dev()) call a%sync()
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nz  = a%get_nzeros()

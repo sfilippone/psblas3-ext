@@ -50,13 +50,15 @@ subroutine psb_z_mv_ell_to_fmt(a,b,info)
     call a%mv_to_coo(b,info)
     ! Need to fix trivial copies! 
   type is (psb_z_ell_sparse_mat) 
+    if (a%is_dev()) call a%sync()
     b%psb_z_base_sparse_mat = a%psb_z_base_sparse_mat
     call move_alloc(a%irn,   b%irn)
     call move_alloc(a%idiag, b%idiag)
     call move_alloc(a%ja,    b%ja)
     call move_alloc(a%val,   b%val)
     call a%free()
-    
+    call b%set_host()
+
   class default
     call a%mv_to_coo(tmp,info)
     if (info == psb_success_) call b%mv_from_coo(tmp,info)

@@ -51,7 +51,7 @@ function psb_z_hll_csnm1(a) result(res)
 
   
   res = dzero 
-  
+  if (a%is_dev()) call a%sync()
   n = a%get_ncols()
   m = a%get_nrows()
   allocate(vt(n),stat=info)

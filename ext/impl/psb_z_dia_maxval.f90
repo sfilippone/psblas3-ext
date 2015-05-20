@@ -42,6 +42,7 @@ function psb_z_dia_maxval(a) result(res)
   character(len=20)  :: name='z_maxval'
   logical, parameter :: debug=.false.
 
+  if (a%is_dev()) call a%sync()
   if (a%is_unit()) then 
     res = done
   else

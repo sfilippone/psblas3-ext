@@ -46,6 +46,7 @@ subroutine psb_z_hll_rowsum(d,a)
 
   call psb_erractionsave(err_act)
   info = 0
+  if (a%is_dev()) call a%sync()
 
   m = a%get_nrows()
   n = a%get_ncols()

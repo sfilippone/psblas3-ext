@@ -50,11 +50,14 @@ subroutine psb_c_cp_ell_to_fmt(a,b,info)
     call a%cp_to_coo(b,info)
 
   type is (psb_c_ell_sparse_mat) 
+    if (a%is_dev()) call a%sync()
+
     b%psb_c_base_sparse_mat = a%psb_c_base_sparse_mat
     if (info == 0) call psb_safe_cpy( a%idiag, b%idiag , info)
     if (info == 0) call psb_safe_cpy( a%irn,   b%irn , info)
     if (info == 0) call psb_safe_cpy( a%ja ,   b%ja  , info)
     if (info == 0) call psb_safe_cpy( a%val,   b%val , info)
+    call b%set_host()
 
   class default
     call a%cp_to_coo(tmp,info)
