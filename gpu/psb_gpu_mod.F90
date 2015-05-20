@@ -35,11 +35,16 @@ module psb_gpu_mod
   use psb_gpu_env_mod
 
   use psb_i_gpu_vect_mod
-
   use psb_s_gpu_vect_mod
   use psb_d_gpu_vect_mod
   use psb_c_gpu_vect_mod
   use psb_z_gpu_vect_mod
+
+  use psb_i_gpu_multivect_mod
+  use psb_s_gpu_multivect_mod
+  use psb_d_gpu_multivect_mod
+  use psb_c_gpu_multivect_mod
+  use psb_z_gpu_multivect_mod
 
   use psb_d_ell_mat_mod
   use psb_d_elg_mat_mod
