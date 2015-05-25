@@ -335,11 +335,19 @@ contains
     class(psb_d_elg_sparse_mat), intent(inout) :: a
     logical, intent(in), optional :: clear
     integer(psb_ipk_) :: isz
+    logical            :: clear_
   
-    if (a%is_dev()) call a%sync()
 
+    if (present(clear)) then 
+      clear_ = clear
+    else
+      clear_ = .true.
+    end if
+    
+    if (clear_) then 
+      if (a%is_dev()) call a%sync()      
+    end if
     call a%psb_d_ell_sparse_mat%reinit(clear)
-    call a%set_host()
 
     return
 
@@ -367,7 +375,8 @@ contains
     class(psb_d_elg_sparse_mat), target, intent(in) :: a
     class(psb_d_elg_sparse_mat), pointer :: tmpa
     integer(psb_ipk_) :: info
-
+    
+    write(0,*) 'Invoked ELG_SYNC()'
     tmpa=>a
     if (tmpa%is_host()) then 
       call tmpa%to_gpu(info)

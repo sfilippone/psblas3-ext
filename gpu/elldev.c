@@ -30,6 +30,7 @@
  
 #include <sys/time.h>
 #include "elldev.h"
+
 #if defined(HAVE_SPGPU)
 
 #define PASS_RS  0

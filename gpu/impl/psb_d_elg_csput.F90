@@ -96,6 +96,7 @@ subroutine psb_d_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     info = psb_err_invalid_mat_state_
 
   else  if (a%is_upd()) then 
+!!$    write(*,*) 'elg_csput_a '
       if (a%is_dev()) call a%sync()
       call a%psb_d_ell_sparse_mat%csput(nz,ia,ja,val,&
            &  imin,imax,jmin,jmax,info,gtl) 
@@ -198,6 +199,7 @@ subroutine psb_d_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   else  if (a%is_upd()) then 
 
     if (present(gtl)) then 
+!!$      write(*,*) 'elg_csput_v called with GTL'
       if (a%is_dev()) call a%sync()
       call a%psb_d_ell_sparse_mat%csput(nz,ia,ja,val,&
            &  imin,imax,jmin,jmax,info,gtl) 
@@ -215,6 +217,7 @@ subroutine psb_d_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
         class is (psb_i_vect_gpu) 
           select type (val)
           class is (psb_d_vect_gpu) 
+!!$            write(*,*) 'elg_csput_v : going on GPU',a%is_host(), a%is_dev()
             if (a%is_host()) call a%sync()
             if (val%is_host()) call val%sync()
             if (ia%is_host()) call ia%sync()
@@ -228,6 +231,7 @@ subroutine psb_d_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
         end select
       end select
       if (.not.gpu_invoked) then 
+!!$        write(*,*) 'elg_csput_v : not invoked?',ia%get_fmt(),ja%get_fmt(),val%get_fmt(),a%is_dev()
         if (a%is_dev()) call a%sync()
         call a%psb_d_ell_sparse_mat%csput(nz,ia,ja,val,&
              &  imin,imax,jmin,jmax,info,gtl) 
