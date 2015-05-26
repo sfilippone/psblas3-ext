@@ -77,7 +77,7 @@ module psb_d_gpu_vect_mod
     procedure, pass(x) :: set_host => d_gpu_set_host
     procedure, pass(x) :: set_dev  => d_gpu_set_dev
     procedure, pass(x) :: set_sync => d_gpu_set_sync
-!!$    procedure, pass(x) :: set_scal => d_gpu_set_scal
+    procedure, pass(x) :: set_scal => d_gpu_set_scal
 !!$    procedure, pass(x) :: set_vect => d_gpu_set_vect
     procedure, pass(x) :: gthzv_x  => d_gpu_gthzv_x
     procedure, pass(y) :: sctb     => d_gpu_sctb
@@ -999,16 +999,24 @@ contains
   end subroutine d_gpu_mlt_v_2
 
 
-!!$  subroutine d_gpu_set_scal(x,val)
-!!$    class(psb_d_vect_gpu), intent(inout) :: x
-!!$    real(psb_dpk_), intent(in)           :: val
-!!$        
-!!$    integer(psb_ipk_) :: info
-!!$
-!!$    if (x%is_dev()) call x%sync()
-!!$    call x%psb_d_base_vect_type%set_scal(val)
-!!$    call x%set_host()
-!!$  end subroutine d_gpu_set_scal
+  subroutine d_gpu_set_scal(x,val,first,last)
+    class(psb_d_vect_gpu), intent(inout)  :: x
+    real(psb_dpk_), intent(in) :: val
+    integer(psb_ipk_), optional :: first, last
+        
+    integer(psb_ipk_) :: info, first_, last_
+
+    first_ = 1
+    last_  = x%get_nrows()
+    if (present(first)) first_ = max(1,first)
+    if (present(last))  last_  = min(last,last_)
+    
+    if (x%is_host()) call x%sync()
+    info = setScalDevice(val,first_,last_,1,x%deviceVect)
+    call x%set_dev()
+
+  end subroutine d_gpu_set_scal
+
 !!$
 !!$  subroutine d_gpu_set_vect(x,val)
 !!$    class(psb_d_vect_gpu), intent(inout) :: x

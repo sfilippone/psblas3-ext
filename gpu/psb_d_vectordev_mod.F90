@@ -162,6 +162,18 @@ module psb_d_vectordev_mod
       type(c_ptr), value :: didx
     end subroutine freeDouble
   end interface
+
+  interface setScalDevice
+    function setScalMultiVecDeviceDouble(val, first, last, &
+         & indexBase, deviceVecX) result(res) &
+         & bind(c,name='setscalMultiVecDeviceDouble')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: first,last,indexbase
+      real(c_double), value :: val
+      type(c_ptr),   value  :: deviceVecX
+    end function setScalMultiVecDeviceDouble
+  end interface
   
   interface 
     function geinsMultiVecDeviceDouble(n,deviceVecIrl,deviceVecVal,&
