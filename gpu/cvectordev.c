@@ -84,6 +84,18 @@ int readMultiVecDeviceFloatComplexR2(void* deviceVec, cuFloatComplex* hostVec, i
   return(i);
 }
 
+int setscalMultiVecDeviceFloatComplex(cuFloatComplex val, int first, int last, 
+				int indexBase, void* devMultiVecX) 
+{ int i=0;
+  int pitch = 0;
+  struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  spgpuCsetscal(handle, first, last, indexBase, val, (cuFloatComplex *) devVecX->v_);
+  
+  return(i);
+}
+
 int geinsMultiVecDeviceFloatComplex(int n, void* devMultiVecIrl, void* devMultiVecVal, 
 			      int dupl, int indexBase, void* devMultiVecX)
 { int j=0, i=0,nmin=0,nmax=0;

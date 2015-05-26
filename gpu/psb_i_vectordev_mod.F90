@@ -163,6 +163,19 @@ module psb_i_vectordev_mod
     end subroutine freeInt
   end interface
   
+
+  interface setScalDevice
+    function setScalMultiVecDeviceInt(val, first, last, &
+         & indexBase, deviceVecX) result(res) &
+         & bind(c,name='setscalMultiVecDeviceInt')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: first,last,indexbase
+      integer(c_int), value :: val
+      type(c_ptr),   value  :: deviceVecX
+    end function setScalMultiVecDeviceInt
+  end interface
+
   interface 
     function geinsMultiVecDeviceInt(n,deviceVecIrl,deviceVecVal,&
          & dupl,indexbase,deviceVecX) &

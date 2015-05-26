@@ -163,6 +163,19 @@ module psb_s_vectordev_mod
     end subroutine freeFloat
   end interface
   
+
+  interface setScalDevice
+    function setScalMultiVecDeviceFloat(val, first, last, &
+         & indexBase, deviceVecX) result(res) &
+         & bind(c,name='setscalMultiVecDeviceFloat')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: first,last,indexbase
+      real(c_float), value :: val
+      type(c_ptr),   value  :: deviceVecX
+    end function setScalMultiVecDeviceFloat
+  end interface
+
   interface 
     function geinsMultiVecDeviceFloat(n,deviceVecIrl,deviceVecVal,&
          & dupl,indexbase,deviceVecX) &

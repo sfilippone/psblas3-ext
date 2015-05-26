@@ -43,6 +43,9 @@ int writeMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld
 int readMultiVecDeviceFloat(void* deviceMultiVec, float* hostMultiVec);
 int readMultiVecDeviceFloatR2(void* deviceMultiVec, float* hostMultiVec, int ld);
 
+int setscalMultiVecDeviceFloat(float val, int first, int last, 
+			       int indexBase, void* devVecX); 
+
 int geinsMultiVecDeviceFloat(int n, void* devVecIrl, void* devVecVal, 
 			      int dupl, int indexBase, void* devVecX); 
 

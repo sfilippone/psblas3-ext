@@ -162,6 +162,7 @@ module psb_d_vectordev_mod
       type(c_ptr), value :: didx
     end subroutine freeDouble
   end interface
+  
 
   interface setScalDevice
     function setScalMultiVecDeviceDouble(val, first, last, &
@@ -174,7 +175,7 @@ module psb_d_vectordev_mod
       type(c_ptr),   value  :: deviceVecX
     end function setScalMultiVecDeviceDouble
   end interface
-  
+
   interface 
     function geinsMultiVecDeviceDouble(n,deviceVecIrl,deviceVecVal,&
          & dupl,indexbase,deviceVecX) &

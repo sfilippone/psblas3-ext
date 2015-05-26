@@ -43,6 +43,9 @@ int writeMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
 int readMultiVecDeviceInt(void* deviceMultiVec, int* hostMultiVec);
 int readMultiVecDeviceIntR2(void* deviceMultiVec, int* hostMultiVec, int ld);
 
+int setscalMultiVecDeviceInt(int val, int first, int last, 
+			     int indexBase, void* devVecX); 
+
 int geinsMultiVecDeviceInt(int n, void* devVecIrl, void* devVecVal, 
 			      int dupl, int indexBase, void* devVecX); 
 

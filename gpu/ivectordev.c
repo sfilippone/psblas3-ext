@@ -85,6 +85,18 @@ int readMultiVecDeviceIntR2(void* deviceVec, int* hostVec, int ld)
 }
 
 
+int setscalMultiVecDeviceInt(int val, int first, int last, 
+				int indexBase, void* devMultiVecX) 
+{ int i=0;
+  int pitch = 0;
+  struct MultiVectDevice *devVecX = (struct MultiVectDevice *) devMultiVecX;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  spgpuIsetscal(handle, first, last, indexBase, val, (int *) devVecX->v_);
+  
+  return(i);
+}
+
 int geinsMultiVecDeviceInt(int n, void* devMultiVecIrl, void* devMultiVecVal, 
 			      int dupl, int indexBase, void* devMultiVecX)
 { int j=0, i=0,nmin=0,nmax=0;
@@ -107,7 +119,7 @@ int geinsMultiVecDeviceInt(int n, void* devMultiVecIrl, void* devMultiVecVal,
   else
     beta = 0;
  
-  spgpuIscat(handle, (double *) devVecX->v_, n, (double*)devVecVal->v_,
+  spgpuIscat(handle, (int *) devVecX->v_, n, (int *)devVecVal->v_,
 	     (int*)devVecIrl->v_, indexBase, beta);
   
   return(i);

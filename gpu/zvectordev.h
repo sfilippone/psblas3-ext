@@ -46,6 +46,8 @@ int writeMultiVecDeviceDoubleComplexR2(void* deviceMultiVec,
 int readMultiVecDeviceDoubleComplex(void* deviceMultiVec, cuDoubleComplex* hostMultiVec);
 int readMultiVecDeviceDoubleComplexR2(void* deviceMultiVec, 
 				      cuDoubleComplex* hostMultiVec, int ld);
+int setscalMultiVecDeviceDoubleComplex(cuDoubleComplex val, int first, int last, 
+				       int indexBase, void* devVecX); 
 
 int geinsMultiVecDeviceDoubleComplex(int n, void* devVecIrl, void* devVecVal, 
 				     int dupl, int indexBase, void* devVecX); 

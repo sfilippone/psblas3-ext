@@ -77,7 +77,7 @@ module psb_z_gpu_vect_mod
     procedure, pass(x) :: set_host => z_gpu_set_host
     procedure, pass(x) :: set_dev  => z_gpu_set_dev
     procedure, pass(x) :: set_sync => z_gpu_set_sync
-!!$    procedure, pass(x) :: set_scal => z_gpu_set_scal
+    procedure, pass(x) :: set_scal => z_gpu_set_scal
 !!$    procedure, pass(x) :: set_vect => z_gpu_set_vect
     procedure, pass(x) :: gthzv_x  => z_gpu_gthzv_x
     procedure, pass(y) :: sctb     => z_gpu_sctb
@@ -777,6 +777,37 @@ contains
     call x%set_sync()
   end subroutine z_gpu_free
 
+  subroutine z_gpu_set_scal(x,val,first,last)
+    class(psb_z_vect_gpu), intent(inout) :: x
+    complex(psb_dpk_), intent(in)           :: val
+    integer(psb_ipk_), optional :: first, last
+    
+    integer(psb_ipk_) :: info, first_, last_
+    
+    first_ = 1
+    last_  = x%get_nrows()
+    if (present(first)) first_ = max(1,first)
+    if (present(last))  last_  = min(last,last_)
+    
+    if (x%is_host()) call x%sync()
+    info = setScalDevice(val,first_,last_,1,x%deviceVect)
+    call x%set_dev()
+    
+  end subroutine z_gpu_set_scal
+!!$
+!!$  subroutine z_gpu_set_vect(x,val)
+!!$    class(psb_z_vect_gpu), intent(inout) :: x
+!!$    complex(psb_dpk_), intent(in)           :: val(:)
+!!$    integer(psb_ipk_) :: nr
+!!$    integer(psb_ipk_) :: info
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    call x%psb_z_base_vect_type%set_vect(val)
+!!$    call x%set_host()
+!!$
+!!$  end subroutine z_gpu_set_vect
+
+
 
   function z_gpu_dot_v(n,x,y) result(res)
     implicit none 
@@ -997,30 +1028,6 @@ contains
       call z%set_host()
     end select
   end subroutine z_gpu_mlt_v_2
-
-
-!!$  subroutine z_gpu_set_scal(x,val)
-!!$    class(psb_z_vect_gpu), intent(inout) :: x
-!!$    complex(psb_dpk_), intent(in)           :: val
-!!$        
-!!$    integer(psb_ipk_) :: info
-!!$
-!!$    if (x%is_dev()) call x%sync()
-!!$    call x%psb_z_base_vect_type%set_scal(val)
-!!$    call x%set_host()
-!!$  end subroutine z_gpu_set_scal
-!!$
-!!$  subroutine z_gpu_set_vect(x,val)
-!!$    class(psb_z_vect_gpu), intent(inout) :: x
-!!$    complex(psb_dpk_), intent(in)           :: val(:)
-!!$    integer(psb_ipk_) :: nr
-!!$    integer(psb_ipk_) :: info
-!!$
-!!$    if (x%is_dev()) call x%sync()
-!!$    call x%psb_z_base_vect_type%set_vect(val)
-!!$    call x%set_host()
-!!$
-!!$  end subroutine z_gpu_set_vect
 
   subroutine z_gpu_scal(alpha, x)
     implicit none 

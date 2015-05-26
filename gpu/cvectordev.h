@@ -45,6 +45,9 @@ int writeMultiVecDeviceFloatComplexR2(void* deviceMultiVec, cuFloatComplex* host
 int readMultiVecDeviceFloatComplex(void* deviceMultiVec, cuFloatComplex* hostMultiVec);
 int readMultiVecDeviceFloatComplexR2(void* deviceMultiVec, cuFloatComplex* hostMultiVec, int ld);
 
+int setscalMultiVecDeviceFloatComplex(cuFloatComplex val, int first, int last, 
+				int indexBase, void* devVecX); 
+
 int geinsMultiVecDeviceFloatComplex(int n, void* devVecIrl, void* devVecVal, 
 			      int dupl, int indexBase, void* devVecX); 
 

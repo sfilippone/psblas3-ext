@@ -74,7 +74,7 @@ module psb_i_gpu_vect_mod
     procedure, pass(x) :: set_host => i_gpu_set_host
     procedure, pass(x) :: set_dev  => i_gpu_set_dev
     procedure, pass(x) :: set_sync => i_gpu_set_sync
-!!$    procedure, pass(x) :: set_scal => i_gpu_set_scal
+    procedure, pass(x) :: set_scal => i_gpu_set_scal
 !!$    procedure, pass(x) :: set_vect => i_gpu_set_vect
     procedure, pass(x) :: gthzv_x  => i_gpu_gthzv_x
     procedure, pass(y) :: sctb     => i_gpu_sctb
@@ -761,6 +761,37 @@ contains
     if (allocated(x%v)) deallocate(x%v, stat=info)
     call x%set_sync()
   end subroutine i_gpu_free
+
+  subroutine i_gpu_set_scal(x,val,first,last)
+    class(psb_i_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(in)           :: val
+    integer(psb_ipk_), optional :: first, last
+    
+    integer(psb_ipk_) :: info, first_, last_
+    
+    first_ = 1
+    last_  = x%get_nrows()
+    if (present(first)) first_ = max(1,first)
+    if (present(last))  last_  = min(last,last_)
+    
+    if (x%is_host()) call x%sync()
+    info = setScalDevice(val,first_,last_,1,x%deviceVect)
+    call x%set_dev()
+    
+  end subroutine i_gpu_set_scal
+!!$
+!!$  subroutine i_gpu_set_vect(x,val)
+!!$    class(psb_i_vect_gpu), intent(inout) :: x
+!!$    integer(psb_ipk_), intent(in)           :: val(:)
+!!$    integer(psb_ipk_) :: nr
+!!$    integer(psb_ipk_) :: info
+!!$
+!!$    if (x%is_dev()) call x%sync()
+!!$    call x%psb_i_base_vect_type%set_vect(val)
+!!$    call x%set_host()
+!!$
+!!$  end subroutine i_gpu_set_vect
+
 
 
 #ifdef HAVE_FINAL

@@ -163,6 +163,19 @@ module psb_z_vectordev_mod
     end subroutine freeDoubleComplex
   end interface
   
+
+  interface setScalDevice
+    function setScalMultiVecDeviceDoubleComplex(val, first, last, &
+         & indexBase, deviceVecX) result(res) &
+         & bind(c,name='setscalMultiVecDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: first,last,indexbase
+      complex(c_double_complex), value :: val
+      type(c_ptr),   value  :: deviceVecX
+    end function setScalMultiVecDeviceDoubleComplex
+  end interface
+
   interface 
     function geinsMultiVecDeviceDoubleComplex(n,deviceVecIrl,deviceVecVal,&
          & dupl,indexbase,deviceVecX) &
