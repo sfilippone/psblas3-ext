@@ -650,6 +650,27 @@ int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, i
 }
 
 
+int dev_csputEllDeviceFloat(void* deviceMat, int nnz, void *ia, void *ja, void *val)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
+  struct MultiVectDevice *devVal = (struct MultiVectDevice *) val;
+  struct MultiVectDevice *devIa = (struct MultiVectDevice *) ia;
+  struct MultiVectDevice *devJa = (struct MultiVectDevice *) ja;
+  float  alpha=1.0;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if (nnz <=0) return SPGPU_SUCCESS; 
+  //fprintf(stderr,"Going through csputEllDeviceDouble %d %p %d\n",nnz,devUpdIdx,cnt);
+  
+  spgpuSellcsput(handle,alpha,(float *) devMat->cM,
+		 devMat->rP,devMat->pitch, devMat->pitch, devMat->rS,
+		 nnz, devIa->v_, devJa->v_, (float *) devVal->v_, 1);
+
+#endif
+  return SPGPU_SUCCESS; 
+}
+
 int dev_csputEllDeviceDouble(void* deviceMat, int nnz, void *ia, void *ja, void *val)
 { int i;
 #ifdef HAVE_SPGPU
@@ -671,4 +692,50 @@ int dev_csputEllDeviceDouble(void* deviceMat, int nnz, void *ia, void *ja, void 
   return SPGPU_SUCCESS; 
 }
 
+
+int dev_csputEllDeviceFloatComplex(void* deviceMat, int nnz,
+				   void *ia, void *ja, void *val)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
+  struct MultiVectDevice *devVal = (struct MultiVectDevice *) val;
+  struct MultiVectDevice *devIa = (struct MultiVectDevice *) ia;
+  struct MultiVectDevice *devJa = (struct MultiVectDevice *) ja;
+  cuFloatComplex alpha =  make_cuFloatComplex(1.0, 0.0);
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if (nnz <=0) return SPGPU_SUCCESS; 
+  //fprintf(stderr,"Going through csputEllDeviceDouble %d %p %d\n",nnz,devUpdIdx,cnt);
+  
+  spgpuCellcsput(handle,alpha,(cuFloatComplex *) devMat->cM,
+		 devMat->rP,devMat->pitch, devMat->pitch, devMat->rS,
+		 nnz, devIa->v_, devJa->v_, (cuFloatComplex *) devVal->v_, 1);
+
 #endif
+  return SPGPU_SUCCESS; 
+}
+
+int dev_csputEllDeviceDoubleComplex(void* deviceMat, int nnz,
+				   void *ia, void *ja, void *val)
+{ int i;
+#ifdef HAVE_SPGPU
+  struct EllDevice *devMat = (struct EllDevice *) deviceMat;
+  struct MultiVectDevice *devVal = (struct MultiVectDevice *) val;
+  struct MultiVectDevice *devIa = (struct MultiVectDevice *) ia;
+  struct MultiVectDevice *devJa = (struct MultiVectDevice *) ja;
+  cuDoubleComplex alpha =  make_cuDoubleComplex(1.0, 0.0);
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if (nnz <=0) return SPGPU_SUCCESS; 
+  //fprintf(stderr,"Going through csputEllDeviceDouble %d %p %d\n",nnz,devUpdIdx,cnt);
+  
+  spgpuZellcsput(handle,alpha,(cuDoubleComplex *) devMat->cM,
+		 devMat->rP,devMat->pitch, devMat->pitch, devMat->rS,
+		 nnz, devIa->v_, devJa->v_, (cuDoubleComplex *) devVal->v_, 1);
+
+#endif
+  return SPGPU_SUCCESS; 
+}
+
+#endif
+

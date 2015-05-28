@@ -35,6 +35,7 @@
 
 #if defined(HAVE_SPGPU)
 #include "cintrf.h"
+#include "cuComplex.h"
 #include "ell.h"
 
 
@@ -151,8 +152,14 @@ void psi_cuda_z_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int 
 		   int *rP, double complex *cM);
 
 
-
-int dev_csputEllDeviceDouble(void* deviceMat, int nnz, void *ia, void *ja, void *val);
+int dev_csputEllDeviceFloat(void* deviceMat, int nnz,
+			    void *ia, void *ja, void *val);
+int dev_csputEllDeviceDouble(void* deviceMat, int nnz,
+			     void *ia, void *ja, void *val);
+int dev_csputEllDeviceFloatComplex(void* deviceMat,  int nnz,
+				   void *ia, void *ja, void *val);
+int dev_csputEllDeviceDoubleComplex(void* deviceMat, int nnz,
+				    void *ia, void *ja, void *val);
 
 int getEllDevicePitch(void* deviceMat);
 
