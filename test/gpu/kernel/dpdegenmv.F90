@@ -324,12 +324,12 @@ program pdgenmv
   ! FIXME: cache flush needed here
   nr       = desc_a%get_local_rows()
   nrg      = desc_a%get_global_rows() 
-  call psb_realloc(nr,xc1,info)
+  call psb_realloc(nr,xc2,info)
   do i=1, nr
     call desc_a%l2g(i,ig,info)
-    xc1(i) = 1.0 + (1.0*ig)/nrg
+    xc2(i) = 1.0 + (1.0*ig)/nrg
   end do
-  call xg%set(xc1)
+  call xg%set(xc2)
 
   call psb_barrier(ictxt)
   gt1 = psb_wtime()
@@ -354,12 +354,12 @@ program pdgenmv
   gt2 = psb_wtime() - gt1
   call psb_amx(ictxt,gt2)
   call bg%sync()
-  xc1 = bv%get_vect()
+!  xc1 = bv%get_vect()
   xc2 = bg%get_vect()
   
   call psb_geaxpby(-done,bg,+done,bv,desc_a,info)
   eps = psb_geamax(bv,desc_a,info)
-
+  if (iam==0) write(*,*) 'Max diff on GPU',eps
   call psb_amx(ictxt,t2)
   eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
   call psb_amx(ictxt,eps)

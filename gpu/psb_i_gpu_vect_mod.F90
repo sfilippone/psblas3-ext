@@ -162,6 +162,10 @@ contains
       call inner_unregister(x%pinned_buffer)
       deallocate(x%pinned_buffer, stat=info)
     end if
+    if (allocated(x%combuf)) then 
+      call inner_unregister(x%combuf)
+      deallocate(x%combuf, stat=info)
+    end if
     if (allocated(x%buffer)) then 
       deallocate(x%buffer, stat=info)
     end if
