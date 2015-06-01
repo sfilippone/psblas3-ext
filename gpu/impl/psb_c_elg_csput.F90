@@ -96,9 +96,7 @@ subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     info = psb_err_invalid_mat_state_
 
   else  if (a%is_upd()) then 
-#if 0
-    if (present(gtl)) then 
-#endif
+!!$    write(*,*) 'elg_csput_a '
       if (a%is_dev()) call a%sync()
       call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
            &  imin,imax,jmin,jmax,info,gtl) 
@@ -107,22 +105,6 @@ subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
         goto 9999
       end if
       call a%set_host()
-#if 0 
-    else
-      t1=psb_wtime()
-      if (a%is_host()) call a%sync()
-      t2=psb_wtime()
-      !!info = outerCsputEllDevicePinned(a%deviceMat,nz,ia,ja,val)      
-      info = csputEllDevice(a%deviceMat,nz,ia,ja,val)
-      t3=psb_wtime()
-      if (.false.) write(0,*)name,' ',t2-t1,t3-t2
-      if (info /= 0) then 
-        info = psb_err_internal_error_
-      end if
-      call a%set_dev()
-
-    end if
-#endif
   else 
     ! State is wrong.
     info = psb_err_invalid_mat_state_
@@ -139,34 +121,6 @@ subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
 
   return
 
-#if 0
-contains
-  function  outerCsputEllDevicePinned(deviceMat,nz,ia,ja,val) result(info)
-    use iso_c_binding 
-    use elldev_mod
-    use psb_vectordev_mod
-    use psb_c_elg_mat_mod, psb_protect_name => psb_c_elg_csput_a
-    type(c_ptr)                             :: deviceMat
-    complex(psb_spk_), intent(in), target       :: val(:)
-    integer(psb_ipk_), intent(in), target    ::  ia(:), ja(:)
-    integer(psb_ipk_), intent(in)    ::  nz
-    integer(psb_ipk_)            :: info
-    type(c_ptr)   :: cval,cia,cja
-    integer(c_int) :: idummy
-    real(c_double) :: ddummy
-    
-!!$    info = registerMapped(c_loc(val),cval,size(val), ddummy)        
-!!$    info = registerMapped(c_loc(ia),cia,size(ia), idummy)        
-!!$    info = registerMapped(c_loc(ja),cja,size(ja), idummy)        
-    cia  = c_loc(ia)
-    cja  = c_loc(ja)
-    cval = c_loc(val)
-    info = csputEllDeviceDoublePinned(deviceMat,nz,cia,cja,cval)
-!!$    call  unregisterMapped(c_loc(val))
-!!$    call  unregisterMapped(c_loc(ia))
-!!$    call  unregisterMapped(c_loc(ja))
-  end function outerCsputEllDevicePinned
-#endif
 end subroutine psb_c_elg_csput_a
 
 
@@ -256,73 +210,26 @@ subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     else
       t1=psb_wtime()
       gpu_invoked = .false. 
-#if 0 
       select type (ia)
       class is (psb_i_vect_gpu) 
         select type (ja)
         class is (psb_i_vect_gpu) 
           select type (val)
           class is (psb_c_vect_gpu) 
-            !!$ write(0,*)'calling dev_csput',a%updcnt
-           if (allocated(a%updidx%v)) then 
-              if ((a%updcnt + nz) > a%updidx%get_nrows()) then 
-                write(0,*) 'Reallocating in CSPUT'
-                idxs = a%updidx%get_vect()
-                nrw = size(idxs)
-                call psb_realloc(nrw+4*nz,idxs,info,pad=-ione)
-                if (info /= 0) then 
-                  info = psb_err_internal_error_
-                  goto 9999
-                end if      
-                call a%updidx%bld(idxs)
-              end if
-              devIdxUpd=a%updidx%deviceVect
-            else
-              devIdxUpd=c_null_ptr
-            end if
-            if (debug_idxs) then 
-!!$              idxs= a%updidx%get_vect()
-!!$              write(0,*) 'Before dev_csput',idxs(:)
-              
-            end if
-!!$            devIdxUpd=c_null_ptr
-              
-            if (a%is_host()) call a%sync()
+            if (a%is_host())   call a%sync()
             if (val%is_host()) call val%sync()
-            if (ia%is_host()) call ia%sync()
-            if (ja%is_host()) call ja%sync()
-!!$            info=dev_CsputEllDeviceDouble(a%deviceMat,nz,&
-!!$                 & ia%deviceVect,ja%deviceVect,val%deviceVect,devIdxUpd,a%updcnt)
-            info = csputEllDevice(a%deviceMat,nz,ia,ja,val)
-
-!!$            call a%updidx%set_dev()
-!!$            if (debug_idxs) then 
-!!$              if (allocated(a%updidx%v)) then 
-!!$                idxs = a%updidx%get_vect()
-!!$                write(0,*) 'After dev_csput',idxs(a%updcnt+1:a%updcnt+nz)
-!!$              end if
-!!$                call ia%sync()
-!!$                call ja%sync()
-!!$                write(0,*) '     IA        ',ia%v(1:nz)
-!!$                write(0,*) '     JA        ',ja%v(1:nz)
-!!$              
-!!$            end if
-!!$            if (debug_vals) then 
-!!$              call val%sync()
-!!$              write(0,*) '     VALS        ',val%v(1:nz)
-!!$            end if
-!!$            a%updcnt = a%updcnt+nz
+            if (ia%is_host())  call ia%sync()
+            if (ja%is_host())  call ja%sync()
+            info = csputEllDeviceFloatComplex(a%deviceMat,nz,&
+                 & ia%deviceVect,ja%deviceVect,val%deviceVect)
             call a%set_dev()
-!!$            write(0,*)'After dev_csput',a%updcnt
-
             gpu_invoked=.true.
-!!$            write(0,*)'done dev_csput'
           end select
         end select
       end select
-#endif      
       if (.not.gpu_invoked) then 
 !!$        write(0,*)'Not gpu_invoked '
+        if (a%is_dev()) call a%sync()
         call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
              &  imin,imax,jmin,jmax,info,gtl) 
         call a%set_host()

@@ -241,6 +241,16 @@ module elldev_mod
     end function psiCopyCooToElgDoubleComplex
   end interface
 
+  interface csputEllDeviceFloat
+    function dev_csputEllDeviceFloat(deviceMat, nnz, ia, ja, val) &
+         & result(res) bind(c,name='dev_csputEllDeviceFloat')
+      use iso_c_binding
+      integer(c_int)		:: res
+      type(c_ptr), value 	:: deviceMat , ia, ja, val
+      integer(c_int), value     :: nnz 
+    end function dev_csputEllDeviceFloat
+  end interface
+
   interface csputEllDeviceDouble
     function dev_csputEllDeviceDouble(deviceMat, nnz, ia, ja, val) &
          & result(res) bind(c,name='dev_csputEllDeviceDouble')
@@ -249,16 +259,27 @@ module elldev_mod
       type(c_ptr), value 	:: deviceMat , ia, ja, val
       integer(c_int), value     :: nnz 
     end function dev_csputEllDeviceDouble
-!!$    function dev_csputEllDeviceDoubleVect(deviceMat, nnz, updidx, val, cnt) &
-!!$         & result(res) bind(c,name='dev_csputEllDeviceDoubleVect')
-!!$      use iso_c_binding
-!!$      integer(c_int)		:: res
-!!$      type(c_ptr), value 	:: deviceMat, val, updidx
-!!$      integer(c_int), value     :: nnz, cnt
-!!$    end function dev_csputEllDeviceDoubleVect
   end interface
 
+  interface csputEllDeviceFloatComplex
+    function dev_csputEllDeviceFloatComplex(deviceMat, nnz, ia, ja, val) &
+         & result(res) bind(c,name='dev_csputEllDeviceFloatComplex')
+      use iso_c_binding
+      integer(c_int)		:: res
+      type(c_ptr), value 	:: deviceMat , ia, ja, val
+      integer(c_int), value     :: nnz 
+    end function dev_csputEllDeviceFloatComplex
+  end interface
 
+  interface csputEllDeviceDoubleComplex
+    function dev_csputEllDeviceDoubleComplex(deviceMat, nnz, ia, ja, val) &
+         & result(res) bind(c,name='dev_csputEllDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)		:: res
+      type(c_ptr), value 	:: deviceMat , ia, ja, val
+      integer(c_int), value     :: nnz 
+    end function dev_csputEllDeviceDoubleComplex
+  end interface
 
   interface spmvEllDevice
     function spmvEllDeviceFloat(deviceMat,alpha,x,beta,y) &

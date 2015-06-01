@@ -97,7 +97,7 @@ program pdgenmv
 #endif
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
-  logical, parameter :: dump=.false.
+  logical, parameter :: dump=.true.
   integer            :: info, i, j, nr, ig, nrg
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
