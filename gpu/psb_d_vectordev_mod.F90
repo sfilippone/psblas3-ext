@@ -340,6 +340,25 @@ module psb_d_vectordev_mod
     end function axybzMultiVecDeviceDouble
   end interface
 
+  interface absMultiVecDevice
+    function absMultiVecDeviceDouble(n,alpha,deviceVecA) &
+         & result(res) bind(c,name='absMultiVecDeviceDouble')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      real(c_double), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function absMultiVecDeviceDouble
+    function absMultiVecDeviceDouble2(n,alpha,deviceVecA,deviceVecB) &
+         & result(res) bind(c,name='absMultiVecDeviceDouble2')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      real(c_double), value :: alpha
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function absMultiVecDeviceDouble2
+  end interface
+
   interface inner_register
     module procedure inner_registerDouble
   end interface

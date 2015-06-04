@@ -241,7 +241,7 @@ int axpbyMultiVecDeviceDouble(int n,double alpha, void* devMultiVecX,
 		(double*)devVecY->v_+pitch*j, alpha,(double*) devVecX->v_+pitch*j);
   return(i);
 }
-
+ 
 int axyMultiVecDeviceDouble(int n, double alpha, void *deviceVecA, void *deviceVecB)
 { int i = 0; 
   struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
@@ -271,6 +271,35 @@ int axybzMultiVecDeviceDouble(int n, double alpha, void *deviceVecA,
 	       devVecB->count_, devVecB->pitch_);
   return(i);
 }
+
+int absMultiVecDeviceDouble2(int n, double alpha, void *deviceVecA,
+			      void *deviceVecB)
+{ int i=0;
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
+  struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
+
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if ((n > devVecA->size_) || (n>devVecB->size_ ))
+    return SPGPU_UNSUPPORTED;
+
+  spgpuDabs(handle, (double*)devVecB->v_, n, alpha, (double*)devVecA->v_);
+
+  return(i);
+}
+ 
+int absMultiVecDeviceDouble(int n, double alpha, void *deviceVecA)
+{ int i = 0; 
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  if (n > devVecA->size_)
+    return SPGPU_UNSUPPORTED;
+
+  spgpuDabs(handle, (double*)devVecA->v_, n, alpha, (double*)devVecA->v_);
+
+  return(i);
+}
+
 
 #endif
 
