@@ -73,6 +73,9 @@ int axpbyMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void* devVecX, 
 int axyMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA, void *deviceVecB);
 int axybzMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA,
 			      void *deviceVecB, cuFloatComplex beta, void *deviceVecZ);
+int absMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA);
+int absMultiVecDeviceFloatComplex2(int n, cuFloatComplex alpha, 
+				  void *deviceVecA, void *deviceVecB);
 
 
 #endif

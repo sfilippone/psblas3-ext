@@ -340,6 +340,7 @@ module psb_d_vectordev_mod
     end function axybzMultiVecDeviceDouble
   end interface
 
+
   interface absMultiVecDevice
     function absMultiVecDeviceDouble(n,alpha,deviceVecA) &
          & result(res) bind(c,name='absMultiVecDeviceDouble')

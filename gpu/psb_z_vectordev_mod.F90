@@ -340,6 +340,26 @@ module psb_z_vectordev_mod
     end function axybzMultiVecDeviceDoubleComplex
   end interface
 
+
+  interface absMultiVecDevice
+    function absMultiVecDeviceDoubleComplex(n,alpha,deviceVecA) &
+         & result(res) bind(c,name='absMultiVecDeviceDoubleComplex')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      complex(c_double_complex), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function absMultiVecDeviceDoubleComplex
+    function absMultiVecDeviceDoubleComplex2(n,alpha,deviceVecA,deviceVecB) &
+         & result(res) bind(c,name='absMultiVecDeviceDoubleComplex2')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      complex(c_double_complex), value :: alpha
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function absMultiVecDeviceDoubleComplex2
+  end interface
+
   interface inner_register
     module procedure inner_registerDoubleComplex
   end interface

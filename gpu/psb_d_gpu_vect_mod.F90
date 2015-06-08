@@ -1115,6 +1115,7 @@ contains
     end select
   end subroutine d_gpu_absval2
 
+
 #ifdef HAVE_FINAL
   subroutine d_gpu_vect_finalize(x)
     use psi_serial_mod

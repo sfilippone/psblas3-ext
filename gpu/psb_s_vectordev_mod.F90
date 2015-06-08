@@ -340,6 +340,26 @@ module psb_s_vectordev_mod
     end function axybzMultiVecDeviceFloat
   end interface
 
+
+  interface absMultiVecDevice
+    function absMultiVecDeviceFloat(n,alpha,deviceVecA) &
+         & result(res) bind(c,name='absMultiVecDeviceFloat')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      real(c_float), value :: alpha
+      type(c_ptr), value    :: deviceVecA
+    end function absMultiVecDeviceFloat
+    function absMultiVecDeviceFloat2(n,alpha,deviceVecA,deviceVecB) &
+         & result(res) bind(c,name='absMultiVecDeviceFloat2')
+      use iso_c_binding
+      integer(c_int)        :: res
+      integer(c_int), value :: n
+      real(c_float), value :: alpha
+      type(c_ptr), value    :: deviceVecA, deviceVecB
+    end function absMultiVecDeviceFloat2
+  end interface
+
   interface inner_register
     module procedure inner_registerFloat
   end interface

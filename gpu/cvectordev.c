@@ -290,5 +290,36 @@ int axybzMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVec
   return(i);
 }
 
+
+int absMultiVecDeviceFloatComplex2(int n, cuFloatComplex alpha, void *deviceVecA,
+			      void *deviceVecB)
+{ int i=0;
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
+  struct MultiVectDevice *devVecB = (struct MultiVectDevice *) deviceVecB;
+
+  spgpuHandle_t handle=psb_gpuGetHandle();
+
+  if ((n > devVecA->size_) || (n>devVecB->size_ ))
+    return SPGPU_UNSUPPORTED;
+
+  spgpuCabs(handle, (cuFloatComplex*)devVecB->v_, n, 
+	    alpha, (cuFloatComplex*)devVecA->v_);
+
+  return(i);
+}
+ 
+int absMultiVecDeviceFloatComplex(int n, cuFloatComplex alpha, void *deviceVecA)
+{ int i = 0; 
+  struct MultiVectDevice *devVecA = (struct MultiVectDevice *) deviceVecA;
+  spgpuHandle_t handle=psb_gpuGetHandle();
+  if (n > devVecA->size_)
+    return SPGPU_UNSUPPORTED;
+
+  spgpuCabs(handle, (cuFloatComplex*)devVecA->v_, n, 
+	    alpha, (cuFloatComplex*)devVecA->v_);
+
+  return(i);
+}
+
 #endif
 

@@ -99,6 +99,8 @@ module psb_z_gpu_vect_mod
     procedure, pass(x) :: nrm2     => z_gpu_nrm2
     procedure, pass(x) :: amax     => z_gpu_amax
     procedure, pass(x) :: asum     => z_gpu_asum
+    procedure, pass(x) :: absval1  => z_gpu_absval1
+    procedure, pass(x) :: absval2  => z_gpu_absval2
 
 #ifdef HAVE_FINAL
     final              :: z_gpu_vect_finalize
@@ -1080,6 +1082,39 @@ contains
     info = asumMultiVecDeviceComplex(res,n,x%deviceVect)
 
   end function z_gpu_asum
+
+  subroutine  z_gpu_absval1(x) 
+    implicit none 
+    class(psb_z_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_) :: n
+    integer(psb_ipk_) :: info
+
+    if (x%is_host()) call x%sync()
+    n=x%get_nrows()
+    info = absMultiVecDevice(n,zone,x%deviceVect)
+
+  end subroutine z_gpu_absval1
+
+  subroutine  z_gpu_absval2(x,y) 
+    implicit none 
+    class(psb_z_vect_gpu), intent(inout) :: x
+    class(psb_z_base_vect_type), intent(inout) :: y
+    integer(psb_ipk_) :: n
+    integer(psb_ipk_) :: info
+
+    n=min(x%get_nrows(),y%get_nrows())
+    select type (yy=> y) 
+    class is (psb_z_vect_gpu)
+      if (x%is_host()) call x%sync()    
+      if (yy%is_host()) call yy%sync()
+      info = absMultiVecDevice(n,zone,x%deviceVect,yy%deviceVect)
+    class default
+      if (x%is_dev()) call x%sync()    
+      if (y%is_dev()) call y%sync()
+      call x%psb_z_base_vect_type%absval(y)
+    end select
+  end subroutine z_gpu_absval2
+
 
 #ifdef HAVE_FINAL
   subroutine z_gpu_vect_finalize(x)

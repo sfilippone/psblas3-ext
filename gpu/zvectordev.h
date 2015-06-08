@@ -83,6 +83,9 @@ int axyMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha,
 int axybzMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, void *deviceVecA,
 				     void *deviceVecB, cuDoubleComplex beta, 
 				     void *deviceVecZ);
+int absMultiVecDeviceDoubleComplex(int n, cuDoubleComplex alpha, void *deviceVecA);
+int absMultiVecDeviceDoubleComplex2(int n, cuDoubleComplex alpha, 
+				    void *deviceVecA, void *deviceVecB);
 
 
 #endif
