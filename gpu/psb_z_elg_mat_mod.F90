@@ -372,7 +372,6 @@ contains
     if (tmpa%is_host()) then 
       call tmpa%to_gpu(info)
     else if (tmpa%is_dev()) then 
-      ! Missing method 
       call tmpa%from_gpu(info)
     end if
     call tmpa%set_sync()

@@ -180,7 +180,8 @@ contains
       deallocate(x%pinned_buffer, stat=info)
     end if
     if (allocated(x%combuf)) then 
-      call inner_unregister(x%combuf)
+      if (psb_gpu_DeviceHasUVA()) &
+           & call inner_unregister(x%combuf)
       deallocate(x%combuf, stat=info)
     end if
     if (allocated(x%buffer)) then 
