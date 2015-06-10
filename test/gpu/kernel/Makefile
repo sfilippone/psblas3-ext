@@ -22,7 +22,9 @@ DPGOBJS=dpdegenmv.o
 SPGOBJS=spdegenmv.o
 EXEDIR=./runs
 
-all: dpdegenmv spdegenmv 
+all: pgen file
+pgen: dpdegenmv spdegenmv 
+file: s_file_spmv c_file_spmv d_file_spmv z_file_spmv
 
 dpdegenmv: $(DPGOBJS)
 	$(F90LINK) $(LOPT) $(DPGOBJS) -fopenmp -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 

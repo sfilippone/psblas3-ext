@@ -43,7 +43,7 @@ program d_file_spmv
   character(len=200) :: mtrx_file
 
   ! sparse matrices
-  type(psb_dspmat_type) :: a, aux_a, agpu, atmp
+  type(psb_dspmat_type) :: a, aux_a, agpu
 
   ! dense matrices
   real(psb_dpk_), allocatable, target :: aux_b(:,:), d(:)
@@ -73,19 +73,17 @@ program d_file_spmv
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_hll_sparse_mat), target   :: ahll
-  type(psb_d_dia_sparse_mat), target   :: adia
   type(psb_d_hdia_sparse_mat), target   :: ahdia
 #ifdef HAVE_GPU
   type(psb_d_elg_sparse_mat), target   :: aelg
   type(psb_d_csrg_sparse_mat), target  :: acsrg
   type(psb_d_hybg_sparse_mat), target  :: ahybg
   type(psb_d_hlg_sparse_mat), target   :: ahlg
-  type(psb_d_diag_sparse_mat), target  :: adiag
   type(psb_d_hdiag_sparse_mat), target  :: ahdiag
 #endif
   class(psb_d_base_sparse_mat), pointer :: acmold, agmold
   ! other variables
-  integer            :: i,info,j,nrt, ns, nr, ipart
+  integer            :: i,info,j,nrt, ns, nr, ipart, ig, nrg
   integer            :: internal, m,ii,nnzero
   real(psb_dpk_) :: t0,t1, t2, tprec, flops
   real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth,&
@@ -209,8 +207,6 @@ program d_file_spmv
     acmold => aell
   case('HLL')
     acmold => ahll
-  case('DIA')
-    acmold => adia
   case('HDIA')
     acmold => ahdia
   case default
@@ -228,8 +224,6 @@ program d_file_spmv
     agmold => acsrg
   case('HYBG')
     agmold => ahybg
-  case('DIAG')
-    agmold => adiag
   case('HDIAG')
     agmold => ahdiag
   case default
@@ -280,13 +274,16 @@ program d_file_spmv
   call a%cscnv(aux_a,info,mold=acoo)
   tcnvcsr = 0
   tcnvgpu = 0
+  nr       = desc_a%get_local_rows()
+  nrg      = desc_a%get_global_rows() 
   call psb_geall(x_col,desc_a,info)
+  do i=1, nr
+    call desc_a%l2g(i,ig,info)
+    x_col(i) = 1.0 + (1.0*ig)/nrg
+  end do
+  call psb_geasb(x_col,desc_a,info)
   do j=1, ncnv
     call aux_a%cscnv(a,info,mold=acoo)
-    ns = size(x_col)
-    do i=1, ns
-      x_col(i) = 1.0 + (1.0*i)/ns
-    end do
     call psb_barrier(ictxt)
     t1 = psb_wtime()
     call a%cscnv(info,mold=acmold)
@@ -294,21 +291,12 @@ program d_file_spmv
     call psb_amx(ictxt,t2)
     tcnvcsr = tcnvcsr + t2
     if (j==1) tcnvc1 = t2
-    ns = size(x_col)
-    do i=1, ns
-      x_col(i) = 1.0 + (1.0*i)/ns
-    end do
-    call psb_geasb(x_col,desc_a,info)
     call xv%bld(x_col)
     call psb_geasb(bv,desc_a,info,scratch=.true.)
     
 #ifdef HAVE_GPU
     
     call aux_a%cscnv(agpu,info,mold=acoo)
-    ns = size(x_col)
-    do i=1, ns
-      x_col(i) = 1.0 + (1.0*i)/ns
-    end do
     call xg%bld(x_col,mold=vmold)
     call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
     call psb_barrier(ictxt)
@@ -361,11 +349,6 @@ program d_file_spmv
   call psb_barrier(ictxt)
   gt1 = psb_wtime()
   do i=1,ntests*ngpu
-    ! Make sure the X vector is on the GPU side of things.
-    select type (v => xg%v)
-    type is (psb_d_vect_gpu) 
-      call v%set_dev()
-    end select
     call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
     if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
       write(0,*) 'From 2 spmm',info,i,ntests

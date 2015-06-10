@@ -61,12 +61,12 @@ program pdgenmv
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_s_vect_type)  :: xv,bv, xg, bg 
+  type(psb_s_vect_type), target :: xv,bv, xg, bg 
 #ifdef HAVE_GPU
   type(psb_s_vect_gpu)  :: vmold
   type(psb_i_vect_gpu)  :: imold
 #endif
-  real(psb_spk_), allocatable :: xc1(:),xc2(:)
+  real(psb_spk_), allocatable :: x1(:), x2(:), x0(:)
   ! blacs parameters
   integer            :: ictxt, iam, np
 
@@ -86,12 +86,11 @@ program pdgenmv
   type(psb_s_hybg_sparse_mat), target  :: ahybg
   type(psb_s_hlg_sparse_mat), target   :: ahlg
   type(psb_s_hdiag_sparse_mat), target   :: ahdiag
-!!$  type(psb_s_diag_sparse_mat), target   :: adiag
 #endif
   class(psb_s_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
-  integer            :: info, i, j, nr
+  integer            :: info, i, j, nr, ig, nrg
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
 
@@ -148,7 +147,7 @@ program pdgenmv
   if (iam == psb_root_) write(psb_out_unit,'(" ")')
 
   if (dump) then 
-    write(fname,'(a,i3.3,a)') 'pde',idim,'.mtx'
+    write(fname,'(a,i3.3,a,i3.3,a,i3.3,a)')  'pde',idim,'-',iam,'-',np,'.mtx'
     call a%print(fname,head='PDEGEN test matrix')
   end if
 
@@ -186,8 +185,6 @@ program pdgenmv
     agmold => aelg
   case('HLG')
     agmold => ahlg
-!!$  case('DIAG')
-!!$    agmold => adiag
   case('HDIAG')
     agmold => ahdiag
   case('CSRG')
@@ -208,18 +205,20 @@ program pdgenmv
 
   call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
   call psb_geasb(xg,desc_a,info,scratch=.true.,mold=vmold)
-  call xg%set(sone)
 #endif
+  nr       = desc_a%get_local_rows()
+  nrg      = desc_a%get_global_rows() 
+  call psb_geall(x0,desc_a,info)
+  do i=1, nr
+    call desc_a%l2g(i,ig,info)
+    x0(i) = 1.0 + (1.0*ig)/nrg
+  end do
   call a%cscnv(aux_a,info,mold=acoo)
   tcnvcsr = 0
   tcnvgpu = 0
-  call psb_geall(xc1,desc_a,info)
+  call psb_geall(x1,desc_a,info)
   do j=1, ncnv
     call aux_a%cscnv(a,info,mold=acoo)
-    nr = size(xc1)
-    do i=1, nr
-      xc1(i) = 1.0 + (1.0*i)/nr
-    end do
     call psb_barrier(ictxt)
     t1 = psb_wtime()
     call a%cscnv(info,mold=acmold)
@@ -227,22 +226,14 @@ program pdgenmv
     call psb_amx(ictxt,t2)
     tcnvcsr = tcnvcsr + t2
     if (j==1) tcnvc1 = t2
-    nr = size(xc1)
-    do i=1, nr
-      xc1(i) = 1.0 + (1.0*i)/nr
-    end do
-    call psb_geasb(xc1,desc_a,info)
-    call xv%bld(xc1)
+    call psb_geasb(x1,desc_a,info)
+    call xv%bld(x0)
     call psb_geasb(bv,desc_a,info,scratch=.true.)
     
 #ifdef HAVE_GPU
     
     call aux_a%cscnv(agpu,info,mold=acoo)
-    nr = size(xc1)
-    do i=1, nr
-      xc1(i) = 1.0 + (1.0*i)/nr
-    end do
-    call xg%bld(xc1,mold=vmold)
+    call xg%bld(x0,mold=vmold)
     call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
     call psb_barrier(ictxt)
     t1 = psb_wtime()
@@ -256,14 +247,7 @@ program pdgenmv
   end do
 
 
-
-  nr       = desc_a%get_local_rows() 
-  call psb_realloc(nr,xc1,info)
-  do i=1, nr
-    xc1(i) = 1.0 + (1.0*i)/nr
-  end do
-  call xv%set(xc1)
-  
+  call xv%set(x0)
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   do i=1,ntests 
@@ -274,11 +258,11 @@ program pdgenmv
   call psb_amx(ictxt,t2)
 
 #ifdef HAVE_GPU
-  call xg%set(xc1)
+  call xg%set(x0)
 
   ! FIXME: cache flush needed here
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
+  x1 = bv%get_vect()
+  x2 = bg%get_vect()
   
   call psb_barrier(ictxt)
   tt1 = psb_wtime()
@@ -295,25 +279,20 @@ program pdgenmv
   call psb_barrier(ictxt)
   tt2 = psb_wtime() - tt1
   call psb_amx(ictxt,tt2)
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
+  x1 = bv%get_vect()
+  x2 = bg%get_vect()
   nr       = desc_a%get_local_rows() 
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
+  eps = maxval(abs(x1(1:nr)-x2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
 
 
-  call xg%sync()
   ! FIXME: cache flush needed here
-  
+  call xg%set(x0)
+  call xg%sync()
   call psb_barrier(ictxt)
   gt1 = psb_wtime()
   do i=1,ntests*ngpu
-    ! Make sure the X vector is on the GPU side of things.
-    select type (v => xg%v)
-    type is (psb_s_vect_gpu) 
-      call v%set_dev()
-    end select
     call psb_spmm(sone,agpu,xg,szero,bg,desc_a,info)
     ! For timing purposes we need to make sure all threads
     ! in the device are done. 
@@ -329,29 +308,30 @@ program pdgenmv
   gt2 = psb_wtime() - gt1
   call psb_amx(ictxt,gt2)
   call bg%sync()
-  xc1 = bv%get_vect()
-  xc2 = bg%get_vect()
+  x1 = bv%get_vect()
+  x2 = bg%get_vect()
   call psb_geaxpby(-sone,bg,+sone,bv,desc_a,info)
   eps = psb_geamax(bv,desc_a,info)
 
   call psb_amx(ictxt,t2)
-  eps = maxval(abs(xc1(1:nr)-xc2(1:nr)))
+  eps = maxval(abs(x1(1:nr)-x2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
   if (dump) then 
     write(fname,'(a,i3.3,a,i3.3,a)')'XCPU-out-',iam,'-',np,'.mtx'
-    call mm_array_write(xc1(1:nr),'Local part CPU',info,filename=fname)
+    call mm_array_write(x1(1:nr),'Local part CPU',info,filename=fname)
     write(fname,'(a,i3.3,a,i3.3,a)')'XGPU-out-',iam,'-',np,'.mtx'
-    call mm_array_write(xc2(1:nr),'Local part GPU',info,filename=fname)
+    call mm_array_write(x2(1:nr),'Local part GPU',info,filename=fname)
   end if
 #endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
+  call psb_sum(ictxt,nr)
   call psb_sum(ictxt,annz)
   call psb_sum(ictxt,amatsize)
   call psb_sum(ictxt,descsize)
-
+  
   if (iam == psb_root_) then
     write(psb_out_unit,&
          & '("Matrix: ell1 ",i0)') idim

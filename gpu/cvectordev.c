@@ -125,7 +125,7 @@ int geinsMultiVecDeviceFloatComplex(int n, void* devMultiVecIrl, void* devMultiV
 }
 
 
-int igathMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n,
+int igathMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int n,
 				    int first, void* deviceIdx, int hfirst,
 				    void* host_values, int indexBase)
 {
@@ -154,7 +154,7 @@ int igathMultiVecDeviceFloatComplex(void* deviceVec, int vectorId, int n,
   return(i);
 }
 
-int iscatMultiVecDeviceFloatVecIdx(void* deviceVec, int vectorId, int n, 
+int iscatMultiVecDeviceFloatComplexVecIdx(void* deviceVec, int vectorId, int n, 
 				   int first, void *deviceIdx,
 				   int hfirst, void* host_values, 
 				   int indexBase, cuFloatComplex beta)
