@@ -39,7 +39,7 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 	psb_d_diag_mat_mod.o\
 	psb_d_hdiag_mat_mod.o psb_s_hdiag_mat_mod.o
 
-COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o  ivectordev.o \
+COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o  ivectordev.o dnsdev.o\
 	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 
 
 OBJS=$(COBJS) $(FOBJS)
@@ -78,6 +78,7 @@ psb_vectordev_mod.o: psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev
  psb_i_vectordev_mod.o psb_s_vectordev_mod.o psb_d_vectordev_mod.o psb_c_vectordev_mod.o psb_z_vectordev_mod.o: psb_base_vectordev_mod.o
 vectordev.o: cuda_util.o   vectordev.h
 elldev.o: elldev.c
+dnsdev.o: dnsdev.c
 fcusparse.h elldev.c: elldev.h vectordev.h
 fcusparse.o: fcusparse.h fcusparse_fct.h
 svectordev.o:  svectordev.h vectordev.h

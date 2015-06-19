@@ -379,6 +379,7 @@ void psb_gpuCreateHandle()
 void psb_gpuDestroyHandle()
 {
   spgpuDestroy(psb_gpu_handle);
+  psb_gpu_handle = NULL; 
 }
 
 cudaStream_t psb_gpuGetStream()
@@ -390,6 +391,23 @@ void  psb_gpuSetStream(cudaStream_t stream)
 {
   spgpuSetStream(psb_gpu_handle, stream);
   return ;
+}
+
+
+
+static cublasHandle_t psb_cublas_handle = NULL;
+cublasHandle_t psb_gpuGetCublasHandle()
+{
+  return psb_cublas_handle;
+}
+void psb_gpuCreateCublasHandle()
+{  if (!psb_cublas_handle)
+    cublasCreate(&psb_cublas_handle);
+}
+void psb_gpuDestroyCublasHandle()
+{
+  cublasDestroy(psb_cublas_handle);
+  psb_cublas_handle=NULL;
 }
 
 

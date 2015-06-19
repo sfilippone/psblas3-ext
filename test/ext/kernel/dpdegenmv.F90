@@ -72,7 +72,8 @@ program pdgenmv
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_hll_sparse_mat), target   :: ahll
   type(psb_d_dia_sparse_mat), target   :: adia
-  type(psb_d_hdia_sparse_mat), target   :: ahdia
+  type(psb_d_hdia_sparse_mat), target  :: ahdia
+  type(psb_d_dns_sparse_mat), target   :: adns
 
   class(psb_d_base_sparse_mat), pointer :: acmold
   ! other variables
@@ -145,6 +146,8 @@ program pdgenmv
     acmold => acsc
   case('COO')
     acmold => acoo
+  case('DNS')
+    acmold => adns
   case default
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll

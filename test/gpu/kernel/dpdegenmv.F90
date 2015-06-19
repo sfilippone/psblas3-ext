@@ -436,7 +436,9 @@ program pdgenmv
     call psb_errpush(info,name,a_err=ch_err)
     goto 9999
   end if
+#ifdef HAVE_GPU
   call psb_gpu_exit()
+#endif
   call psb_exit(ictxt)
   stop
 

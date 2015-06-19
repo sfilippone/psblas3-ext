@@ -472,6 +472,7 @@ program c_file_spmv
   call psb_gefree(xg, desc_a,info)
   call psb_gefree(bg, desc_a,info)
   call psb_spfree(agpu,desc_a,info)
+  call psb_gpu_exit()
 #endif
   call psb_cdfree(desc_a,info)
 

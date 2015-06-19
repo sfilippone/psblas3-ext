@@ -34,6 +34,8 @@ module psb_ext_mod
   use psb_const_mod
   use psi_ext_util_mod
 
+  use psb_d_dns_mat_mod
+  
   use psb_d_ell_mat_mod
   use psb_s_ell_mat_mod
   use psb_z_ell_mat_mod

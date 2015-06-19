@@ -43,6 +43,7 @@
 #include "core.h" 
 #include "cuComplex.h"
 #include "fcusparse.h"
+#include "cublas_v2.h"
 
 int allocRemoteBuffer(void** buffer, int count);
 int allocMappedMemory(void **buffer, void **dp, int size);
@@ -75,6 +76,10 @@ void psb_gpuCreateHandle();
 void psb_gpuDestroyHandle();
 cudaStream_t psb_gpuGetStream();
 void  psb_gpuSetStream(cudaStream_t stream);
+
+cublasHandle_t psb_gpuGetCublasHandle(); 
+void psb_gpuCreateCublasHandle();
+void psb_gpuDestroyCublasHandle();
 
 
 int allocateInt(void **, int);
