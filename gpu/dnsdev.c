@@ -35,6 +35,8 @@
 
 #define PASS_RS  0
 
+#define IMIN(a,b) ((a)<(b) ? (a) : (b))
+
 DnsDeviceParams getDnsDeviceParams(unsigned int rows, unsigned int maxRowSize,
 				   unsigned int nnzeros, 
 				   unsigned int columns, unsigned int elementType,
@@ -168,52 +170,36 @@ int spmvDnsDeviceFloat(void *deviceMat, float alpha, void* deviceX,
 }
 #endif
 
-void
-dspmdmm_gpu (double *z,int s, int vPitch, double *y, double alpha, double* cM, int* rP,
-	     int* rS, int avgRowSize, int maxRowSize, int rows, int pitch, 
-	     double *x, double beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      if (PASS_RS) {
-	spgpuDdnsspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP,
-		       pitch, pitch, rS,
-		       NULL,  avgRowSize, maxRowSize, rows, (double*)x, beta, firstIndex);
-      } else {
-	spgpuDdnsspmv (handle, (double*) z, (double*)y, alpha, (double*) cM, rP,
-		       pitch, pitch, NULL,
-		       NULL,  avgRowSize, maxRowSize, rows, (double*)x, beta, firstIndex);
-      } 
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
 
 //new
-int spmvDnsDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
-		       double beta, void* deviceY)
+int spmvDnsDeviceDouble(char transa, int m, int n, int k, double *alpha,
+			void *deviceMat, void* deviceX, double *beta, void* deviceY)
 {
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
-
+  int status;
 #ifdef HAVE_SPGPU
   /*spgpuDdnsspmv (handle, (double*) y->v_, (double*)y->v_, alpha, (double*) devMat->cM, devMat->rP, devMat->cMPitch, devMat->rPPitch, devMat->rS, devMat->rows, (double*)x->v_, beta, devMat->baseIndex);*/
   /* fprintf(stderr,"From spmvDnsDouble: mat %d %d %d %d y %d %d \n", */
   /* 	  devMat->avgRowSize, devMat->maxRowSize, devMat->rows, */
   /* 	  devMat->pitch, y->count_, y->pitch_); */
-  #if 0 
-  dspmdmm_gpu ((double *)y->v_, y->count_, y->pitch_, (double *)y->v_,
-	       alpha, (double *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->avgRowSize,
-	       devMat->maxRowSize, devMat->rows, devMat->pitch,
-	       (double *)x->v_, beta, devMat->baseIndex);
-  #endif
+  cublasHandle_t handle=psb_gpuGetCublasHandle();
+
+  if (n == 1) {
+    status = cublasDgemv(handle, transa, m,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,1,
+			 beta,  y->v_,1);
+  } else {
+    status = cublasDgemm(handle, transa, CUBLAS_OP_N, m,n,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,x->pitch_,
+			 beta,  y->v_,y->pitch_);
+  }    
   
-  return SPGPU_SUCCESS;
+  if (status == CUBLAS_STATUS_SUCCESS)  
+    return SPGPU_SUCCESS;
+  else
+    return SPGPU_UNSUPPORTED;
 #else
   return SPGPU_UNSUPPORTED;
 #endif

@@ -99,8 +99,9 @@ int readDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, in
 
 int spmvDnsDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
 		       float beta, void* deviceY);
-int spmvDnsDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
-			double beta, void* deviceY);
+int spmvDnsDeviceDouble(char transa, int m, int n, int k,
+			double *alpha, void *deviceMat, void* deviceX, 
+			double *beta, void* deviceY);
 int spmvDnsDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,
 			      float complex beta, void* deviceY);
 int spmvDnsDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX,

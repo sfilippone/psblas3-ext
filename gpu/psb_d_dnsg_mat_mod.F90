@@ -35,7 +35,8 @@ module psb_d_dnsg_mat_mod
   use iso_c_binding
   use psb_d_mat_mod 
   use psb_d_dns_mat_mod
-
+  use dnsdev_mod
+  
   type, extends(psb_d_dns_sparse_mat) :: psb_d_dnsg_sparse_mat
     !
     ! ITPACK/DNS format, extended.
@@ -49,10 +50,10 @@ module psb_d_dnsg_mat_mod
 
   contains
     procedure, nopass  :: get_fmt       => d_dnsg_get_fmt
-    procedure, pass(a) :: sizeof        => d_dnsg_sizeof
+    ! procedure, pass(a) :: sizeof        => d_dnsg_sizeof
     procedure, pass(a) :: vect_mv       => psb_d_dnsg_vect_mv
-    procedure, pass(a) :: csmm          => psb_d_dnsg_csmm
-    procedure, pass(a) :: csmv          => psb_d_dnsg_csmv
+!!$    procedure, pass(a) :: csmm          => psb_d_dnsg_csmm
+!!$    procedure, pass(a) :: csmv          => psb_d_dnsg_csmv
     procedure, pass(a) :: in_vect_sv    => psb_d_dnsg_inner_vect_sv
     procedure, pass(a) :: scals         => psb_d_dnsg_scals
     procedure, pass(a) :: scalv         => psb_d_dnsg_scal
@@ -78,7 +79,7 @@ module psb_d_dnsg_mat_mod
 
 #ifdef HAVE_SPGPU
   private :: d_dnsg_get_nzeros, d_dnsg_free,  d_dnsg_get_fmt, &
-       & d_dnsg_get_size, d_dnsg_sizeof, d_dnsg_get_nz_row
+       & d_dnsg_get_size, d_dnsg_get_nz_row
 
 
   interface 
@@ -232,21 +233,6 @@ contains
   ! == ===================================
 
   
-  function d_dnsg_sizeof(a) result(res)
-    implicit none 
-    class(psb_d_dnsg_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
-    res = 8 
-    res = res + psb_sizeof_dp  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irn)
-    res = res + psb_sizeof_int * size(a%idiag)
-    res = res + psb_sizeof_int * size(a%hkoffs)
-    res = res + psb_sizeof_int * size(a%ja)
-    ! Should we account for the shadow data structure
-    ! on the GPU device side? 
-    ! res = 2*res
-      
-  end function d_dnsg_sizeof
 
   function d_dnsg_get_fmt() result(res)
     implicit none 
