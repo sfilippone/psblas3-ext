@@ -402,7 +402,10 @@ psi_s_convert_dia_from_coo.o \
 psi_c_convert_dia_from_coo.o \
 psi_d_convert_dia_from_coo.o \
 psi_z_convert_dia_from_coo.o \
-psb_d_dns_mat_impl.o
+psb_s_dns_mat_impl.o \
+psb_d_dns_mat_impl.o \
+psb_c_dns_mat_impl.o \
+psb_z_dns_mat_impl.o 
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

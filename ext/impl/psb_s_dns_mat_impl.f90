@@ -1,6 +1,6 @@
   
 !> Function  csmv:
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Product by a dense rank 1 array.
 !!
 !!        Compute
@@ -16,19 +16,19 @@
 !!               or its conjugate transpose (C)
 !!
 !
-subroutine psb_d_dns_csmv(alpha,a,x,beta,y,info,trans) 
+subroutine psb_s_dns_csmv(alpha,a,x,beta,y,info,trans) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_csmv
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_csmv
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(in)          :: alpha, beta, x(:)
-  real(psb_dpk_), intent(inout)       :: y(:)
+  class(psb_s_dns_sparse_mat), intent(in) :: a
+  real(psb_spk_), intent(in)          :: alpha, beta, x(:)
+  real(psb_spk_), intent(inout)       :: y(:)
   integer, intent(out)                :: info
   character, optional, intent(in)     :: trans
 
   character :: trans_
   Integer(psb_ipk_)  :: err_act, m, n, lda
-  character(len=20)  :: name='d_dns_csmv'
+  character(len=20)  :: name='s_dns_csmv'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
@@ -57,7 +57,7 @@ subroutine psb_d_dns_csmv(alpha,a,x,beta,y,info,trans)
   lda = size(a%val,1)
 
 
-  call dgemv(trans_,a%get_nrows(),a%get_ncols(),alpha,&
+  call sgemv(trans_,a%get_nrows(),a%get_ncols(),alpha,&
        & a%val,size(a%val,1),x,1,beta,y,1)
 
   call psb_erractionrestore(err_act)
@@ -66,11 +66,11 @@ subroutine psb_d_dns_csmv(alpha,a,x,beta,y,info,trans)
 9999 call psb_error_handler(err_act)
   return
 
-end subroutine psb_d_dns_csmv
+end subroutine psb_s_dns_csmv
 
   
 !> Function  csmm:
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Product by a dense rank 2 array.
 !!
 !!        Compute
@@ -86,19 +86,19 @@ end subroutine psb_d_dns_csmv
 !!               or its conjugate transpose (C)
 !!
 !
-subroutine psb_d_dns_csmm(alpha,a,x,beta,y,info,trans) 
+subroutine psb_s_dns_csmm(alpha,a,x,beta,y,info,trans) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_csmm
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_csmm
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
-  real(psb_dpk_), intent(inout)       :: y(:,:)
+  class(psb_s_dns_sparse_mat), intent(in) :: a
+  real(psb_spk_), intent(in)          :: alpha, beta, x(:,:)
+  real(psb_spk_), intent(inout)       :: y(:,:)
   integer, intent(out)                :: info
   character, optional, intent(in)     :: trans
 
   character :: trans_
   Integer(psb_ipk_)  :: err_act,m,n,k, lda, ldx, ldy
-  character(len=20)  :: name='d_dns_csmm'
+  character(len=20)  :: name='s_dns_csmm'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
@@ -129,7 +129,7 @@ subroutine psb_d_dns_csmm(alpha,a,x,beta,y,info,trans)
   lda = size(a%val,1)
   ldx = size(x,1)
   ldy = size(y,1)
-  call dgemm(trans_,'N',m,n,k,alpha,a%val,lda,x,ldx,beta,y,ldy)
+  call sgemm(trans_,'N',m,n,k,alpha,a%val,lda,x,ldx,beta,y,ldy)
 
   call psb_erractionrestore(err_act)
   return
@@ -137,29 +137,29 @@ subroutine psb_d_dns_csmm(alpha,a,x,beta,y,info,trans)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_csmm
+end subroutine psb_s_dns_csmm
 
 
 
 !
 !
 !> Function  csnmi:
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Operator infinity norm
 !!     CSNMI = MAXVAL(SUM(ABS(A(:,:)),dim=2))
 !! 
 !
-function psb_d_dns_csnmi(a) result(res)
+function psb_s_dns_csnmi(a) result(res)
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_csnmi
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_csnmi
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(in) :: a
-  real(psb_dpk_)         :: res
+  class(psb_s_dns_sparse_mat), intent(in) :: a
+  real(psb_spk_)         :: res
 
   integer   :: i
-  real(psb_dpk_) :: acc
+  real(psb_spk_) :: acc
 
-  res = dzero 
+  res = szero 
   if (a%is_dev()) call a%sync()
  
   do i = 1, a%get_nrows()
@@ -167,12 +167,12 @@ function psb_d_dns_csnmi(a) result(res)
     res = max(res,acc)
   end do
 
-end function psb_d_dns_csnmi
+end function psb_s_dns_csnmi
 
 
 !
 !> Function  get_diag:
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Extract the diagonal of A. 
 !!        
 !!   D(i) = A(i:i), i=1:min(nrows,ncols)
@@ -180,12 +180,12 @@ end function psb_d_dns_csnmi
 !! \param d(:)  The output diagonal
 !! \param info  return code. 
 ! 
-subroutine psb_d_dns_get_diag(a,d,info) 
+subroutine psb_s_dns_get_diag(a,d,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_get_diag
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_get_diag
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(in) :: a
-  real(psb_dpk_), intent(out)     :: d(:)
+  class(psb_s_dns_sparse_mat), intent(in) :: a
+  real(psb_spk_), intent(out)     :: d(:)
   integer, intent(out)            :: info
 
   Integer :: err_act, mnm, i
@@ -208,7 +208,7 @@ subroutine psb_d_dns_get_diag(a,d,info)
     d(i) = a%val(i,i)
   end do
   do i=mnm+1,size(d) 
-    d(i) = dzero
+    d(i) = szero
   end do
 
   call psb_erractionrestore(err_act)
@@ -217,27 +217,27 @@ subroutine psb_d_dns_get_diag(a,d,info)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_get_diag
+end subroutine psb_s_dns_get_diag
 
 
 !         
 !
 !> Function  reallocate_nz
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief One--parameters version of (re)allocate
 !!
 !!  \param nz  number of nonzeros to allocate for
 !!             i.e. makes sure that the internal storage
 !!             allows for NZ coefficients and their indices. 
 !  
-subroutine  psb_d_dns_reallocate_nz(nz,a) 
+subroutine  psb_s_dns_reallocate_nz(nz,a) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_reallocate_nz
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_reallocate_nz
   implicit none 
   integer, intent(in) :: nz
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
   Integer :: err_act
-  character(len=20)  :: name='d_dns_reallocate_nz'
+  character(len=20)  :: name='s_dns_reallocate_nz'
   logical, parameter :: debug=.false.
 
   call psb_erractionsave(err_act)
@@ -254,24 +254,24 @@ subroutine  psb_d_dns_reallocate_nz(nz,a)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_reallocate_nz
+end subroutine psb_s_dns_reallocate_nz
 
 !
 !> Function  mold:
-!! \memberof  psb_d_dns_sparse_mat
-!! \brief Allocate a class(psb_d_dns_sparse_mat) with the
+!! \memberof  psb_s_dns_sparse_mat
+!! \brief Allocate a class(psb_s_dns_sparse_mat) with the
 !!     same dynamic type as the input.
 !!     This is equivalent to allocate(  mold=  ) and is provided
 !!     for those compilers not yet supporting mold.
 !!   \param b The output variable
 !!   \param info return code
 ! 
-subroutine psb_d_dns_mold(a,b,info) 
+subroutine psb_s_dns_mold(a,b,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_mold
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_mold
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(in)  :: a
-  class(psb_d_base_sparse_mat), intent(inout), allocatable  :: b
+  class(psb_s_dns_sparse_mat), intent(in)  :: a
+  class(psb_s_base_sparse_mat), intent(inout), allocatable  :: b
   integer, intent(out)                    :: info
   Integer :: err_act
   character(len=20)  :: name='dns_mold'
@@ -279,7 +279,7 @@ subroutine psb_d_dns_mold(a,b,info)
 
   call psb_get_erraction(err_act)
   
-  allocate(psb_d_dns_sparse_mat :: b, stat=info)
+  allocate(psb_s_dns_sparse_mat :: b, stat=info)
   
   if (info /= 0) then 
     info = psb_err_alloc_dealloc_
@@ -292,24 +292,24 @@ subroutine psb_d_dns_mold(a,b,info)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_mold
+end subroutine psb_s_dns_mold
 
 !         
 !
 !> Function  allocate_mnnz
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Three-parameters version of allocate
 !!
 !!  \param m  number of rows
 !!  \param n  number of cols
 !!  \param nz [estimated internally] number of nonzeros to allocate for
 !
-subroutine  psb_d_dns_allocate_mnnz(m,n,a,nz) 
+subroutine  psb_s_dns_allocate_mnnz(m,n,a,nz) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_allocate_mnnz
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_allocate_mnnz
   implicit none 
   integer, intent(in) :: m,n
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
   integer, intent(in), optional :: nz
   Integer :: err_act, info, nz_
   character(len=20)  :: name='allocate_mnz'
@@ -342,7 +342,7 @@ subroutine  psb_d_dns_allocate_mnnz(m,n,a,nz)
 
   call psb_realloc(m,n,a%val,info)
   if (info == psb_success_) then 
-    a%val = dzero
+    a%val = szero
     a%nnz = 0
   end if
 
@@ -352,14 +352,14 @@ subroutine  psb_d_dns_allocate_mnnz(m,n,a,nz)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_allocate_mnnz
+end subroutine psb_s_dns_allocate_mnnz
 
 
 !
 !
 !
 !> Function  csgetrow:
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Get a (subset of) row(s)
 !!        
 !!        getrow is the basic method by which the other (getblk, clip) can
@@ -391,17 +391,17 @@ end subroutine psb_d_dns_allocate_mnnz
 !!  \param nzin [none]  if append, then first new entry should go in entry nzin+1
 !!           
 !
-subroutine psb_d_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
+subroutine psb_s_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
      & jmin,jmax,iren,append,nzin,rscale,cscale)
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_csgetrow
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_csgetrow
   implicit none
 
-  class(psb_d_dns_sparse_mat), intent(in) :: a
+  class(psb_s_dns_sparse_mat), intent(in) :: a
   integer, intent(in)                  :: imin,imax
   integer, intent(out)                 :: nz
   integer, allocatable, intent(inout)  :: ia(:), ja(:)
-  real(psb_dpk_), allocatable,  intent(inout)    :: val(:)
+  real(psb_spk_), allocatable,  intent(inout)    :: val(:)
   integer,intent(out)                  :: info
   logical, intent(in), optional        :: append
   integer, intent(in), optional        :: iren(:)
@@ -465,7 +465,7 @@ subroutine psb_d_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     call psb_errpush(info,name,a_err='not impl')
     goto 9999
   end if
-  nz = count(a%val(imin:imax,jmin_:jmax_) /= dzero)
+  nz = count(a%val(imin:imax,jmin_:jmax_) /= szero)
 
   call psb_realloc(nz,ia,info)
   if (info == psb_success_) call psb_realloc(nz,ja,info)
@@ -475,7 +475,7 @@ subroutine psb_d_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   k = 0
   do i=imin,imax
     do j=jmin_,jmax_
-      if (a%val(i,j) /= dzero) then 
+      if (a%val(i,j) /= szero) then 
         k = k + 1
         ia(k) = i
         ja(k) = j
@@ -503,20 +503,20 @@ subroutine psb_d_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_csgetrow
+end subroutine psb_s_dns_csgetrow
 
 
 !> Function  trim 
-!! \memberof  psb_d_dns_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
 !! \brief Memory trim
 !! Make sure the memory allocation of the sparse matrix is as tight as
 !! possible given the actual number of nonzeros it contains. 
 !
-subroutine  psb_d_dns_trim(a)
+subroutine  psb_s_dns_trim(a)
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_dns_trim
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_trim
   implicit none 
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
   Integer :: err_act
   character(len=20)  :: name='trim'
   logical, parameter :: debug=.false.
@@ -530,27 +530,27 @@ subroutine  psb_d_dns_trim(a)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_dns_trim
+end subroutine psb_s_dns_trim
 
 !
 !> Function  cp_from_coo:
-!! \memberof  psb_d_dns_sparse_mat
-!! \brief Copy and convert from psb_d_coo_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
+!! \brief Copy and convert from psb_s_coo_sparse_mat
 !!        Invoked from the target object.
 !!   \param b The input variable
 !!   \param info return code
 !  
 
-subroutine psb_d_cp_dns_from_coo(a,b,info) 
+subroutine psb_s_cp_dns_from_coo(a,b,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_cp_dns_from_coo
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_cp_dns_from_coo
   implicit none 
 
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(in)    :: b
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_coo_sparse_mat), intent(in)    :: b
   integer, intent(out)                        :: info
 
-  type(psb_d_coo_sparse_mat)   :: tmp
+  type(psb_s_coo_sparse_mat)   :: tmp
   !locals
   Integer             :: nza, nr, i,err_act, nc
   Integer, Parameter  :: maxtry=8
@@ -569,11 +569,11 @@ subroutine psb_d_cp_dns_from_coo(a,b,info)
     nc  = tmp%get_ncols()
     nza = tmp%get_nzeros()
     ! If it is sorted then we can lessen memory impact 
-    a%psb_d_base_sparse_mat = tmp%psb_d_base_sparse_mat
+    a%psb_s_base_sparse_mat = tmp%psb_s_base_sparse_mat
     
     call psb_realloc(nr,nc,a%val,info) 
     if (info /= 0) goto 9999
-    a%val = dzero
+    a%val = szero
     do i=1, nza
       a%val(tmp%ia(i),tmp%ja(i)) = tmp%val(i)
     end do
@@ -585,11 +585,11 @@ subroutine psb_d_cp_dns_from_coo(a,b,info)
     nc  = b%get_ncols()
     nza = b%get_nzeros()
     ! If it is sorted then we can lessen memory impact 
-    a%psb_d_base_sparse_mat = b%psb_d_base_sparse_mat
+    a%psb_s_base_sparse_mat = b%psb_s_base_sparse_mat
     
     call psb_realloc(nr,nc,a%val,info) 
     if (info /= 0) goto 9999
-    a%val = dzero
+    a%val = szero
     do i=1, nza
       a%val(b%ia(i),b%ja(i)) = b%val(i)
     end do
@@ -602,26 +602,26 @@ subroutine psb_d_cp_dns_from_coo(a,b,info)
 9999 call psb_error_handler(err_act)
   return
   
-end subroutine psb_d_cp_dns_from_coo
+end subroutine psb_s_cp_dns_from_coo
 
 
   
 !
 !> Function  cp_to_coo:
-!! \memberof  psb_d_dns_sparse_mat
-!! \brief Copy and convert to psb_d_coo_sparse_mat
+!! \memberof  psb_s_dns_sparse_mat
+!! \brief Copy and convert to psb_s_coo_sparse_mat
 !!        Invoked from the source object.
 !!   \param b The output variable
 !!   \param info return code
 !  
 
-subroutine psb_d_cp_dns_to_coo(a,b,info) 
+subroutine psb_s_cp_dns_to_coo(a,b,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_cp_dns_to_coo
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_cp_dns_to_coo
   implicit none 
 
-  class(psb_d_dns_sparse_mat), intent(in)  :: a
-  class(psb_d_coo_sparse_mat), intent(inout) :: b
+  class(psb_s_dns_sparse_mat), intent(in)  :: a
+  class(psb_s_coo_sparse_mat), intent(inout) :: b
   integer, intent(out)                      :: info
 
   !locals
@@ -635,12 +635,12 @@ subroutine psb_d_cp_dns_to_coo(a,b,info)
   nza = a%get_nzeros()
 
   call b%allocate(nr,nc,nza)
-  b%psb_d_base_sparse_mat = a%psb_d_base_sparse_mat
+  b%psb_s_base_sparse_mat = a%psb_s_base_sparse_mat
 
   k = 0
   do i=1,a%get_nrows()
     do j=1,a%get_ncols()
-      if (a%val(i,j) /= dzero) then 
+      if (a%val(i,j) /= szero) then 
         k = k + 1
         b%ia(k) = i
         b%ja(k) = j
@@ -654,25 +654,25 @@ subroutine psb_d_cp_dns_to_coo(a,b,info)
   call b%set_asb()
   call b%set_host()
 
-end subroutine psb_d_cp_dns_to_coo
+end subroutine psb_s_cp_dns_to_coo
 
 
 
 !
 !> Function  mv_to_coo:
-!! \memberof  psb_d_dns_sparse_mat
-!! \brief Convert to psb_d_coo_sparse_mat, freeing the source.
+!! \memberof  psb_s_dns_sparse_mat
+!! \brief Convert to psb_s_coo_sparse_mat, freeing the source.
 !!        Invoked from the source object.
 !!   \param b The output variable
 !!   \param info return code
 !  
-subroutine psb_d_mv_dns_to_coo(a,b,info) 
+subroutine psb_s_mv_dns_to_coo(a,b,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_mv_dns_to_coo
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_mv_dns_to_coo
   implicit none 
 
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(inout) :: b
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_coo_sparse_mat), intent(inout) :: b
   integer, intent(out)                       :: info
 
   info = psb_success_
@@ -681,25 +681,25 @@ subroutine psb_d_mv_dns_to_coo(a,b,info)
   call a%free()
   return
 
-end subroutine psb_d_mv_dns_to_coo
+end subroutine psb_s_mv_dns_to_coo
 
 
 !
 !> Function  mv_from_coo:
-!! \memberof  psb_d_dns_sparse_mat
-!! \brief Convert from psb_d_coo_sparse_mat, freeing the source.
+!! \memberof  psb_s_dns_sparse_mat
+!! \brief Convert from psb_s_coo_sparse_mat, freeing the source.
 !!        Invoked from the target object.
 !!   \param b The input variable
 !!   \param info return code
 !  
 !  
-subroutine psb_d_mv_dns_from_coo(a,b,info) 
+subroutine psb_s_mv_dns_from_coo(a,b,info) 
   use psb_base_mod
-  use psb_d_dns_mat_mod, psb_protect_name => psb_d_mv_dns_from_coo
+  use psb_s_dns_mat_mod, psb_protect_name => psb_s_mv_dns_from_coo
   implicit none 
 
-  class(psb_d_dns_sparse_mat), intent(inout) :: a
-  class(psb_d_coo_sparse_mat), intent(inout) :: b
+  class(psb_s_dns_sparse_mat), intent(inout) :: a
+  class(psb_s_coo_sparse_mat), intent(inout) :: b
   integer, intent(out)                        :: info
 
   info = psb_success_
@@ -709,5 +709,5 @@ subroutine psb_d_mv_dns_from_coo(a,b,info)
 
   return
 
-end subroutine psb_d_mv_dns_from_coo
+end subroutine psb_s_mv_dns_from_coo
 

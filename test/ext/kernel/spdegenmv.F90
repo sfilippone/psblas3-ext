@@ -72,6 +72,7 @@ program pdgenmv
   type(psb_s_ell_sparse_mat), target   :: aell
   type(psb_s_hll_sparse_mat), target   :: ahll
   type(psb_s_dia_sparse_mat), target   :: adia
+  type(psb_s_dns_sparse_mat), target   :: adns
   type(psb_s_hdia_sparse_mat), target   :: ahdia
 
   class(psb_s_base_sparse_mat), pointer :: acmold
@@ -137,6 +138,8 @@ program pdgenmv
     acmold => ahll
   case('DIA')
     acmold => adia
+  case('DNS')
+    acmold => adns
   case('HDIA')
     acmold => ahdia
   case('CSR')

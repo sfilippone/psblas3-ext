@@ -28,14 +28,14 @@
 !!$  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !!$  POSSIBILITY OF SUCH DAMAGE.
 !!$ 
-module psb_d_dns_mat_mod
+module psb_s_dns_mat_mod
 
-  use psb_d_base_mat_mod
+  use psb_s_base_mat_mod
 
-  type, extends(psb_d_base_sparse_mat) :: psb_d_dns_sparse_mat
+  type, extends(psb_s_base_sparse_mat) :: psb_s_dns_sparse_mat
     !
     ! DNS format: a very simple dense matrix storage
-    !  psb_dpk_ : kind for double precision reals
+    !  psb_spk_ : kind for double precision reals
     !  psb_ipk_: kind for normal integers.
     !  psb_sizeof_dp: variable holding size in bytes of
     !                 a double
@@ -47,38 +47,38 @@ module psb_d_dns_mat_mod
     ! 
     ! 
     integer(psb_ipk_) :: nnz
-    real(psb_dpk_), allocatable :: val(:,:)
+    real(psb_spk_), allocatable :: val(:,:)
 
   contains
-    procedure, pass(a) :: get_size     => d_dns_get_size
-    procedure, pass(a) :: get_nzeros   => d_dns_get_nzeros
-    procedure, nopass  :: get_fmt      => d_dns_get_fmt
-    procedure, pass(a) :: sizeof       => d_dns_sizeof
-    procedure, pass(a) :: csmv         => psb_d_dns_csmv
-    procedure, pass(a) :: csmm         => psb_d_dns_csmm
-    procedure, pass(a) :: csnmi        => psb_d_dns_csnmi
-    procedure, pass(a) :: reallocate_nz => psb_d_dns_reallocate_nz
-    procedure, pass(a) :: allocate_mnnz => psb_d_dns_allocate_mnnz
-    procedure, pass(a) :: cp_to_coo    => psb_d_cp_dns_to_coo
-    procedure, pass(a) :: cp_from_coo  => psb_d_cp_dns_from_coo
-    procedure, pass(a) :: mv_to_coo    => psb_d_mv_dns_to_coo
-    procedure, pass(a) :: mv_from_coo  => psb_d_mv_dns_from_coo
-    procedure, pass(a) :: get_diag     => psb_d_dns_get_diag
-    procedure, pass(a) :: csgetrow     => psb_d_dns_csgetrow
-    procedure, pass(a) :: get_nz_row   => d_dns_get_nz_row
-    procedure, pass(a) :: trim         => psb_d_dns_trim
-    procedure, pass(a) :: free         => d_dns_free
-    procedure, pass(a) :: mold         => psb_d_dns_mold
+    procedure, pass(a) :: get_size     => s_dns_get_size
+    procedure, pass(a) :: get_nzeros   => s_dns_get_nzeros
+    procedure, nopass  :: get_fmt      => s_dns_get_fmt
+    procedure, pass(a) :: sizeof       => s_dns_sizeof
+    procedure, pass(a) :: csmv         => psb_s_dns_csmv
+    procedure, pass(a) :: csmm         => psb_s_dns_csmm
+    procedure, pass(a) :: csnmi        => psb_s_dns_csnmi
+    procedure, pass(a) :: reallocate_nz => psb_s_dns_reallocate_nz
+    procedure, pass(a) :: allocate_mnnz => psb_s_dns_allocate_mnnz
+    procedure, pass(a) :: cp_to_coo    => psb_s_cp_dns_to_coo
+    procedure, pass(a) :: cp_from_coo  => psb_s_cp_dns_from_coo
+    procedure, pass(a) :: mv_to_coo    => psb_s_mv_dns_to_coo
+    procedure, pass(a) :: mv_from_coo  => psb_s_mv_dns_from_coo
+    procedure, pass(a) :: get_diag     => psb_s_dns_get_diag
+    procedure, pass(a) :: csgetrow     => psb_s_dns_csgetrow
+    procedure, pass(a) :: get_nz_row   => s_dns_get_nz_row
+    procedure, pass(a) :: trim         => psb_s_dns_trim
+    procedure, pass(a) :: free         => s_dns_free
+    procedure, pass(a) :: mold         => psb_s_dns_mold
 
-  end type psb_d_dns_sparse_mat
+  end type psb_s_dns_sparse_mat
 
-  private :: d_dns_get_nzeros, d_dns_free,  d_dns_get_fmt, &
-       & d_dns_get_size, d_dns_sizeof, d_dns_get_nz_row
+  private :: s_dns_get_nzeros, s_dns_free,  s_dns_get_fmt, &
+       & s_dns_get_size, s_dns_sizeof, s_dns_get_nz_row
 
   !         
   !
   !> Function  reallocate_nz
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief One--parameters version of (re)allocate
   !!
   !!  \param nz  number of nonzeros to allocate for
@@ -86,30 +86,30 @@ module psb_d_dns_mat_mod
   !!             allows for NZ coefficients and their indices. 
   !  
   interface
-    subroutine  psb_d_dns_reallocate_nz(nz,a) 
-      import :: psb_d_dns_sparse_mat
+    subroutine  psb_s_dns_reallocate_nz(nz,a) 
+      import :: psb_s_dns_sparse_mat
       integer, intent(in) :: nz
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_dns_reallocate_nz
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
+    end subroutine psb_s_dns_reallocate_nz
   end interface
   
   !> Function  trim 
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Memory trim
   !! Make sure the memory allocation of the sparse matrix is as tight as
   !! possible given the actual number of nonzeros it contains. 
   !
   interface
-    subroutine  psb_d_dns_trim(a)
-      import :: psb_d_dns_sparse_mat
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_dns_trim
+    subroutine  psb_s_dns_trim(a)
+      import :: psb_s_dns_sparse_mat
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
+    end subroutine psb_s_dns_trim
   end interface
   
   !
   !> Function  mold:
-  !! \memberof  psb_d_dns_sparse_mat
-  !! \brief Allocate a class(psb_d_dns_sparse_mat) with the
+  !! \memberof  psb_s_dns_sparse_mat
+  !! \brief Allocate a class(psb_s_dns_sparse_mat) with the
   !!     same dynamic type as the input.
   !!     This is equivalent to allocate(  mold=  ) and is provided
   !!     for those compilers not yet supporting mold.
@@ -117,18 +117,18 @@ module psb_d_dns_mat_mod
   !!   \param info return code
   ! 
   interface 
-    subroutine psb_d_dns_mold(a,b,info) 
-      import :: psb_d_dns_sparse_mat, psb_d_base_sparse_mat, psb_long_int_k_
-      class(psb_d_dns_sparse_mat), intent(in)                  :: a
-      class(psb_d_base_sparse_mat), intent(inout), allocatable :: b
+    subroutine psb_s_dns_mold(a,b,info) 
+      import :: psb_s_dns_sparse_mat, psb_s_base_sparse_mat, psb_long_int_k_
+      class(psb_s_dns_sparse_mat), intent(in)                  :: a
+      class(psb_s_base_sparse_mat), intent(inout), allocatable :: b
       integer, intent(out)                                 :: info
-    end subroutine psb_d_dns_mold
+    end subroutine psb_s_dns_mold
   end interface
 
   !         
   !
   !> Function  allocate_mnnz
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Three-parameters version of allocate
   !!
   !!  \param m  number of rows
@@ -136,86 +136,86 @@ module psb_d_dns_mat_mod
   !!  \param nz [estimated internally] number of nonzeros to allocate for
   !
   interface
-    subroutine  psb_d_dns_allocate_mnnz(m,n,a,nz) 
-      import :: psb_d_dns_sparse_mat
+    subroutine  psb_s_dns_allocate_mnnz(m,n,a,nz) 
+      import :: psb_s_dns_sparse_mat
       integer, intent(in) :: m,n
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
       integer, intent(in), optional :: nz
-    end subroutine psb_d_dns_allocate_mnnz
+    end subroutine psb_s_dns_allocate_mnnz
   end interface
   
   !
   !> Function  cp_to_coo:
-  !! \memberof  psb_d_dns_sparse_mat
-  !! \brief Copy and convert to psb_d_coo_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
+  !! \brief Copy and convert to psb_s_coo_sparse_mat
   !!        Invoked from the source object.
   !!   \param b The output variable
   !!   \param info return code
   !  
   interface 
-    subroutine psb_d_cp_dns_to_coo(a,b,info) 
-      import :: psb_d_coo_sparse_mat, psb_d_dns_sparse_mat
-      class(psb_d_dns_sparse_mat), intent(in) :: a
-      class(psb_d_coo_sparse_mat), intent(inout) :: b
+    subroutine psb_s_cp_dns_to_coo(a,b,info) 
+      import :: psb_s_coo_sparse_mat, psb_s_dns_sparse_mat
+      class(psb_s_dns_sparse_mat), intent(in) :: a
+      class(psb_s_coo_sparse_mat), intent(inout) :: b
       integer, intent(out)            :: info
-    end subroutine psb_d_cp_dns_to_coo
+    end subroutine psb_s_cp_dns_to_coo
   end interface
   
   !
   !> Function  cp_from_coo:
-  !! \memberof  psb_d_dns_sparse_mat
-  !! \brief Copy and convert from psb_d_coo_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
+  !! \brief Copy and convert from psb_s_coo_sparse_mat
   !!        Invoked from the target object.
   !!   \param b The input variable
   !!   \param info return code
   !  
   interface 
-    subroutine psb_d_cp_dns_from_coo(a,b,info) 
-      import :: psb_d_dns_sparse_mat, psb_d_coo_sparse_mat
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
-      class(psb_d_coo_sparse_mat), intent(in)    :: b
+    subroutine psb_s_cp_dns_from_coo(a,b,info) 
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
+      class(psb_s_coo_sparse_mat), intent(in)    :: b
       integer, intent(out)                        :: info
-    end subroutine psb_d_cp_dns_from_coo
+    end subroutine psb_s_cp_dns_from_coo
   end interface
   
   !
   !> Function  mv_to_coo:
-  !! \memberof  psb_d_dns_sparse_mat
-  !! \brief Convert to psb_d_coo_sparse_mat, freeing the source.
+  !! \memberof  psb_s_dns_sparse_mat
+  !! \brief Convert to psb_s_coo_sparse_mat, freeing the source.
   !!        Invoked from the source object.
   !!   \param b The output variable
   !!   \param info return code
   !  
   interface 
-    subroutine psb_d_mv_dns_to_coo(a,b,info) 
-      import :: psb_d_dns_sparse_mat, psb_d_coo_sparse_mat
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
-      class(psb_d_coo_sparse_mat), intent(inout)   :: b
+    subroutine psb_s_mv_dns_to_coo(a,b,info) 
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
+      class(psb_s_coo_sparse_mat), intent(inout)   :: b
       integer, intent(out)            :: info
-    end subroutine psb_d_mv_dns_to_coo
+    end subroutine psb_s_mv_dns_to_coo
   end interface
   
   !
   !> Function  mv_from_coo:
-  !! \memberof  psb_d_dns_sparse_mat
-  !! \brief Convert from psb_d_coo_sparse_mat, freeing the source.
+  !! \memberof  psb_s_dns_sparse_mat
+  !! \brief Convert from psb_s_coo_sparse_mat, freeing the source.
   !!        Invoked from the target object.
   !!   \param b The input variable
   !!   \param info return code
   !  
   interface 
-    subroutine psb_d_mv_dns_from_coo(a,b,info) 
-      import :: psb_d_dns_sparse_mat, psb_d_coo_sparse_mat
-      class(psb_d_dns_sparse_mat), intent(inout) :: a
-      class(psb_d_coo_sparse_mat), intent(inout) :: b
+    subroutine psb_s_mv_dns_from_coo(a,b,info) 
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      class(psb_s_dns_sparse_mat), intent(inout) :: a
+      class(psb_s_coo_sparse_mat), intent(inout) :: b
       integer, intent(out)                        :: info
-    end subroutine psb_d_mv_dns_from_coo
+    end subroutine psb_s_mv_dns_from_coo
   end interface
   
   !
   !
   !> Function  csgetrow:
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Get a (subset of) row(s)
   !!        
   !!        getrow is the basic method by which the other (getblk, clip) can
@@ -248,26 +248,26 @@ module psb_d_dns_mat_mod
   !!           
   !
   interface 
-    subroutine psb_d_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
+    subroutine psb_s_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
          & jmin,jmax,iren,append,nzin,rscale,cscale)
-      import :: psb_d_dns_sparse_mat, psb_dpk_
-      class(psb_d_dns_sparse_mat), intent(in) :: a
+      import :: psb_s_dns_sparse_mat, psb_spk_
+      class(psb_s_dns_sparse_mat), intent(in) :: a
       integer, intent(in)                  :: imin,imax
       integer, intent(out)                 :: nz
       integer, allocatable, intent(inout)  :: ia(:), ja(:)
-      real(psb_dpk_), allocatable,  intent(inout)    :: val(:)
+      real(psb_spk_), allocatable,  intent(inout)    :: val(:)
       integer,intent(out)                  :: info
       logical, intent(in), optional        :: append
       integer, intent(in), optional        :: iren(:)
       integer, intent(in), optional        :: jmin,jmax, nzin
       logical, intent(in), optional        :: rscale,cscale
-    end subroutine psb_d_dns_csgetrow
+    end subroutine psb_s_dns_csgetrow
   end interface
 
   
   
   !> Function  csmv:
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Product by a dense rank 1 array.
   !!
   !!        Compute
@@ -284,18 +284,18 @@ module psb_d_dns_mat_mod
   !!
   !
   interface 
-    subroutine psb_d_dns_csmv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_dns_sparse_mat, psb_dpk_
-      class(psb_d_dns_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)          :: alpha, beta, x(:)
-      real(psb_dpk_), intent(inout)       :: y(:)
+    subroutine psb_s_dns_csmv(alpha,a,x,beta,y,info,trans) 
+      import :: psb_s_dns_sparse_mat, psb_spk_
+      class(psb_s_dns_sparse_mat), intent(in) :: a
+      real(psb_spk_), intent(in)          :: alpha, beta, x(:)
+      real(psb_spk_), intent(inout)       :: y(:)
       integer, intent(out)                :: info
       character, optional, intent(in)     :: trans
-    end subroutine psb_d_dns_csmv
+    end subroutine psb_s_dns_csmv
   end interface
   
   !> Function  csmm:
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Product by a dense rank 2 array.
   !!
   !!        Compute
@@ -312,35 +312,35 @@ module psb_d_dns_mat_mod
   !!
   !
   interface 
-    subroutine psb_d_dns_csmm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_dns_sparse_mat, psb_dpk_
-      class(psb_d_dns_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)          :: alpha, beta, x(:,:)
-      real(psb_dpk_), intent(inout)       :: y(:,:)
+    subroutine psb_s_dns_csmm(alpha,a,x,beta,y,info,trans) 
+      import :: psb_s_dns_sparse_mat, psb_spk_
+      class(psb_s_dns_sparse_mat), intent(in) :: a
+      real(psb_spk_), intent(in)          :: alpha, beta, x(:,:)
+      real(psb_spk_), intent(inout)       :: y(:,:)
       integer, intent(out)                :: info
       character, optional, intent(in)     :: trans
-    end subroutine psb_d_dns_csmm
+    end subroutine psb_s_dns_csmm
   end interface
   
   !
   !
   !> Function  csnmi:
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Operator infinity norm
   !!     CSNMI = MAXVAL(SUM(ABS(A(:,:)),dim=2))
   !! 
   !
   interface 
-    function psb_d_dns_csnmi(a) result(res)
-      import :: psb_d_dns_sparse_mat, psb_dpk_
-      class(psb_d_dns_sparse_mat), intent(in) :: a
-      real(psb_dpk_)         :: res
-    end function psb_d_dns_csnmi
+    function psb_s_dns_csnmi(a) result(res)
+      import :: psb_s_dns_sparse_mat, psb_spk_
+      class(psb_s_dns_sparse_mat), intent(in) :: a
+      real(psb_spk_)         :: res
+    end function psb_s_dns_csnmi
   end interface
   
   !
   !> Function  get_diag:
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Extract the diagonal of A. 
   !!        
   !!   D(i) = A(i:i), i=1:min(nrows,ncols)
@@ -349,12 +349,12 @@ module psb_d_dns_mat_mod
   !! \param info  return code. 
   ! 
   interface 
-    subroutine psb_d_dns_get_diag(a,d,info) 
-      import :: psb_d_dns_sparse_mat, psb_dpk_
-      class(psb_d_dns_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(out)     :: d(:)
+    subroutine psb_s_dns_get_diag(a,d,info) 
+      import :: psb_s_dns_sparse_mat, psb_spk_
+      class(psb_s_dns_sparse_mat), intent(in) :: a
+      real(psb_spk_), intent(out)     :: d(:)
       integer, intent(out)            :: info
-    end subroutine psb_d_dns_get_diag
+    end subroutine psb_s_dns_get_diag
   end interface
   
 
@@ -362,71 +362,71 @@ contains
 
   !         
   !> Function  sizeof
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Memory occupation in bytes
   !
-  function d_dns_sizeof(a) result(res)
+  function s_dns_sizeof(a) result(res)
     implicit none 
-    class(psb_d_dns_sparse_mat), intent(in) :: a
+    class(psb_s_dns_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
 
     res = psb_sizeof_dp  * size(a%val)
     res = res + psb_sizeof_int 
       
-  end function d_dns_sizeof
+  end function s_dns_sizeof
 
   !         
   !> Function  get_fmt
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief return a short descriptive name (e.g. COO CSR etc.)
   !
-  function d_dns_get_fmt() result(res)
+  function s_dns_get_fmt() result(res)
     implicit none 
     character(len=5) :: res
     res = 'DNS'
-  end function d_dns_get_fmt
+  end function s_dns_get_fmt
   
   !         
   !> Function  get_nzeros
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Current number of nonzero entries
   !
-  function d_dns_get_nzeros(a) result(res)
+  function s_dns_get_nzeros(a) result(res)
     implicit none 
-    class(psb_d_dns_sparse_mat), intent(in) :: a
+    class(psb_s_dns_sparse_mat), intent(in) :: a
     integer :: res
     res = a%nnz
-  end function d_dns_get_nzeros
+  end function s_dns_get_nzeros
 
   !         
   !> Function  get_size
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !! \brief Maximum number of nonzeros the current structure can hold
   ! this is fixed once you initialize the matrix, with dense storage
   ! you can hold up to MxN entries
-  function d_dns_get_size(a) result(res)
+  function s_dns_get_size(a) result(res)
     implicit none 
-    class(psb_d_dns_sparse_mat), intent(in) :: a
+    class(psb_s_dns_sparse_mat), intent(in) :: a
     integer :: res
 
     res = size(a%val)
 
-  end function d_dns_get_size
+  end function s_dns_get_size
 
 
   !
   !> Function get_nz_row.
-  !! \memberof  psb_d_coo_sparse_mat
+  !! \memberof  psb_s_coo_sparse_mat
   !! \brief How many nonzeros in a row?
   !!
   !! \param idx  The row to search.
   !!
   !
-  function  d_dns_get_nz_row(idx,a) result(res)
+  function  s_dns_get_nz_row(idx,a) result(res)
 
     implicit none
     
-    class(psb_d_dns_sparse_mat), intent(in) :: a
+    class(psb_s_dns_sparse_mat), intent(in) :: a
     integer, intent(in)                  :: idx
     integer                              :: res
     
@@ -436,17 +436,17 @@ contains
       res = count(a%val(idx,:) /= dzero)
     end if
     
-  end function d_dns_get_nz_row
+  end function s_dns_get_nz_row
 
   !         
   !> Function  free
-  !! \memberof  psb_d_dns_sparse_mat
+  !! \memberof  psb_s_dns_sparse_mat
   !!            Name says all 
 
-  subroutine  d_dns_free(a) 
+  subroutine  s_dns_free(a) 
     implicit none 
 
-    class(psb_d_dns_sparse_mat), intent(inout) :: a
+    class(psb_s_dns_sparse_mat), intent(inout) :: a
 
     if (allocated(a%val)) deallocate(a%val)
     a%nnz = 0
@@ -461,7 +461,7 @@ contains
     
     return
 
-  end subroutine d_dns_free
+  end subroutine s_dns_free
 
 
-end module psb_d_dns_mat_mod
+end module psb_s_dns_mat_mod

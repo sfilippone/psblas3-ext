@@ -25,7 +25,7 @@ EXEDIR=./runs
 all: dpdegenmv spdegenmv 
 
 dpdegenmv: $(DPGOBJS)
-	$(F90LINK) $(LOPT) $(DPGOBJS) -fopenmp -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 
+	$(F90LINK) $(LOPT) $(DPGOBJS)  -o dpdegenmv $(FINCLUDES) $(PSBLAS_LIB) $(LDLIBS) 
 	/bin/mv dpdegenmv $(EXEDIR) 
 spdegenmv: $(SPGOBJS)
 	$(F90LINK) $(LOPT) $(SPGOBJS) -o spdegenmv $(PSBLAS_LIB) $(LDLIBS) 
