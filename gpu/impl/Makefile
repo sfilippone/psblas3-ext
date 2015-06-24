@@ -272,7 +272,8 @@ psb_s_mv_hdiag_from_coo.o \
 psb_s_hdiag_to_gpu.o \
 psb_s_hdiag_csmv.o \
 psb_s_hdiag_mold.o \
-psb_s_hdiag_vect_mv.o 
+psb_s_hdiag_vect_mv.o \
+psb_d_dnsg_mat_impl.o
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

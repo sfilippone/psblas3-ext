@@ -76,7 +76,8 @@ program pdgenmv
   ! solver parameters
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
-  integer, parameter :: ntests=200, ngpu=50, ncnv=20 
+  integer, parameter :: ntests=200, ngpu=50, ncnv=1
+!!$    integer, parameter :: ntests=200, ngpu=50, ncnv=20 
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
@@ -92,6 +93,7 @@ program pdgenmv
   type(psb_d_hybg_sparse_mat), target  :: ahybg
   type(psb_d_hlg_sparse_mat), target   :: ahlg
   type(psb_d_hdiag_sparse_mat), target   :: ahdiag
+  type(psb_d_dnsg_sparse_mat), target   :: adnsg
 #endif
   class(psb_d_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
@@ -120,7 +122,7 @@ program pdgenmv
   endif
   if(psb_get_errstatus() /= 0) goto 9999
   name='pdegenmv-gpu'
-  call psb_set_errverbosity(2)
+  call psb_set_errverbosity(999)
   !call psb_set_debug_level(9999)
   !
   ! Hello world
@@ -199,6 +201,8 @@ program pdgenmv
     agmold => ahdiag
   case('CSRG')
     agmold => acsrg
+  case('DNSG')
+    agmold => adnsg
   case('HYBG')
     agmold => ahybg
   case default

@@ -81,14 +81,13 @@ module dnsdev_mod
       integer(c_int)      :: ja(ldj,*),irn(*)
     end function writeDnsDeviceFloat
 
-    function writeDnsDeviceDouble(deviceMat,val,ja,ldj,irn) &
+    function writeDnsDeviceDouble(deviceMat,val,lda,nc) &
          & result(res) bind(c,name='writeDnsDeviceDouble')
       use iso_c_binding
-      integer(c_int)      :: res
-      type(c_ptr), value  :: deviceMat
-      integer(c_int), value :: ldj
-      real(c_double)      :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)        :: res
+      type(c_ptr), value    :: deviceMat
+      integer(c_int), value :: lda,nc
+      real(c_double)        :: val(lda,*)
     end function writeDnsDeviceDouble
 
     function writeDnsDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
@@ -125,14 +124,13 @@ module dnsdev_mod
       integer(c_int)      :: ja(ldj,*),irn(*)
     end function readDnsDeviceFloat
 
-    function readDnsDeviceDouble(deviceMat,val,ja,ldj,irn) &
+    function readDnsDeviceDouble(deviceMat,val,lda,nc) &
          & result(res) bind(c,name='readDnsDeviceDouble')
       use iso_c_binding
-      integer(c_int)      :: res
-      type(c_ptr), value  :: deviceMat
-      integer(c_int), value :: ldj
-      real(c_double)      :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)        :: res
+      type(c_ptr), value    :: deviceMat
+      integer(c_int), value :: lda,nc
+      real(c_double)        :: val(lda,*)
     end function readDnsDeviceDouble
 
     function readDnsDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
@@ -188,16 +186,15 @@ module dnsdev_mod
     end function getDnsDevicePitch
   end interface
 
-  interface 
-    function  getDnsDeviceMaxRowSize(deviceMat) &
-         & bind(c,name='getDnsDeviceMaxRowSize') result(res)
-      use iso_c_binding
-      type(c_ptr), value  :: deviceMat
-      integer(c_int)      :: res
-    end function getDnsDeviceMaxRowSize
-  end interface
-
-
+!!$  interface 
+!!$    function  getDnsDeviceMaxRowSize(deviceMat) &
+!!$         & bind(c,name='getDnsDeviceMaxRowSize') result(res)
+!!$      use iso_c_binding
+!!$      type(c_ptr), value  :: deviceMat
+!!$      integer(c_int)      :: res
+!!$    end function getDnsDeviceMaxRowSize
+!!$  end interface
+!!$
 !!$  interface psi_CopyCooToElg
 !!$    function psiCopyCooToElgFloat(nr, nc, nza, hacksz, ldv, nzm, irn, &
 !!$         &  idisp, ja, val, deviceMat) &

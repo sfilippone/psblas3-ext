@@ -34,6 +34,13 @@
 
 #if defined(HAVE_CUDA)
 
+
+static int hasUVA=-1;
+static struct cudaDeviceProp *prop=NULL;
+static spgpuHandle_t psb_gpu_handle = NULL;
+static cublasHandle_t psb_cublas_handle = NULL;
+
+
 int allocRemoteBuffer(void** buffer, int count)
 {
   cudaError_t err = cudaMalloc(buffer, count);
@@ -192,9 +199,6 @@ int freeRemoteBuffer(void* buffer)
   }
 }
 
-static int hasUVA=-1;
-static struct cudaDeviceProp *prop=NULL;
-
 int gpuInit(int dev)
 {
 
@@ -211,6 +215,8 @@ int gpuInit(int dev)
     fprintf(stderr,"CUDA Error gpuInit2: %s\n", cudaGetErrorString(err));
     return SPGPU_UNSPECIFIED;
   }
+  if (!psb_cublas_handle)
+    psb_gpuCreateCublasHandle();
   hasUVA=getDeviceHasUVA();
   
   return err;
@@ -363,7 +369,6 @@ void cudaReset()
   }
 }
 
-static spgpuHandle_t psb_gpu_handle = NULL;
 
 spgpuHandle_t psb_gpuGetHandle()
 {
@@ -395,9 +400,10 @@ void  psb_gpuSetStream(cudaStream_t stream)
 
 
 
-static cublasHandle_t psb_cublas_handle = NULL;
 cublasHandle_t psb_gpuGetCublasHandle()
 {
+  if (!psb_cublas_handle)
+    psb_gpuCreateCublasHandle();
   return psb_cublas_handle;
 }
 void psb_gpuCreateCublasHandle()

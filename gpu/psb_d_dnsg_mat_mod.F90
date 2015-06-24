@@ -54,11 +54,11 @@ module psb_d_dnsg_mat_mod
     procedure, pass(a) :: vect_mv       => psb_d_dnsg_vect_mv
 !!$    procedure, pass(a) :: csmm          => psb_d_dnsg_csmm
 !!$    procedure, pass(a) :: csmv          => psb_d_dnsg_csmv
-    procedure, pass(a) :: in_vect_sv    => psb_d_dnsg_inner_vect_sv
-    procedure, pass(a) :: scals         => psb_d_dnsg_scals
-    procedure, pass(a) :: scalv         => psb_d_dnsg_scal
-    procedure, pass(a) :: reallocate_nz => psb_d_dnsg_reallocate_nz
-    procedure, pass(a) :: allocate_mnnz => psb_d_dnsg_allocate_mnnz
+!!$    procedure, pass(a) :: in_vect_sv    => psb_d_dnsg_inner_vect_sv
+!!$    procedure, pass(a) :: scals         => psb_d_dnsg_scals
+!!$    procedure, pass(a) :: scalv         => psb_d_dnsg_scal
+!!$    procedure, pass(a) :: reallocate_nz => psb_d_dnsg_reallocate_nz
+!!$    procedure, pass(a) :: allocate_mnnz => psb_d_dnsg_allocate_mnnz
     ! Note: we *do* need the TO methods, because of the need to invoke SYNC
     ! 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_dnsg_from_coo
@@ -93,34 +93,34 @@ module psb_d_dnsg_mat_mod
       character, optional, intent(in)            :: trans
     end subroutine psb_d_dnsg_vect_mv
   end interface
+!!$
+!!$  interface 
+!!$    subroutine psb_d_dnsg_inner_vect_sv(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_ipk_, psb_d_dnsg_sparse_mat, psb_dpk_,  psb_d_base_vect_type
+!!$      class(psb_d_dnsg_sparse_mat), intent(in)    :: a
+!!$      real(psb_dpk_), intent(in)                 :: alpha, beta
+!!$      class(psb_d_base_vect_type), intent(inout) :: x, y
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$      character, optional, intent(in)            :: trans
+!!$    end subroutine psb_d_dnsg_inner_vect_sv
+!!$  end interface
 
-  interface 
-    subroutine psb_d_dnsg_inner_vect_sv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_ipk_, psb_d_dnsg_sparse_mat, psb_dpk_,  psb_d_base_vect_type
-      class(psb_d_dnsg_sparse_mat), intent(in)    :: a
-      real(psb_dpk_), intent(in)                 :: alpha, beta
-      class(psb_d_base_vect_type), intent(inout) :: x, y
-      integer(psb_ipk_), intent(out)             :: info
-      character, optional, intent(in)            :: trans
-    end subroutine psb_d_dnsg_inner_vect_sv
-  end interface
-
-  interface
-    subroutine  psb_d_dnsg_reallocate_nz(nz,a) 
-      import :: psb_d_dnsg_sparse_mat, psb_ipk_
-      integer(psb_ipk_), intent(in)              :: nz
-      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
-    end subroutine psb_d_dnsg_reallocate_nz
-  end interface
-
-  interface
-    subroutine  psb_d_dnsg_allocate_mnnz(m,n,a,nz) 
-      import :: psb_d_dnsg_sparse_mat, psb_ipk_
-      integer(psb_ipk_), intent(in)              :: m,n
-      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
-      integer(psb_ipk_), intent(in), optional    :: nz
-    end subroutine psb_d_dnsg_allocate_mnnz
-  end interface
+!!$  interface
+!!$    subroutine  psb_d_dnsg_reallocate_nz(nz,a) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_ipk_
+!!$      integer(psb_ipk_), intent(in)              :: nz
+!!$      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
+!!$    end subroutine psb_d_dnsg_reallocate_nz
+!!$  end interface
+!!$
+!!$  interface
+!!$    subroutine  psb_d_dnsg_allocate_mnnz(m,n,a,nz) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_ipk_
+!!$      integer(psb_ipk_), intent(in)              :: m,n
+!!$      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
+!!$      integer(psb_ipk_), intent(in), optional    :: nz
+!!$    end subroutine psb_d_dnsg_allocate_mnnz
+!!$  end interface
 
   interface 
     subroutine psb_d_dnsg_mold(a,b,info) 
@@ -132,11 +132,10 @@ module psb_d_dnsg_mat_mod
   end interface
 
   interface 
-    subroutine psb_d_dnsg_to_gpu(a,info, nzrm) 
+    subroutine psb_d_dnsg_to_gpu(a,info) 
       import :: psb_d_dnsg_sparse_mat, psb_ipk_
       class(psb_d_dnsg_sparse_mat), intent(inout) :: a
       integer(psb_ipk_), intent(out)             :: info
-      integer(psb_ipk_), intent(in), optional    :: nzrm
     end subroutine psb_d_dnsg_to_gpu
   end interface
 
@@ -177,46 +176,46 @@ module psb_d_dnsg_mat_mod
     end subroutine psb_d_mv_dnsg_from_fmt
   end interface
   
-  interface 
-    subroutine psb_d_dnsg_csmv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_dnsg_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)              :: alpha, beta, x(:)
-      real(psb_dpk_), intent(inout)           :: y(:)
-      integer(psb_ipk_), intent(out)          :: info
-      character, optional, intent(in)         :: trans
-    end subroutine psb_d_dnsg_csmv
-  end interface
-  interface 
-    subroutine psb_d_dnsg_csmm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_dnsg_sparse_mat), intent(in) :: a
-      real(psb_dpk_), intent(in)              :: alpha, beta, x(:,:)
-      real(psb_dpk_), intent(inout)           :: y(:,:)
-      integer(psb_ipk_), intent(out)          :: info
-      character, optional, intent(in)         :: trans
-    end subroutine psb_d_dnsg_csmm
-  end interface
-  
-  interface 
-    subroutine psb_d_dnsg_scal(d,a,info, side) 
-      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)                 :: d(:)
-      integer(psb_ipk_), intent(out)             :: info
-      character, intent(in), optional            :: side
-    end subroutine psb_d_dnsg_scal
-  end interface
-  
-  interface
-    subroutine psb_d_dnsg_scals(d,a,info) 
-      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
-      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
-      real(psb_dpk_), intent(in)                 :: d
-      integer(psb_ipk_), intent(out)             :: info
-    end subroutine psb_d_dnsg_scals
-  end interface
-  
+!!$  interface 
+!!$    subroutine psb_d_dnsg_csmv(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_dnsg_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)              :: alpha, beta, x(:)
+!!$      real(psb_dpk_), intent(inout)           :: y(:)
+!!$      integer(psb_ipk_), intent(out)          :: info
+!!$      character, optional, intent(in)         :: trans
+!!$    end subroutine psb_d_dnsg_csmv
+!!$  end interface
+!!$  interface 
+!!$    subroutine psb_d_dnsg_csmm(alpha,a,x,beta,y,info,trans) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_dnsg_sparse_mat), intent(in) :: a
+!!$      real(psb_dpk_), intent(in)              :: alpha, beta, x(:,:)
+!!$      real(psb_dpk_), intent(inout)           :: y(:,:)
+!!$      integer(psb_ipk_), intent(out)          :: info
+!!$      character, optional, intent(in)         :: trans
+!!$    end subroutine psb_d_dnsg_csmm
+!!$  end interface
+!!$  
+!!$  interface 
+!!$    subroutine psb_d_dnsg_scal(d,a,info, side) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)                 :: d(:)
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$      character, intent(in), optional            :: side
+!!$    end subroutine psb_d_dnsg_scal
+!!$  end interface
+!!$  
+!!$  interface
+!!$    subroutine psb_d_dnsg_scals(d,a,info) 
+!!$      import :: psb_d_dnsg_sparse_mat, psb_dpk_, psb_ipk_
+!!$      class(psb_d_dnsg_sparse_mat), intent(inout) :: a
+!!$      real(psb_dpk_), intent(in)                 :: d
+!!$      integer(psb_ipk_), intent(out)             :: info
+!!$    end subroutine psb_d_dnsg_scals
+!!$  end interface
+!!$  
 
 contains 
 

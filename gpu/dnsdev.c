@@ -185,13 +185,14 @@ int spmvDnsDeviceDouble(char transa, int m, int n, int k, double *alpha,
   /* 	  devMat->avgRowSize, devMat->maxRowSize, devMat->rows, */
   /* 	  devMat->pitch, y->count_, y->pitch_); */
   cublasHandle_t handle=psb_gpuGetCublasHandle();
-
+  cublasOperation_t trans=((transa == 'N')? CUBLAS_OP_N:((transa=='T')? CUBLAS_OP_T:CUBLAS_OP_C));
+  /* Note: the M,N,K choices according to TRANS have already been handled in the caller */  
   if (n == 1) {
-    status = cublasDgemv(handle, transa, m,k,
+    status = cublasDgemv(handle, trans, m,k,
 			 alpha, devMat->cM,devMat->pitch, x->v_,1,
 			 beta,  y->v_,1);
   } else {
-    status = cublasDgemm(handle, transa, CUBLAS_OP_N, m,n,k,
+    status = cublasDgemm(handle, trans, CUBLAS_OP_N, m,n,k,
 			 alpha, devMat->cM,devMat->pitch, x->v_,x->pitch_,
 			 beta,  y->v_,y->pitch_);
   }    
