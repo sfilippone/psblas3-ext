@@ -76,7 +76,10 @@ module psb_gpu_mod
   use psb_d_diag_mat_mod
   use psb_d_hdiag_mat_mod
 
+  use psb_s_dnsg_mat_mod
   use psb_d_dnsg_mat_mod
+  use psb_c_dnsg_mat_mod
+  use psb_z_dnsg_mat_mod
   
   use psb_s_hdiag_mat_mod
   ! use psb_s_diag_mat_mod

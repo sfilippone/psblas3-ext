@@ -273,7 +273,10 @@ psb_s_hdiag_to_gpu.o \
 psb_s_hdiag_csmv.o \
 psb_s_hdiag_mold.o \
 psb_s_hdiag_vect_mv.o \
-psb_d_dnsg_mat_impl.o
+psb_s_dnsg_mat_impl.o \
+psb_d_dnsg_mat_impl.o \
+psb_c_dnsg_mat_impl.o \
+psb_z_dnsg_mat_impl.o 
 
 lib: $(OBJS)
 	ar cur ../$(LIBNAME) $(OBJS)

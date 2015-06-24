@@ -85,6 +85,7 @@ program pdgenmv
   type(psb_s_csrg_sparse_mat), target  :: acsrg
   type(psb_s_hybg_sparse_mat), target  :: ahybg
   type(psb_s_hlg_sparse_mat), target   :: ahlg
+  type(psb_s_dnsg_sparse_mat), target   :: adnsg
   type(psb_s_hdiag_sparse_mat), target   :: ahdiag
 #endif
   class(psb_s_base_sparse_mat), pointer :: agmold, acmold
@@ -185,6 +186,8 @@ program pdgenmv
     agmold => aelg
   case('HLG')
     agmold => ahlg
+  case('DNSG')
+    agmold => adnsg
   case('HDIAG')
     agmold => ahdiag
   case('CSRG')
