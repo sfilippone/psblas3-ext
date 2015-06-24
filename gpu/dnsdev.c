@@ -37,10 +37,8 @@
 
 #define IMIN(a,b) ((a)<(b) ? (a) : (b))
 
-DnsDeviceParams getDnsDeviceParams(unsigned int rows, unsigned int maxRowSize,
-				   unsigned int nnzeros, 
-				   unsigned int columns, unsigned int elementType,
-				   unsigned int firstIndex)
+DnsDeviceParams getDnsDeviceParams(unsigned int rows, unsigned int columns,
+				   unsigned int elementType, unsigned int firstIndex)
 {
   DnsDeviceParams params;
 
@@ -57,8 +55,6 @@ DnsDeviceParams getDnsDeviceParams(unsigned int rows, unsigned int maxRowSize,
   params.rows = rows;
   params.columns = columns;
   params.firstIndex = firstIndex;
-
-  //params.pitch = computeDnsAllocPitch(rows);
 
   return params;
 
@@ -102,15 +98,14 @@ void freeDnsDevice(void* remoteMatrix)
 }
 
 //new
-int FallocDnsDevice(void** deviceMat, unsigned int rows, unsigned int maxRowSize, 
-		    unsigned int nnzeros,
+int FallocDnsDevice(void** deviceMat, unsigned int rows,
 		    unsigned int columns, unsigned int elementType, 
 		    unsigned int firstIndex)
 { int i;
 #ifdef HAVE_SPGPU
   DnsDeviceParams p;
 
-  p = getDnsDeviceParams(rows, maxRowSize, nnzeros, columns, elementType, firstIndex);
+  p = getDnsDeviceParams(rows, columns, elementType, firstIndex);
   i = allocDnsDevice(deviceMat, &p);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","FallocDnsDevice",i);
@@ -121,57 +116,38 @@ int FallocDnsDevice(void** deviceMat, unsigned int rows, unsigned int maxRowSize
 #endif
 }
 
-#if 0 
-void sspmdmm_gpu(float *z,int s, int vPitch, float *y, float alpha, float* cM, int* rP, int* rS, 
-		 int avgRowSize, int maxRowSize, int rows, int pitch, float *x, float beta, int firstIndex)
-{
-  int i=0;
-  cublasHandle_t handle=psb_gpuGetCublasHandle();
 
-  for (i=0; i<s; i++)
-    {
-      if (PASS_RS) {
-	spgpuSdnsspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, rS, 
-		       NULL, avgRowSize, maxRowSize, rows, (float*)x, beta, firstIndex);
-      } else {
-	spgpuSdnsspmv (handle, (float*) z, (float*)y, alpha, (float*) cM, rP, pitch, pitch, NULL, 
-		       NULL, avgRowSize, maxRowSize, rows, (float*)x, beta, firstIndex);
-      }
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-//new
-int spmvDnsDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
-		       float beta, void* deviceY)
-{ int i=SPGPU_SUCCESS;
+int spmvDnsDeviceFloat(char transa, int m, int n, int k, float *alpha,
+			void *deviceMat, void* deviceX, float *beta, void* deviceY)
+{
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
-  struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY; 
-
+  struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
+  int status;
 #ifdef HAVE_SPGPU
-#ifdef VERBOSE
-  __assert(x->count_ == x->count_, "ERROR: x and y don't share the same number of vectors");
-  __assert(x->size_ >= devMat->columns, "ERROR: x vector's size is not >= to matrix size (columns)");
-  __assert(y->size_ >= devMat->rows, "ERROR: y vector's size is not >= to matrix size (rows)");
-#endif
-  /*spgpuSdnsspmv (handle, (float*) y->v_, (float*)y->v_, alpha, 
-		 (float*) devMat->cM, devMat->rP, devMat->cMPitch, 
-		 devMat->rPPitch, devMat->rS, devMat->rows, 
-		 (float*)x->v_, beta, devMat->baseIndex);*/
-  sspmdmm_gpu ( (float *)y->v_,y->count_, y->pitch_, (float *)y->v_, alpha, (float *)devMat->cM, devMat->rP, devMat->rS, 
-		devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
-		(float *)x->v_, beta, devMat->baseIndex);
-  return(i);
+
+  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  cublasOperation_t trans=((transa == 'N')? CUBLAS_OP_N:((transa=='T')? CUBLAS_OP_T:CUBLAS_OP_C));
+  /* Note: the M,N,K choices according to TRANS have already been handled in the caller */  
+  if (n == 1) {
+    status = cublasSgemv(handle, trans, m,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,1,
+			 beta,  y->v_,1);
+  } else {
+    status = cublasSgemm(handle, trans, CUBLAS_OP_N, m,n,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,x->pitch_,
+			 beta,  y->v_,y->pitch_);
+  }    
+  
+  if (status == CUBLAS_STATUS_SUCCESS)  
+    return SPGPU_SUCCESS;
+  else
+    return SPGPU_UNSUPPORTED;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
-#endif
 
-
-//new
 int spmvDnsDeviceDouble(char transa, int m, int n, int k, double *alpha,
 			void *deviceMat, void* deviceX, double *beta, void* deviceY)
 {
@@ -180,10 +156,7 @@ int spmvDnsDeviceDouble(char transa, int m, int n, int k, double *alpha,
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
   int status;
 #ifdef HAVE_SPGPU
-  /*spgpuDdnsspmv (handle, (double*) y->v_, (double*)y->v_, alpha, (double*) devMat->cM, devMat->rP, devMat->cMPitch, devMat->rPPitch, devMat->rS, devMat->rows, (double*)x->v_, beta, devMat->baseIndex);*/
-  /* fprintf(stderr,"From spmvDnsDouble: mat %d %d %d %d y %d %d \n", */
-  /* 	  devMat->avgRowSize, devMat->maxRowSize, devMat->rows, */
-  /* 	  devMat->pitch, y->count_, y->pitch_); */
+
   cublasHandle_t handle=psb_gpuGetCublasHandle();
   cublasOperation_t trans=((transa == 'N')? CUBLAS_OP_N:((transa=='T')? CUBLAS_OP_T:CUBLAS_OP_C));
   /* Note: the M,N,K choices according to TRANS have already been handled in the caller */  
@@ -206,120 +179,90 @@ int spmvDnsDeviceDouble(char transa, int m, int n, int k, double *alpha,
 #endif
 }
 
-#if 0 
-void
-cspmdmm_gpu (cuFloatComplex *z, int s, int vPitch, cuFloatComplex *y,  
-	     cuFloatComplex alpha, cuFloatComplex* cM,
-	     int* rP, int* rS, int avgRowSize, int maxRowSize, int rows, int pitch,
-	     cuFloatComplex *x, cuFloatComplex beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      if (PASS_RS) {
-	spgpuCdnsspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
-		       pitch, pitch, rS, NULL, avgRowSize, maxRowSize, rows, (cuFloatComplex *) x, beta, firstIndex);
-      } else {
-	spgpuCdnsspmv (handle, (cuFloatComplex *) z, (cuFloatComplex *)y, alpha, (cuFloatComplex *) cM, rP, 
-		       pitch, pitch, NULL, NULL, avgRowSize, maxRowSize, rows, (cuFloatComplex *) x, beta, firstIndex);
-      }
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-
-int spmvDnsDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,
-			      float complex beta, void* deviceY)
+int spmvDnsDeviceFloatComplex(char transa, int m, int n, int k, float complex *alpha,
+			void *deviceMat, void* deviceX, float complex *beta, void* deviceY)
 {
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
-
+  int status;
 #ifdef HAVE_SPGPU
-  cuFloatComplex a = make_cuFloatComplex(crealf(alpha),cimagf(alpha));
-  cuFloatComplex b = make_cuFloatComplex(crealf(beta),cimagf(beta));
-  cspmdmm_gpu ((cuFloatComplex *)y->v_, y->count_, y->pitch_, (cuFloatComplex *)y->v_, a, (cuFloatComplex *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows, devMat->pitch,
-	       (cuFloatComplex *)x->v_, b, devMat->baseIndex);
+
+  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  cublasOperation_t trans=((transa == 'N')? CUBLAS_OP_N:((transa=='T')? CUBLAS_OP_T:CUBLAS_OP_C));
+  /* Note: the M,N,K choices according to TRANS have already been handled in the caller */  
+  if (n == 1) {
+    status = cublasCgemv(handle, trans, m,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,1,
+			 beta,  y->v_,1);
+  } else {
+    status = cublasCgemm(handle, trans, CUBLAS_OP_N, m,n,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,x->pitch_,
+			 beta,  y->v_,y->pitch_);
+  }    
   
-  return SPGPU_SUCCESS;
+  if (status == CUBLAS_STATUS_SUCCESS)  
+    return SPGPU_SUCCESS;
+  else
+    return SPGPU_UNSUPPORTED;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
 
-void
-zspmdmm_gpu (cuDoubleComplex *z, int s, int vPitch, cuDoubleComplex *y, cuDoubleComplex alpha, cuDoubleComplex* cM,
-	     int* rP, int* rS, int avgRowSize, int maxRowSize, int rows, int pitch,
-	     cuDoubleComplex *x, cuDoubleComplex beta, int firstIndex)
-{
-  int i=0;
-  spgpuHandle_t handle=psb_gpuGetHandle();
-  for (i=0; i<s; i++)
-    {
-      if (PASS_RS) {
-	spgpuZdnsspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
-		       pitch, pitch, rS, NULL,  avgRowSize, maxRowSize, rows, (cuDoubleComplex *) x, beta, firstIndex);
-      } else {
-	spgpuZdnsspmv (handle, (cuDoubleComplex *) z, (cuDoubleComplex *)y, alpha, (cuDoubleComplex *) cM, rP, 
-		       pitch, pitch, NULL, NULL,  avgRowSize, maxRowSize, rows, (cuDoubleComplex *) x, beta, firstIndex);
-      }
-      z += vPitch;
-      y += vPitch;
-      x += vPitch;		
-    }
-}
-
-int spmvDnsDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX,
-			      double complex beta, void* deviceY)
+int spmvDnsDeviceDoubleComplex(char transa, int m, int n, int k, double complex *alpha,
+			void *deviceMat, void* deviceX, double complex *beta, void* deviceY)
 {
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
-
+  int status;
 #ifdef HAVE_SPGPU
-  cuDoubleComplex a = make_cuDoubleComplex(creal(alpha),cimag(alpha));
-  cuDoubleComplex b = make_cuDoubleComplex(creal(beta),cimag(beta));
-  zspmdmm_gpu ((cuDoubleComplex *)y->v_, y->count_, y->pitch_, (cuDoubleComplex *)y->v_, a, (cuDoubleComplex *)devMat->cM, 
-	       devMat->rP, devMat->rS, devMat->avgRowSize, devMat->maxRowSize, devMat->rows,
-	       devMat->pitch, (cuDoubleComplex *)x->v_, b, devMat->baseIndex);
+
+  cublasHandle_t handle=psb_gpuGetCublasHandle();
+  cublasOperation_t trans=((transa == 'N')? CUBLAS_OP_N:((transa=='T')? CUBLAS_OP_T:CUBLAS_OP_C));
+  /* Note: the M,N,K choices according to TRANS have already been handled in the caller */  
+  if (n == 1) {
+    status = cublasZgemv(handle, trans, m,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,1,
+			 beta,  y->v_,1);
+  } else {
+    status = cublasZgemm(handle, trans, CUBLAS_OP_N, m,n,k,
+			 alpha, devMat->cM,devMat->pitch, x->v_,x->pitch_,
+			 beta,  y->v_,y->pitch_);
+  }    
   
-  return SPGPU_SUCCESS;
+  if (status == CUBLAS_STATUS_SUCCESS)  
+    return SPGPU_SUCCESS;
+  else
+    return SPGPU_UNSUPPORTED;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
 
-int writeDnsDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
+
+int writeDnsDeviceFloat(void* deviceMat, float* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  // Ex updateFromHost function
-  i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
-  i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  //i = writeDnsDevice(deviceMat, (void *) val, ja, irn);
-  /*if (i != 0) {
+  int pitch=devMat->pitch; 
+  i = cublasSetMatrix(lda,nc,sizeof(float), (void*) val,lda, (void *)devMat->cM, pitch);
+  if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceFloat",i);
-  }*/
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
-#endif
 
 int writeDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   int pitch=devMat->pitch; 
-  // Ex updateFromHost function
-  // i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = cublasSetMatrix(lda,nc,sizeof(double), (void*) val,lda, (void *)devMat->cM, pitch);
-  /*i = writeDnsDevice(deviceMat, (void *) val, ja, irn);*/
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceDouble",i);
   }
@@ -329,73 +272,59 @@ int writeDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc)
 #endif
 }
 
-#if 0 
-int writeDnsDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn)
+
+int writeDnsDeviceFloatComplex(void* deviceMat, float complex* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  // Ex updateFromHost function
-  i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
-  i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-
-  /*i = writeDnsDevice(deviceMat, (void *) val, ja, irn);
+  int pitch=devMat->pitch; 
+  i = cublasSetMatrix(lda,nc,sizeof(cuFloatComplex), (void*) val,lda, (void *)devMat->cM, pitch);
   if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceDouble",i);
-  }*/
+    fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceFloatComplex",i);
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
 
-int writeDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn)
+int writeDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  // Ex updateFromHost function
-  i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
-  i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-
-  /*i = writeDnsDevice(deviceMat, (void *) val, ja, irn);
+  int pitch=devMat->pitch; 
+  i = cublasSetMatrix(lda,nc,sizeof(cuDoubleComplex), (void*) val,lda, (void *)devMat->cM, pitch);
   if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceDouble",i);
-  }*/
+    fprintf(stderr,"From routine : %s : %d \n","writeDnsDeviceDoubleComplex",i);
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
 
-int readDnsDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
+
+int readDnsDeviceFloat(void* deviceMat, float* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
-  i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  /*i = readDnsDevice(deviceMat, (void *) val, ja, irn);
+  int pitch=devMat->pitch; 
+  i = cublasGetMatrix(lda,nc,sizeof(float), (void*) val,lda, (void *)devMat->cM, pitch);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceFloat",i);
-  }*/
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
-#endif
-
 
 int readDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
   int pitch=devMat->pitch; 
-  // Ex updateFromHost function
-  // i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
-  i = cublasGetMatrix(lda,nc,sizeof(double), (void *)devMat->cM, pitch, (void*) val, lda);
-  /*i = writeDnsDevice(deviceMat, (void *) val, ja, irn);*/
+  i = cublasGetMatrix(lda,nc,sizeof(double), (void*) val,lda, (void *)devMat->cM, pitch);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceDouble",i);
   }
@@ -405,45 +334,43 @@ int readDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc)
 #endif
 }
 
-#if 0
-int readDnsDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn)
+
+int readDnsDeviceFloatComplex(void* deviceMat, float complex* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
-  i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceDouble",i);
-  }*/
+  int pitch=devMat->pitch; 
+  i = cublasGetMatrix(lda,nc,sizeof(cuFloatComplex), (void*) val,lda, (void *)devMat->cM, pitch);
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceFloatComplex",i);
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
 
-int readDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn)
+int readDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int lda, int nc)
 { int i;
 #ifdef HAVE_SPGPU
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
-  i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
-  i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
-  /*if (i != 0) {
-    fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceDouble",i);
-  }*/
+  int pitch=devMat->pitch; 
+  i = cublasGetMatrix(lda,nc,sizeof(cuDoubleComplex), (void*) val,lda, (void *)devMat->cM, pitch);
+  if (i != 0) {
+    fprintf(stderr,"From routine : %s : %d \n","readDnsDeviceDoubleComplex",i);
+  }
   return SPGPU_SUCCESS;
 #else
   return SPGPU_UNSUPPORTED;
 #endif
 }
-#endif
+
+
 int getDnsDevicePitch(void* deviceMat)
 { int i;
   struct DnsDevice *devMat = (struct DnsDevice *) deviceMat;
 #ifdef HAVE_SPGPU
-  i = devMat->pitch; //old
-  //i = getPitchDnsDevice(deviceMat);
+  i = devMat->pitch; 
   return(i);
 #else
   return SPGPU_UNSUPPORTED;

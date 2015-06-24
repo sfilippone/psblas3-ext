@@ -80,34 +80,34 @@ typedef struct DnsDeviceParams
 	unsigned int firstIndex;
 } DnsDeviceParams;
 
-int FallocDnsDevice(void** deviceMat, unsigned int rows, unsigned int maxRowSize, 
-		    unsigned int nnzeros,
+int FallocDnsDevice(void** deviceMat, unsigned int rows, 
 		    unsigned int columns, unsigned int elementType, 
 		    unsigned int firstIndex);
 int allocDnsDevice(void ** remoteMatrix, DnsDeviceParams* params);
 void freeDnsDevice(void* remoteMatrix);
 
-int writeDnsDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
+int writeDnsDeviceFloat(void* deviceMat, float* val, int lda, int nc);
 int writeDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc);
-int writeDnsDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
-int writeDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+int writeDnsDeviceFloatComplex(void* deviceMat, float complex* val, int lda, int nc);
+int writeDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int lda, int nc);
 
-int readDnsDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
+int readDnsDeviceFloat(void* deviceMat, float* val, int lda, int nc);
 int readDnsDeviceDouble(void* deviceMat, double* val, int lda, int nc);
-int readDnsDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
-int readDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+int readDnsDeviceFloatComplex(void* deviceMat, float complex* val, int lda, int nc);
+int readDnsDeviceDoubleComplex(void* deviceMat, double complex* val, int lda, int nc);
 
-int spmvDnsDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
-		       float beta, void* deviceY);
+int spmvDnsDeviceFloat(char transa, int m, int n, int k,
+		       float *alpha, void *deviceMat, void* deviceX, 
+		       float *beta, void* deviceY);
 int spmvDnsDeviceDouble(char transa, int m, int n, int k,
 			double *alpha, void *deviceMat, void* deviceX, 
 			double *beta, void* deviceY);
-int spmvDnsDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX,
-			      float complex beta, void* deviceY);
-int spmvDnsDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX,
-			       double complex beta, void* deviceY);
-
-
+int spmvDnsDeviceFloatComplex(char transa, int m, int n, int k,
+		       float complex *alpha, void *deviceMat, void* deviceX, 
+		       float complex *beta, void* deviceY);
+int spmvDnsDeviceDoubleComplex(char transa, int m, int n, int k,
+			double complex *alpha, void *deviceMat, void* deviceX, 
+			double complex *beta, void* deviceY);
 
 int getDnsDevicePitch(void* deviceMat);
 
