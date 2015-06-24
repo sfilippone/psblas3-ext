@@ -225,8 +225,17 @@ int gpuInit(int dev)
 
 void gpuClose()
 {
+  cudaStream_t st1, st2;
+  if (! psb_gpu_handle)
+    st1=spgpuGetStream(psb_gpu_handle);
+  if (! psb_cublas_handle)
+    cublasGetStream(psb_cublas_handle,&st2);
+
+  psb_gpuDestroyHandle();
+  if (st1 != st2) 
+    psb_gpuDestroyCublasHandle();
   free(prop);
-  prop=NULL; 
+  prop=NULL;
   hasUVA=-1;
 }
 
@@ -379,11 +388,13 @@ void psb_gpuCreateHandle()
 {
   if (!psb_gpu_handle)
     spgpuCreate(&psb_gpu_handle, getDevice());
+  
 }
 
 void psb_gpuDestroyHandle()
 {
-  spgpuDestroy(psb_gpu_handle);
+  if (!psb_gpu_handle)
+    spgpuDestroy(psb_gpu_handle);
   psb_gpu_handle = NULL; 
 }
 
@@ -412,7 +423,8 @@ void psb_gpuCreateCublasHandle()
 }
 void psb_gpuDestroyCublasHandle()
 {
-  cublasDestroy(psb_cublas_handle);
+  if (!psb_cublas_handle)
+    cublasDestroy(psb_cublas_handle);
   psb_cublas_handle=NULL;
 }
 

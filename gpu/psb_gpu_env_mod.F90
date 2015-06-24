@@ -255,7 +255,6 @@ contains
   subroutine psb_gpu_exit()
     integer :: res
     res =  closeFcusparse()
-    call psb_gpuDestroyHandle()
     call psb_gpuClose()
     call psb_cudaReset()
   end subroutine psb_gpu_exit
