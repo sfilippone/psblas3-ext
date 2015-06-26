@@ -81,7 +81,7 @@ subroutine psb_z_dnsg_vect_mv(alpha,a,x,beta,y,info,trans)
     type is (psb_z_vect_gpu)
       if (a%is_host()) call a%sync()
       if (xx%is_host()) call xx%sync()
-      if (beta /= dzero) then 
+      if (beta /= zzero) then 
         if (yy%is_host()) call yy%sync()
       end if
       info = spmvDnsDevice(trans_,m,n,k,alpha,a%deviceMat,&

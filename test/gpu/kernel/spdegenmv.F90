@@ -317,6 +317,7 @@ program pdgenmv
   eps = psb_geamax(bv,desc_a,info)
 
   call psb_amx(ictxt,t2)
+  
   eps = maxval(abs(x1(1:nr)-x2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
