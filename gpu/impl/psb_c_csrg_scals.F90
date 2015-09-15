@@ -51,6 +51,7 @@ subroutine psb_c_csrg_scals(d,a,info)
   info  = psb_success_
   call psb_erractionsave(err_act)
 
+  if (a%is_dev()) call a%sync()
   call a%psb_c_csr_sparse_mat%scal(d,info)
 
   if (info /= 0) goto 9999

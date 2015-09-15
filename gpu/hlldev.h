@@ -37,7 +37,7 @@
 #include "hell.h"
 
 
-struct HllDevice
+typedef struct hlldevice
 {
   // Compressed matrix
   void *cM; //it can be float or double
@@ -53,7 +53,7 @@ struct HllDevice
   int rows;
   int avgNzr;
   int hackOffsLength;
-
+  int nzt;
   int hackSize; //must be multiple of 32
 
   //matrix size (uncompressed)
@@ -65,9 +65,9 @@ struct HllDevice
 
   /*(i.e. 0 for C, 1 for Fortran)*/
   int baseIndex;
-};
+} HllDevice;
 
-typedef struct HllDeviceParams
+typedef struct hlldeviceparams
 {			
   
   unsigned int elementType;
@@ -78,6 +78,7 @@ typedef struct HllDeviceParams
   // Used to allocate rS array
   unsigned int rows;
   unsigned int avgNzr;
+  unsigned int nzt;
   //unsigned int hackOffsLength;
   
   // Number of columns.
@@ -90,9 +91,13 @@ typedef struct HllDeviceParams
   unsigned int firstIndex;
 
 } HllDeviceParams;
-HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows, unsigned int nzeros,
+
+
+HllDeviceParams bldHllDeviceParams(unsigned int hksize, unsigned int rows, unsigned int nzeros,
 				   unsigned int allocsize, 
 				   unsigned int elementType, unsigned int firstIndex);
+int getHllDeviceParams(HllDevice* mat, int *hksize, int *rows, int *nzeros,
+		       int *allocsize, int *hackOffsLength,  int *firstIndex, int *avgnzr);
 int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  unsigned int nzeros,
 		    unsigned int allocsize, unsigned int elementType, unsigned int firstIndex);
 int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params);

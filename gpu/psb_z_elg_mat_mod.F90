@@ -73,6 +73,8 @@ module psb_z_elg_mat_mod
     procedure, pass(a) :: mv_from_fmt   => psb_z_mv_elg_from_fmt
     procedure, pass(a) :: free          => z_elg_free
     procedure, pass(a) :: mold          => psb_z_elg_mold
+    procedure, pass(a) :: csput_a       => psb_z_elg_csput_a
+    procedure, pass(a) :: csput_v       => psb_z_elg_csput_v
     procedure, pass(a) :: is_host       => z_elg_is_host
     procedure, pass(a) :: is_dev        => z_elg_is_dev
     procedure, pass(a) :: is_sync       => z_elg_is_sync
@@ -80,10 +82,8 @@ module psb_z_elg_mat_mod
     procedure, pass(a) :: set_dev       => z_elg_set_dev
     procedure, pass(a) :: set_sync      => z_elg_set_sync
     procedure, pass(a) :: sync          => z_elg_sync
-    procedure, pass(a) :: csput_a       => psb_z_elg_csput_a
-    procedure, pass(a) :: csput_v       => psb_z_elg_csput_v
-    procedure, pass(a) :: to_gpu        => psb_z_elg_to_gpu
     procedure, pass(a) :: from_gpu      => psb_z_elg_from_gpu
+    procedure, pass(a) :: to_gpu        => psb_z_elg_to_gpu
     procedure, pass(a) :: asb           => psb_z_elg_asb
 #ifdef HAVE_FINAL
     final              :: z_elg_finalize
@@ -175,20 +175,20 @@ module psb_z_elg_mat_mod
   end interface
 
   interface 
+    subroutine psb_z_elg_from_gpu(a,info) 
+      import :: psb_z_elg_sparse_mat, psb_ipk_
+      class(psb_z_elg_sparse_mat), intent(inout) :: a
+      integer(psb_ipk_), intent(out)             :: info
+    end subroutine psb_z_elg_from_gpu
+  end interface
+
+  interface 
     subroutine psb_z_elg_to_gpu(a,info, nzrm) 
       import :: psb_z_elg_sparse_mat, psb_ipk_
       class(psb_z_elg_sparse_mat), intent(inout) :: a
       integer(psb_ipk_), intent(out)             :: info
       integer(psb_ipk_), intent(in), optional    :: nzrm
     end subroutine psb_z_elg_to_gpu
-  end interface
-
-  interface 
-    subroutine psb_z_elg_from_gpu(a,info) 
-      import :: psb_z_elg_sparse_mat, psb_ipk_
-      class(psb_z_elg_sparse_mat), intent(inout) :: a
-      integer(psb_ipk_), intent(out)             :: info
-    end subroutine psb_z_elg_from_gpu
   end interface
 
   interface 
@@ -368,7 +368,7 @@ contains
     class(psb_z_elg_sparse_mat), pointer :: tmpa
     integer(psb_ipk_) :: info
 
-    tmpa=>a
+    tmpa => a
     if (tmpa%is_host()) then 
       call tmpa%to_gpu(info)
     else if (tmpa%is_dev()) then 
@@ -423,7 +423,6 @@ contains
 
     res = (a%devstate == is_sync)
   end function z_elg_is_sync
-
 
 #ifdef HAVE_FINAL
   subroutine  z_elg_finalize(a) 

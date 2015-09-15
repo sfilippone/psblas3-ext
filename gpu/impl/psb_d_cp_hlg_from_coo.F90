@@ -86,7 +86,6 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
     info = FallochllDevice(a%deviceMat,hksz,nr,nza,isz,spgpu_type_double,1)
     if (info == 0) info = psi_CopyCooToHlg(nr,nc,nza, hksz,noffs,isz,&
          &  a%irn,a%hkoffs,idisp,b%ja, b%val, a%deviceMat)
-
   else
     ! This is to guarantee tmp%is_by_rows()
     call b%cp_to_coo(tmp,info)
@@ -114,7 +113,7 @@ subroutine psb_d_cp_hlg_from_coo(a,b,info)
 
   end if
   if (info /= 0) goto 9999
-
+  call a%set_dev()
   return
 
 9999 continue

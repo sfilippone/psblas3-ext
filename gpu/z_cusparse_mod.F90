@@ -118,6 +118,17 @@ module z_cusparse_mod
       integer(c_int)        :: res
     end function z_CSRGDeviceAlloc
   end interface
+
+  interface CSRGDeviceGetParms
+    function z_CSRGDeviceGetParms(Mat,nr,nc,nz) &
+         & bind(c,name="z_CSRGDeviceGetParms") result(res)
+      use iso_c_binding
+      import  z_Cmat
+      type(z_Cmat)          :: Mat
+      integer(c_int)        :: nr, nc, nz
+      integer(c_int)        :: res
+    end function z_CSRGDeviceGetParms
+  end interface 
   
   interface spsvCSRGDevice
     function z_spsvCSRGDevice(Mat,alpha,x,beta,y) &

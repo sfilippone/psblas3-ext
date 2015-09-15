@@ -30,44 +30,39 @@
 !!$ 
   
 
-subroutine psb_z_csrg_scal(d,a,info,side) 
+subroutine psb_c_csrg_from_gpu(a,info) 
   
   use psb_base_mod
 #ifdef HAVE_SPGPU
-  use cusparse_mod
-  use psb_z_csrg_mat_mod, psb_protect_name => psb_z_csrg_scal
+  use elldev_mod
+  use psb_vectordev_mod
+  use psb_c_csrg_mat_mod, psb_protect_name => psb_c_csrg_from_gpu
 #else 
-  use psb_z_csrg_mat_mod
+  use psb_c_csrg_mat_mod
 #endif
   implicit none 
-  class(psb_z_csrg_sparse_mat), intent(inout) :: a
-  complex(psb_dpk_), intent(in)      :: d(:)
-  integer(psb_ipk_), intent(out)  :: info
-  character, intent(in), optional :: side
+  class(psb_c_csrg_sparse_mat), intent(inout) :: a
+  integer(psb_ipk_), intent(out)             :: info
 
+  integer(psb_ipk_)  :: m, n, nz
 
-  Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='scal'
-  logical, parameter :: debug=.false.
+  info = 0
 
-  info  = psb_success_
-  call psb_erractionsave(err_act)
-
-  if (a%is_dev()) call a%sync()
-
-  call a%psb_z_csr_sparse_mat%scal(d,info,side=side)
-  if (info /= 0) goto 9999
-  
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
+  if (.not.(c_associated(a%deviceMat%mat))) then 
+    call a%free()
+    return
+  end if
+
+  info = CSRGDeviceGetParms(a%deviceMat,m,n,nz)
+  if (info /= psb_success_) return
+  
+  if (info == 0) call psb_realloc(m+1,a%irp,info)
+  if (info == 0) call psb_realloc(nz,a%ja,info)
+  if (info == 0) call psb_realloc(nz,a%val,info)
+  if (info == 0)  info = &
+       & CSRGDevice2Host(a%deviceMat,m,n,nz,a%irp,a%ja,a%val)
+  call a%set_sync()
 #endif
 
-  call psb_erractionrestore(err_act)
-  return
-
-9999 call psb_error_handler(err_act)
-
-  return
-
-end subroutine psb_z_csrg_scal
+end subroutine psb_c_csrg_from_gpu

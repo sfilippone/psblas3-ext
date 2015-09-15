@@ -30,44 +30,47 @@
 !!$ 
   
 
-subroutine psb_z_csrg_scal(d,a,info,side) 
+subroutine psb_d_hlg_from_gpu(a,info) 
   
   use psb_base_mod
 #ifdef HAVE_SPGPU
-  use cusparse_mod
-  use psb_z_csrg_mat_mod, psb_protect_name => psb_z_csrg_scal
+  use hlldev_mod
+  use psb_vectordev_mod
+  use psb_d_hlg_mat_mod, psb_protect_name => psb_d_hlg_from_gpu
 #else 
-  use psb_z_csrg_mat_mod
+  use psb_d_hlg_mat_mod
 #endif
   implicit none 
-  class(psb_z_csrg_sparse_mat), intent(inout) :: a
-  complex(psb_dpk_), intent(in)      :: d(:)
-  integer(psb_ipk_), intent(out)  :: info
-  character, intent(in), optional :: side
+  class(psb_d_hlg_sparse_mat), intent(inout) :: a
+  integer(psb_ipk_), intent(out)             :: info
 
+  integer(psb_ipk_)  :: hksize,rows,nzeros,allocsize,hackOffsLength,firstIndex,avgnzr
 
-  Integer(Psb_ipk_)  :: err_act
-  character(len=20)  :: name='scal'
-  logical, parameter :: debug=.false.
+  info = 0
 
-  info  = psb_success_
-  call psb_erractionsave(err_act)
-
-  if (a%is_dev()) call a%sync()
-
-  call a%psb_z_csr_sparse_mat%scal(d,info,side=side)
-  if (info /= 0) goto 9999
-  
 #ifdef HAVE_SPGPU
-  call a%to_gpu(info)
-  if (info /= 0) goto 9999
+  if (a%is_sync()) return
+  if (a%is_host()) return
+  if (.not.(c_associated(a%deviceMat))) then 
+    call a%free()
+    return
+  end if
+
+  
+  info = getHllDeviceParams(a%deviceMat,hksize, rows, nzeros, allocsize,&
+       &  hackOffsLength, firstIndex,avgnzr) 
+
+  if (info == 0) call a%set_nzeros(nzeros)
+  if (info == 0) call a%set_hksz(hksize)
+  if (info == 0) call psb_realloc(rows,a%irn,info)
+  if (info == 0) call psb_realloc(rows,a%idiag,info)
+  if (info == 0) call psb_realloc(allocsize,a%ja,info)
+  if (info == 0) call psb_realloc(allocsize,a%val,info)
+  if (info == 0) call psb_realloc((hackOffsLength+1),a%hkoffs,info)
+  
+  if (info == 0) info = &
+       & readHllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn)
+  call a%set_sync()
 #endif
 
-  call psb_erractionrestore(err_act)
-  return
-
-9999 call psb_error_handler(err_act)
-
-  return
-
-end subroutine psb_z_csrg_scal
+end subroutine psb_d_hlg_from_gpu

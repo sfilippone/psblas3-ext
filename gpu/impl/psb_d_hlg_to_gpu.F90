@@ -51,6 +51,10 @@ subroutine psb_d_hlg_to_gpu(a,info,nzrm)
   info = 0
 
 #ifdef HAVE_SPGPU
+  if (a%is_dev()) then
+    ! What should we do here?
+    return
+  end if
   if ((.not.allocated(a%val)).or.(.not.allocated(a%ja))) return
   
   n   = a%get_nrows()
@@ -62,6 +66,7 @@ subroutine psb_d_hlg_to_gpu(a,info,nzrm)
   info       = FallochllDevice(a%deviceMat,a%hksz,n,nza,allocsize,spgpu_type_double,1)
   if (info == 0)  info = &
        & writehllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn)
+  call a%set_sync()
 !  if (info /= 0) goto 9999
 #endif
 

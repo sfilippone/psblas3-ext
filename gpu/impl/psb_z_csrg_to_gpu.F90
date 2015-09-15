@@ -141,6 +141,7 @@ subroutine psb_z_csrg_to_gpu(a,info,nzrm)
     info = CSRGDeviceCsrsmAnalysis(a%deviceMat)
   end if
 
+  call a%set_sync()
 
   if (info /= 0) then 
     write(0,*) 'Error in CSRG_TO_GPU ',info

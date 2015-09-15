@@ -84,6 +84,7 @@ cusparseHandle_t *getHandle()
 #define T_spmvCSRGDevice	       s_spmvCSRGDevice
 #define T_spsvCSRGDevice	       s_spsvCSRGDevice
 #define T_CSRGDeviceAlloc	       s_CSRGDeviceAlloc
+#define T_CSRGDeviceGetParms	       s_CSRGDeviceGetParms
 #define T_CSRGDeviceFree	       s_CSRGDeviceFree
 #define T_CSRGDeviceSetMatType	       s_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatFillMode     s_CSRGDeviceSetMatFillMode
@@ -122,6 +123,7 @@ cusparseHandle_t *getHandle()
 #define T_Hmat			       d_Hmat
 #define T_spmvCSRGDevice	       d_spmvCSRGDevice
 #define T_spsvCSRGDevice	       d_spsvCSRGDevice
+#define T_CSRGDeviceGetParms	       d_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       d_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       d_CSRGDeviceFree
 #define T_CSRGDeviceSetMatType	       d_CSRGDeviceSetMatType
@@ -160,6 +162,7 @@ cusparseHandle_t *getHandle()
 #define T_Hmat			       c_Hmat
 #define T_spmvCSRGDevice	       c_spmvCSRGDevice
 #define T_spsvCSRGDevice	       c_spsvCSRGDevice
+#define T_CSRGDeviceGetParms	       c_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       c_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       c_CSRGDeviceFree
 #define T_CSRGDeviceSetMatType	       c_CSRGDeviceSetMatType
@@ -198,6 +201,7 @@ cusparseHandle_t *getHandle()
 #define T_Hmat			       z_Hmat
 #define T_spmvCSRGDevice	       z_spmvCSRGDevice
 #define T_spsvCSRGDevice	       z_spsvCSRGDevice
+#define T_CSRGDeviceGetParms	       z_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       z_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       z_CSRGDeviceFree
 #define T_CSRGDeviceSetMatType	       z_CSRGDeviceSetMatType

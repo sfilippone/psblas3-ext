@@ -28,6 +28,7 @@ psb_s_csrg_mold.o \
 psb_s_csrg_reallocate_nz.o \
 psb_s_csrg_scal.o \
 psb_s_csrg_scals.o \
+psb_s_csrg_from_gpu.o \
 psb_s_csrg_to_gpu.o \
 psb_s_csrg_vect_mv.o \
 psb_s_csrg_inner_vect_sv.o \
@@ -38,6 +39,7 @@ psb_d_csrg_mold.o \
 psb_d_csrg_reallocate_nz.o \
 psb_d_csrg_scal.o \
 psb_d_csrg_scals.o \
+psb_d_csrg_from_gpu.o \
 psb_d_csrg_to_gpu.o \
 psb_d_csrg_vect_mv.o \
 psb_d_csrg_inner_vect_sv.o \
@@ -89,6 +91,7 @@ psb_d_hlg_mold.o \
 psb_d_hlg_reallocate_nz.o \
 psb_d_hlg_scal.o \
 psb_d_hlg_scals.o \
+psb_d_hlg_from_gpu.o \
 psb_d_hlg_to_gpu.o \
 psb_d_hlg_vect_mv.o \
 psb_s_hlg_allocate_mnnz.o \
@@ -99,6 +102,7 @@ psb_s_hlg_mold.o \
 psb_s_hlg_reallocate_nz.o \
 psb_s_hlg_scal.o \
 psb_s_hlg_scals.o \
+psb_s_hlg_from_gpu.o \
 psb_s_hlg_to_gpu.o \
 psb_s_hlg_vect_mv.o \
 psb_s_mv_hlg_from_coo.o \
@@ -148,6 +152,7 @@ psb_c_csrg_mold.o \
 psb_c_csrg_reallocate_nz.o \
 psb_c_csrg_scal.o \
 psb_c_csrg_scals.o \
+psb_c_csrg_from_gpu.o \
 psb_c_csrg_to_gpu.o \
 psb_c_csrg_vect_mv.o \
 psb_c_csrg_inner_vect_sv.o \
@@ -158,6 +163,7 @@ psb_z_csrg_mold.o \
 psb_z_csrg_reallocate_nz.o \
 psb_z_csrg_scal.o \
 psb_z_csrg_scals.o \
+psb_z_csrg_from_gpu.o \
 psb_z_csrg_to_gpu.o \
 psb_z_csrg_vect_mv.o \
 psb_z_csrg_inner_vect_sv.o \
@@ -209,6 +215,7 @@ psb_z_hlg_mold.o \
 psb_z_hlg_reallocate_nz.o \
 psb_z_hlg_scal.o \
 psb_z_hlg_scals.o \
+psb_z_hlg_from_gpu.o \
 psb_z_hlg_to_gpu.o \
 psb_z_hlg_vect_mv.o \
 psb_c_hlg_allocate_mnnz.o \
@@ -219,6 +226,7 @@ psb_c_hlg_mold.o \
 psb_c_hlg_reallocate_nz.o \
 psb_c_hlg_scal.o \
 psb_c_hlg_scals.o \
+psb_c_hlg_from_gpu.o \
 psb_c_hlg_to_gpu.o \
 psb_c_hlg_vect_mv.o \
 psb_c_mv_hlg_from_coo.o \

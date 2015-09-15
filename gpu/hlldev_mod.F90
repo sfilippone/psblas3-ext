@@ -46,13 +46,25 @@ module hlldev_mod
 #ifdef HAVE_SPGPU  
 
   interface 
-    function FgetHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex) &
-         & result(res) bind(c,name='getHllDeviceParams')
+    function bldHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex) &
+         & result(res) bind(c,name='bldHllDeviceParams')
       use iso_c_binding
       import :: hlldev_parms
       type(hlldev_parms)    :: res
       integer(c_int), value :: hksize,rows,nzeros,allocsize,elementType,firstIndex
-    end function FgetHllDeviceParams
+    end function BldHllDeviceParams
+  end interface
+
+  interface 
+    function getHllDeviceParams(deviceMat,hksize, rows, nzeros, allocsize,&
+         &  hackOffsLength, firstIndex,avgnzr) &
+         & result(res) bind(c,name='getHllDeviceParams')
+      use iso_c_binding
+      import :: hlldev_parms
+      integer(c_int)      :: res
+      type(c_ptr), value  :: deviceMat
+      integer(c_int)      :: hksize,rows,nzeros,allocsize,hackOffsLength,firstIndex,avgnzr
+    end function GetHllDeviceParams
   end interface
 
 

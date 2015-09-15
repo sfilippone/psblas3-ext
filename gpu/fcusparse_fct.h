@@ -67,6 +67,7 @@ int T_spmvCSRGDevice(T_Cmat *Mat, TYPE alpha, void *deviceX,
 int T_spsvCSRGDevice(T_Cmat *Mat, TYPE alpha, void *deviceX, 
 		     TYPE beta, void *deviceY);
 int T_CSRGDeviceAlloc(T_Cmat *Mat,int nr, int nc, int nz);
+int T_CSRGDeviceGetParms(T_Cmat *Mat,int *nr, int *nc, int *nz);
 int T_CSRGDeviceFree(T_Cmat *Mat);
 
 int T_CSRGDeviceSetMatType(T_Cmat *Mat, int type);
@@ -161,6 +162,20 @@ int T_CSRGDeviceAlloc(T_Cmat *Matrix,int nr, int nc, int nz)
     return(rc);
   Matrix->mat = cMat;
   return(CUSPARSE_STATUS_SUCCESS);
+}
+
+int T_CSRGDeviceGetParms(T_Cmat *Matrix,int *nr, int *nc, int *nz)
+{
+  T_CSRGDeviceMat *cMat= Matrix->mat;
+  
+  if (cMat!=NULL) {
+    *nr = cMat->m   ;
+    *nc = cMat->n   ;
+    *nz = cMat->nz  ;
+    return(CUSPARSE_STATUS_SUCCESS);
+  } else {
+    return((int) CUSPARSE_STATUS_ALLOC_FAILED);
+  }
 }
 
 int T_CSRGDeviceFree(T_Cmat *Matrix)

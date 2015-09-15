@@ -32,7 +32,7 @@
 #include "hlldev.h"
 #if defined(HAVE_SPGPU)
 //new
-HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows,  unsigned int nzeros, 
+HllDeviceParams bldHllDeviceParams(unsigned int hksize, unsigned int rows,  unsigned int nzeros, 
 				   unsigned int allocsize, unsigned int elementType, unsigned int firstIndex)
 {
   HllDeviceParams params;
@@ -42,16 +42,35 @@ HllDeviceParams getHllDeviceParams(unsigned int hksize, unsigned int rows,  unsi
   //numero di elementi di val
   params.allocsize = allocsize;
   params.rows  = rows;
+  params.nzt   = nzeros;
   params.avgNzr = (nzeros+rows-1)/rows;
   params.firstIndex = firstIndex;
-
   return params;
+  
+}
 
+int getHllDeviceParams(HllDevice* mat, int *hksize, int *rows, int *nzeros,
+		       int *allocsize, int *hackOffsLength,  int *firstIndex, int *avgnzr)
+{
+
+  
+  if (mat!=NULL) {
+    *hackOffsLength = mat->hackOffsLength ;
+    *hksize         = mat->hackSize    ;
+    *nzeros         = mat->nzt    ; 
+    *allocsize      = mat->allocsize   ;
+    *rows           = mat->rows        ;
+    *avgnzr         = mat->avgNzr      ;
+    *firstIndex     = mat->baseIndex  ;
+    return SPGPU_SUCCESS;
+  } else {
+    return SPGPU_UNSUPPORTED;
+  }
 }
 //new
 int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
 {
-  struct HllDevice *tmp = (struct HllDevice *)malloc(sizeof(struct HllDevice));
+  HllDevice *tmp = (HllDevice *)malloc(sizeof(HllDevice));
   int ret=SPGPU_SUCCESS;
   *remoteMatrix = (void *)tmp;
 
@@ -60,7 +79,8 @@ int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
   tmp->allocsize = params->allocsize;
 
   tmp->rows   = params->rows;
-  tmp->avgNzr = params->avgNzr; 
+  tmp->avgNzr = params->avgNzr;
+  tmp->nzt    = params->nzt; 
   //fprintf(stderr,"Allocating HLG with %d avgNzr\n",params->avgNzr);
   tmp->hackOffsLength = (int)(tmp->rows+tmp->hackSize-1)/tmp->hackSize;
 
@@ -109,7 +129,7 @@ int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params)
 
 void freeHllDevice(void* remoteMatrix)
 {
-  struct HllDevice *devMat = (struct HllDevice *) remoteMatrix;  
+  HllDevice *devMat = (HllDevice *) remoteMatrix;  
   //fprintf(stderr,"freeHllDevice\n");
   if (devMat != NULL) {
     freeRemoteBuffer(devMat->rS);
@@ -127,7 +147,7 @@ int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  un
 #ifdef HAVE_SPGPU
   HllDeviceParams p;
 
-  p = getHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex);
+  p = bldHllDeviceParams(hksize, rows, nzeros, allocsize, elementType, firstIndex);
   i = allocHllDevice(deviceMat, &p);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","FallocEllDevice",i);
@@ -142,7 +162,7 @@ int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  un
 int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
 			float beta, void* deviceY)
 {
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
   spgpuHandle_t handle=psb_gpuGetHandle();
@@ -171,7 +191,7 @@ int spmvHllDeviceFloat(void *deviceMat, float alpha, void* deviceX,
 int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX, 
 		       double beta, void* deviceY)
 {
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
   spgpuHandle_t handle=psb_gpuGetHandle();
@@ -199,7 +219,7 @@ int spmvHllDeviceDouble(void *deviceMat, double alpha, void* deviceX,
 int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* deviceX, 
 		       float complex beta, void* deviceY)
 {
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
   spgpuHandle_t handle=psb_gpuGetHandle();
@@ -229,7 +249,7 @@ int spmvHllDeviceFloatComplex(void *deviceMat, float complex alpha, void* device
 int spmvHllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* deviceX, 
 		       double complex beta, void* deviceY)
 {
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   struct MultiVectDevice *x = (struct MultiVectDevice *) deviceX;
   struct MultiVectDevice *y = (struct MultiVectDevice *) deviceY;
   spgpuHandle_t handle=psb_gpuGetHandle();
@@ -256,7 +276,7 @@ int spmvHllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
 int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -275,7 +295,7 @@ int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* 
 int writeHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -294,7 +314,7 @@ int writeHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int
 int writeHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -313,7 +333,7 @@ int writeHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int
 int writeHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -332,7 +352,7 @@ int writeHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, i
 int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
@@ -350,7 +370,7 @@ int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* i
 int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
@@ -367,7 +387,7 @@ int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int*
 int readHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
@@ -384,7 +404,7 @@ int readHllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int 
 int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int *hkoffs, int* irn)
 { int i;
 #ifdef HAVE_SPGPU
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
@@ -405,7 +425,7 @@ int psiCopyCooToHlgFloat(int nr, int nc, int nza, int hacksz, int noffs, int isz
 { int i,j;
 #ifdef HAVE_SPGPU
   spgpuHandle_t handle; 
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   float *devVal;
   int *devIdisp, *devJa;
   int *tja;
@@ -447,7 +467,7 @@ int psiCopyCooToHlgDouble(int nr, int nc, int nza, int hacksz, int noffs, int is
 { int i,j;
 #ifdef HAVE_SPGPU
   spgpuHandle_t handle; 
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   double *devVal;
   int *devIdisp, *devJa;
   int *tja;
@@ -489,7 +509,7 @@ int psiCopyCooToHlgFloatComplex(int nr, int nc, int nza, int hacksz, int noffs, 
 { int i,j;
 #ifdef HAVE_SPGPU
   spgpuHandle_t handle; 
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   float complex *devVal;
   int *devIdisp, *devJa;
   int *tja;
@@ -531,7 +551,7 @@ int psiCopyCooToHlgDoubleComplex(int nr, int nc, int nza, int hacksz, int noffs,
 { int i,j;
 #ifdef HAVE_SPGPU
   spgpuHandle_t handle; 
-  struct HllDevice *devMat = (struct HllDevice *) deviceMat;
+  HllDevice *devMat = (HllDevice *) deviceMat;
   double complex *devVal;
   int *devIdisp, *devJa;
   int *tja;

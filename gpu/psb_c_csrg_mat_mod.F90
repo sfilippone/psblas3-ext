@@ -36,6 +36,10 @@ module psb_c_csrg_mat_mod
   use psb_c_mat_mod
   use cusparse_mod
 
+  integer(psb_ipk_), parameter, private :: is_host = -1
+  integer(psb_ipk_), parameter, private :: is_sync = 0 
+  integer(psb_ipk_), parameter, private :: is_dev  = 1 
+
   type, extends(psb_c_csr_sparse_mat) :: psb_c_csrg_sparse_mat
     !
     ! cuSPARSE 4.0 CSR format.
@@ -46,7 +50,8 @@ module psb_c_csrg_mat_mod
     ! 
 #ifdef HAVE_SPGPU
     type(c_Cmat) :: deviceMat
-
+    integer     :: devstate  = is_host
+    
   contains
     procedure, nopass  :: get_fmt       => c_csrg_get_fmt
     procedure, pass(a) :: sizeof        => c_csrg_sizeof
@@ -66,7 +71,15 @@ module psb_c_csrg_mat_mod
     procedure, pass(a) :: mv_from_fmt   => psb_c_mv_csrg_from_fmt
     procedure, pass(a) :: free          => c_csrg_free
     procedure, pass(a) :: mold          => psb_c_csrg_mold
+    procedure, pass(a) :: is_host       => c_csrg_is_host
+    procedure, pass(a) :: is_dev        => c_csrg_is_dev
+    procedure, pass(a) :: is_sync       => c_csrg_is_sync
+    procedure, pass(a) :: set_host      => c_csrg_set_host
+    procedure, pass(a) :: set_dev       => c_csrg_set_dev
+    procedure, pass(a) :: set_sync      => c_csrg_set_sync
+    procedure, pass(a) :: sync          => c_csrg_sync
     procedure, pass(a) :: to_gpu        => psb_c_csrg_to_gpu
+    procedure, pass(a) :: from_gpu      => psb_c_csrg_from_gpu
 #ifdef HAVE_FINAL
     final              :: c_csrg_finalize
 #endif
@@ -139,6 +152,14 @@ module psb_c_csrg_mat_mod
       integer(psb_ipk_), intent(out)              :: info
       integer(psb_ipk_), intent(in), optional     :: nzrm
     end subroutine psb_c_csrg_to_gpu
+  end interface
+
+  interface 
+    subroutine psb_c_csrg_from_gpu(a,info) 
+      import :: psb_c_csrg_sparse_mat, psb_ipk_
+      class(psb_c_csrg_sparse_mat), intent(inout) :: a
+      integer(psb_ipk_), intent(out)             :: info
+    end subroutine psb_c_csrg_from_gpu
   end interface
 
   interface 
@@ -237,6 +258,7 @@ contains
     implicit none 
     class(psb_c_csrg_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
+    if (a%is_dev()) call a%sync()
     res = 8 
     res = res + (2*psb_sizeof_sp)  * size(a%val)
     res = res + psb_sizeof_int * size(a%irp)
@@ -266,6 +288,70 @@ contains
   !
   !
   ! == ===================================  
+
+
+  subroutine c_csrg_set_host(a)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_host
+  end subroutine c_csrg_set_host
+
+  subroutine c_csrg_set_dev(a)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_dev
+  end subroutine c_csrg_set_dev
+
+  subroutine c_csrg_set_sync(a)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_sync
+  end subroutine c_csrg_set_sync
+
+  function c_csrg_is_dev(a) result(res)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(in) :: a
+    logical  :: res
+  
+    res = (a%devstate == is_dev)
+  end function c_csrg_is_dev
+  
+  function c_csrg_is_host(a) result(res)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(in) :: a
+    logical  :: res
+
+    res = (a%devstate == is_host)
+  end function c_csrg_is_host
+
+  function c_csrg_is_sync(a) result(res)
+    implicit none 
+    class(psb_c_csrg_sparse_mat), intent(in) :: a
+    logical  :: res
+
+    res = (a%devstate == is_sync)
+  end function c_csrg_is_sync
+
+
+  subroutine  c_csrg_sync(a) 
+    implicit none 
+    class(psb_c_csrg_sparse_mat), target, intent(in) :: a
+    class(psb_c_csrg_sparse_mat), pointer :: tmpa
+    integer(psb_ipk_) :: info
+
+    tmpa => a
+    if (tmpa%is_host()) then 
+      call tmpa%to_gpu(info)
+    else if (tmpa%is_dev()) then 
+      call tmpa%from_gpu(info)
+    end if
+    call tmpa%set_sync()
+    return
+
+  end subroutine c_csrg_sync
 
   subroutine  c_csrg_free(a) 
     use cusparse_mod

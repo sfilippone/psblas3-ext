@@ -36,6 +36,11 @@ module psb_d_hlg_mat_mod
   use psb_d_mat_mod 
   use psb_d_hll_mat_mod
 
+
+  integer(psb_ipk_), parameter, private :: is_host = -1
+  integer(psb_ipk_), parameter, private :: is_sync = 0 
+  integer(psb_ipk_), parameter, private :: is_dev  = 1 
+
   type, extends(psb_d_hll_sparse_mat) :: psb_d_hlg_sparse_mat
     !
     ! ITPACK/HLL format, extended.
@@ -46,6 +51,7 @@ module psb_d_hlg_mat_mod
     ! 
 #ifdef HAVE_SPGPU
     type(c_ptr) :: deviceMat = c_null_ptr
+    integer     :: devstate  = is_host
 
   contains
     procedure, nopass  :: get_fmt       => d_hlg_get_fmt
@@ -58,14 +64,22 @@ module psb_d_hlg_mat_mod
     procedure, pass(a) :: scalv         => psb_d_hlg_scal
     procedure, pass(a) :: reallocate_nz => psb_d_hlg_reallocate_nz
     procedure, pass(a) :: allocate_mnnz => psb_d_hlg_allocate_mnnz
-    ! Note: we *do* need the TO methods, because of the need to invoke SYNC
-    ! 
+    ! Note: we do *not* need the TO methods, because the parent type
+    ! methods will work. 
     procedure, pass(a) :: cp_from_coo   => psb_d_cp_hlg_from_coo
     procedure, pass(a) :: cp_from_fmt   => psb_d_cp_hlg_from_fmt
     procedure, pass(a) :: mv_from_coo   => psb_d_mv_hlg_from_coo
     procedure, pass(a) :: mv_from_fmt   => psb_d_mv_hlg_from_fmt
     procedure, pass(a) :: free          => d_hlg_free
     procedure, pass(a) :: mold          => psb_d_hlg_mold
+    procedure, pass(a) :: is_host       => d_hlg_is_host
+    procedure, pass(a) :: is_dev        => d_hlg_is_dev
+    procedure, pass(a) :: is_sync       => d_hlg_is_sync
+    procedure, pass(a) :: set_host      => d_hlg_set_host
+    procedure, pass(a) :: set_dev       => d_hlg_set_dev
+    procedure, pass(a) :: set_sync      => d_hlg_set_sync
+    procedure, pass(a) :: sync          => d_hlg_sync
+    procedure, pass(a) :: from_gpu      => psb_d_hlg_from_gpu
     procedure, pass(a) :: to_gpu        => psb_d_hlg_to_gpu
 #ifdef HAVE_FINAL
     final              :: d_hlg_finalize
@@ -128,6 +142,14 @@ module psb_d_hlg_mat_mod
       class(psb_d_base_sparse_mat), intent(inout), allocatable :: b
       integer(psb_ipk_), intent(out)                           :: info
     end subroutine psb_d_hlg_mold
+  end interface
+
+  interface 
+    subroutine psb_d_hlg_from_gpu(a,info) 
+      import :: psb_d_hlg_sparse_mat, psb_ipk_
+      class(psb_d_hlg_sparse_mat), intent(inout) :: a
+      integer(psb_ipk_), intent(out)             :: info
+    end subroutine psb_d_hlg_from_gpu
   end interface
 
   interface 
@@ -236,6 +258,9 @@ contains
     implicit none 
     class(psb_d_hlg_sparse_mat), intent(in) :: a
     integer(psb_long_int_k_) :: res
+
+    
+    if (a%is_dev()) call a%sync()
     res = 8 
     res = res + psb_sizeof_dp  * size(a%val)
     res = res + psb_sizeof_int * size(a%irn)
@@ -282,6 +307,70 @@ contains
     return
 
   end subroutine d_hlg_free
+
+  
+  subroutine  d_hlg_sync(a) 
+    implicit none 
+    class(psb_d_hlg_sparse_mat), target, intent(in) :: a
+    class(psb_d_hlg_sparse_mat), pointer :: tmpa
+    integer(psb_ipk_) :: info
+
+    tmpa => a
+    if (tmpa%is_host()) then 
+      call tmpa%to_gpu(info)
+    else if (tmpa%is_dev()) then 
+      call tmpa%from_gpu(info)
+    end if
+    call tmpa%set_sync()
+    return
+
+  end subroutine d_hlg_sync
+
+  subroutine d_hlg_set_host(a)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_host
+  end subroutine d_hlg_set_host
+
+  subroutine d_hlg_set_dev(a)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_dev
+  end subroutine d_hlg_set_dev
+
+  subroutine d_hlg_set_sync(a)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(inout) :: a
+    
+    a%devstate = is_sync
+  end subroutine d_hlg_set_sync
+
+  function d_hlg_is_dev(a) result(res)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(in) :: a
+    logical  :: res
+  
+    res = (a%devstate == is_dev)
+  end function d_hlg_is_dev
+  
+  function d_hlg_is_host(a) result(res)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(in) :: a
+    logical  :: res
+
+    res = (a%devstate == is_host)
+  end function d_hlg_is_host
+
+  function d_hlg_is_sync(a) result(res)
+    implicit none 
+    class(psb_d_hlg_sparse_mat), intent(in) :: a
+    logical  :: res
+
+    res = (a%devstate == is_sync)
+  end function d_hlg_is_sync
+
 
 #ifdef HAVE_FINAL
   subroutine  d_hlg_finalize(a) 
