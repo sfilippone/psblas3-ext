@@ -400,6 +400,10 @@ program s_file_spmv
          &'("Memory occupation CPU  (MBytes)  : ",f20.2,"           ")') samatsize
     write(psb_out_unit,&
          &'("Memory occupation GPU  (MBytes)  : ",f20.2,"           ")') sgmatsize
+    write(psb_out_unit,&
+         &'("Memory occupation CPU  (Bytes)   : ",i24,"           ")') amatsize
+    write(psb_out_unit,&
+         &'("Memory occupation GPU  (Bytes)   : ",i24,"           ")') agmatsize
     flops  = ntests*(2.d0*annz)
     tflops = flops
     gflops = flops * ngpu
