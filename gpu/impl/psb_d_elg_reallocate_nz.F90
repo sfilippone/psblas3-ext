@@ -55,7 +55,7 @@ subroutine  psb_d_elg_reallocate_nz(nz,a)
   ! 
   if (a%is_dev()) call a%sync()
   m    = a%get_nrows()
-  nzrm = (nz+m-1)/m
+  nzrm = (max(nz,ione)+m-1)/m
   ld = size(a%ja,1)
   call psb_realloc(ld,nzrm,a%ja,info)
   if (info == psb_success_) call psb_realloc(ld,nzrm,a%val,info)

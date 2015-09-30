@@ -44,25 +44,19 @@ subroutine psb_d_cp_hybg_from_coo(a,b,info)
   class(psb_d_coo_sparse_mat), intent(in)     :: b
   integer(psb_ipk_), intent(out)              :: info
 
-  !locals
-  logical, parameter :: timings=.false.
-  real(psb_dpk_) :: t0,t1,t2
   info = psb_success_
 
-  if (timings) t0=psb_wtime()
   call a%psb_d_csr_sparse_mat%cp_from_coo(b,info) 
   if (info /= 0) goto 9999
-  if (timings) t1=psb_wtime()
 #ifdef HAVE_SPGPU
   call a%to_gpu(info)
-#endif
   if (info /= 0) goto 9999
-  if (timings) t2=psb_wtime()
-  if (timings) write(*,*) 'cp_hybg_from_coo', t2-t0,t1-t0,t2-t1
+#endif
+
   return
 
 9999 continue
-  info = psb_err_alloc_dealloc_ 
+  info = psb_err_alloc_dealloc_
   return
 
 end subroutine psb_d_cp_hybg_from_coo

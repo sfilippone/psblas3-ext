@@ -55,9 +55,9 @@ subroutine  psb_d_hll_allocate_mnnz(m,n,a,nz)
     goto 9999
   endif
   if (present(nz)) then 
-    nz_ = (nz + m -1 )/m
+    nz_ = (max(nz,ione) + m -1 )/m
   else
-    nz_ = (max(7*m,7*n,1)+m-1)/m
+    nz_ = (max(7*m,7*n,ione)+m-1)/m
   end if
   if (nz_ < 0) then 
     info = psb_err_iarg_neg_

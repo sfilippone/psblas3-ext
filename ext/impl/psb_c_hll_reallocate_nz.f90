@@ -37,7 +37,7 @@ subroutine  psb_c_hll_reallocate_nz(nz,a)
   implicit none 
   integer(psb_ipk_), intent(in) :: nz
   class(psb_c_hll_sparse_mat), intent(inout) :: a
-  integer(psb_ipk_)  :: m, nzrm
+  integer(psb_ipk_)  :: m, nzrm,nz_
   Integer(Psb_ipk_)  :: err_act, info
   character(len=20)  :: name='c_hll_reallocate_nz'
   logical, parameter :: debug=.false.
@@ -46,9 +46,10 @@ subroutine  psb_c_hll_reallocate_nz(nz,a)
 
   !
   ! What should this really do??? 
-  ! 
-  call psb_realloc(nz,a%ja,info)
-  if (info == psb_success_) call psb_realloc(nz,a%val,info)
+  !
+  nz_ = max(nz,ione)
+  call psb_realloc(nz_,a%ja,info)
+  if (info == psb_success_) call psb_realloc(nz_,a%val,info)
   if (info /= psb_success_) then 
     call psb_errpush(psb_err_alloc_dealloc_,name)
     goto 9999

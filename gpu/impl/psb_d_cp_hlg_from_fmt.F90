@@ -53,7 +53,6 @@ subroutine psb_d_cp_hlg_from_fmt(a,b,info)
     call a%cp_from_coo(b,info) 
   class default
     call a%psb_d_hll_sparse_mat%cp_from_fmt(b,info)
-    call a%set_host()
 #ifdef HAVE_SPGPU
     if (info == 0) call a%to_gpu(info)
 #endif

@@ -48,7 +48,7 @@ subroutine  psb_d_ell_reallocate_nz(nz,a)
   ! What should this really do??? 
   ! 
   m    = a%get_nrows()
-  nzrm = (nz+m-1)/m
+  nzrm = (max(nz,ione)+m-1)/m
   ld = size(a%ja,1)
   call psb_realloc(ld,nzrm,a%ja,info)
   if (info == psb_success_) call psb_realloc(ld,nzrm,a%val,info)

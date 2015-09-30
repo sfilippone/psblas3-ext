@@ -47,8 +47,7 @@ subroutine psb_d_hybg_to_gpu(a,info,nzrm)
   integer(psb_ipk_) :: nzdi,i,j,k,nrz
   integer(psb_ipk_), allocatable :: irpdi(:),jadi(:)
   real(psb_dpk_), allocatable :: valdi(:)
-  real(psb_dpk_) :: t0, t1
-  
+
   info = 0
 
 #ifdef HAVE_SPGPU
@@ -127,10 +126,8 @@ subroutine psb_d_hybg_to_gpu(a,info,nzrm)
       end if
     end if
 
-    t0=psb_wtime()
     if (info == 0) info = HYBGHost2Device(a%deviceMat,m,n,nz,a%irp,a%ja,a%val)
-    t1 = psb_wtime() - t0
-    !write(*,*) 'HYBGHost2Device ',t1
+
     if ((info == 0) .and. a%is_triangle()) then 
       info = HYBGDeviceSetMatType(a%deviceMat,cusparse_matrix_type_triangular)
       if ((info == 0).and.a%is_upper()) then 
