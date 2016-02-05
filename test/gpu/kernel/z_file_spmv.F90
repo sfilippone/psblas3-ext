@@ -47,9 +47,9 @@ program z_file_spmv
 
   ! dense matrices
   complex(psb_dpk_), allocatable, target :: aux_b(:,:), d(:)
-  complex(psb_dpk_), allocatable , save  :: b_col(:), x_col(:), r_col(:), &
-       & x_col_glob(:), r_col_glob(:), bres(:)
+  complex(psb_dpk_), allocatable , save  :: x_col_glob(:), r_col_glob(:)
   complex(psb_dpk_), pointer  :: b_col_glob(:)
+  type(psb_z_vect_type)    :: b_col, x_col, r_col
   type(psb_z_vect_type) :: xg, bg, xv, bv
 #ifdef HAVE_GPU
   type(psb_z_vect_gpu)  :: vmold
@@ -111,6 +111,10 @@ program z_file_spmv
     write(*,*) 'Welcome to PSBLAS version: ',psb_version_string_
     write(*,*) 'This is the ',trim(name),' sample program'
   end if
+#ifdef HAVE_GPU
+  write(*,*) 'Process ',iam,' running on device: ', psb_cuda_getDevice(),' out of', psb_cuda_getDeviceCount()
+  write(*,*) 'Process ',iam,' device ', psb_cuda_getDevice(),' is a: ', trim(psb_gpu_DeviceName())  
+#endif
 
   if (iam == 0) then 
     write(*,*) 'Matrix? '
@@ -238,7 +242,7 @@ program z_file_spmv
       ivg(i) = ipv(1)
     enddo
     call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,b_col_glob,bv,info,v=ivg)
+         & desc_a,info,b_glob=b_col_glob,b=bv,v=ivg)
   else if (ipart == 2) then 
     if (iam==psb_root_) then 
       write(psb_out_unit,'("Partition type: graph")')
@@ -250,11 +254,11 @@ program z_file_spmv
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
     call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,b_col_glob,bv,info,v=ivg)
+         & desc_a,info,b_glob=b_col_glob,b=bv,v=ivg)
   else 
     if (iam==psb_root_) write(psb_out_unit,'("Partition type default: block")')
     call psb_matdist(aux_a, a,  ictxt, &
-         & desc_a,b_col_glob,bv,info,parts=part_block)
+         & desc_a,info,b_glob=b_col_glob,b=bv,parts=part_block)
   end if
 
   t2 = psb_wtime() - t0
@@ -274,7 +278,7 @@ program z_file_spmv
   call psb_geall(x_col,desc_a,info)
   do i=1, nr
     call desc_a%l2g(i,ig,info)
-    x_col(i) = 1.0 + (1.0*ig)/nrg
+    call psb_geins(ione,(/ig/),(/(zone + (zone*ig)/nrg)/),x_col,desc_a,info)
   end do
   call psb_geasb(x_col,desc_a,info)
   do j=1, ncnv
@@ -286,13 +290,14 @@ program z_file_spmv
     call psb_amx(ictxt,t2)
     tcnvcsr = tcnvcsr + t2
     if (j==1) tcnvc1 = t2
-    call xv%bld(x_col)
+    xc1 = x_col%get_vect()
+    call xv%bld(xc1)
     call psb_geasb(bv,desc_a,info,scratch=.true.)
     
 #ifdef HAVE_GPU
     
     call aux_a%cscnv(agpu,info,mold=acoo)
-    call xg%bld(x_col,mold=vmold)
+    call xg%bld(xc1,mold=vmold)
     call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
     call psb_barrier(ictxt)
     t1 = psb_wtime()

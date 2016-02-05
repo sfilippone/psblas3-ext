@@ -299,7 +299,7 @@ int absMultiVecDeviceDoubleComplex2(int n, cuDoubleComplex alpha, void *deviceVe
     return SPGPU_UNSUPPORTED;
 
   spgpuZabs(handle, (cuDoubleComplex*)devVecB->v_, n,
-	    alpha, (cuDoubleComplex*)devVecA->v_);
+	    alpha, (cuDoubleComplex*)devVecA->v_); 
 
   return(i);
 }

@@ -34,8 +34,8 @@
 #if defined(HAVE_SPGPU)
 //#include "utils.h"
 #include <complex.h>
-#include "vectordev.h"
 #include "cuComplex.h"
+#include "vectordev.h"
 #include "cuda_runtime.h"
 #include "core.h"
 
