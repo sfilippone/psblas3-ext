@@ -583,7 +583,7 @@ int psiCopyCooToElgFloatComplex(int nr, int nc, int nza, int hacksz, int ldv, in
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_s_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_c_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
 				    (int *) devMat->rP, (float complex *)devMat->cM);
   // Ex updateFromHost function
@@ -626,7 +626,7 @@ int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, i
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_d_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_z_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
 				    (int *) devMat->rP, (double complex *)devMat->cM);
   // Ex updateFromHost function
