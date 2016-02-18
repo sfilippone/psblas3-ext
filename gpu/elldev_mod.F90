@@ -166,6 +166,14 @@ module elldev_mod
   end interface
 
   interface 
+    subroutine  zeroEllDevice(deviceMat) &
+         & bind(c,name='zeroEllDevice')
+      use iso_c_binding
+      type(c_ptr), value  :: deviceMat
+    end subroutine zeroEllDevice
+  end interface
+
+  interface 
     subroutine resetEllTimer() bind(c,name='resetEllTimer')
       use iso_c_binding
     end subroutine resetEllTimer

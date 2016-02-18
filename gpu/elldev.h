@@ -68,6 +68,9 @@ struct EllDevice
 
   /*(i.e. 0 for C, 1 for Fortran)*/
   int baseIndex;
+  /* real/complex, single/double */
+  int  dataType;
+  
 };
 
 typedef struct EllDeviceParams
@@ -160,6 +163,8 @@ int dev_csputEllDeviceFloatComplex(void* deviceMat,  int nnz,
 				   void *ia, void *ja, void *val);
 int dev_csputEllDeviceDoubleComplex(void* deviceMat, int nnz,
 				    void *ia, void *ja, void *val);
+
+void zeroEllDevice(void* deviceMat);
 
 int getEllDevicePitch(void* deviceMat);
 

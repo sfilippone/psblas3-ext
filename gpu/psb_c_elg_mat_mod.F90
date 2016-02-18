@@ -334,13 +334,41 @@ contains
 
     class(psb_c_elg_sparse_mat), intent(inout) :: a
     logical, intent(in), optional :: clear
-    integer(psb_ipk_) :: isz
-  
-    if (a%is_dev()) call a%sync()
+    integer(psb_ipk_) :: isz, err_act
+    character(len=20)  :: name='reinit'
+    logical            :: clear_
+    logical, parameter :: debug=.false.
 
-    call a%psb_c_ell_sparse_mat%reinit(clear)
-    call a%set_host()
+    call psb_erractionsave(err_act)
+    info = psb_success_
 
+    if (present(clear)) then 
+      clear_ = clear
+    else
+      clear_ = .true.
+    end if
+
+    if (a%is_bld() .or. a%is_upd()) then 
+      ! do nothing
+      return
+    else if (a%is_asb()) then
+      if (a%is_dev().or.a%is_sync()) then
+        if (clear_) call zeroEllDevice(a%deviceMat)
+        call a%set_dev()
+      else if (a%is_host()) then 
+        a%val(:,:) = czero
+      end if
+      call a%set_upd()
+    else
+      info = psb_err_invalid_mat_state_
+      call psb_errpush(info,name)
+      goto 9999
+    end if
+
+    call psb_erractionrestore(err_act)
+    return
+
+9999 call psb_error_handler(err_act)
     return
 
   end subroutine c_elg_reinit

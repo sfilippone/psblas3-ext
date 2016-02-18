@@ -81,6 +81,7 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
   allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
   tmp->columns = params->columns;
   tmp->baseIndex = params->firstIndex;
+  tmp->dataType = params->elementType;
   //fprintf(stderr,"allocEllDevice: %d %d %d \n",tmp->pitch, params->maxRowSize, params->avgRowSize);
   if (params->elementType == SPGPU_TYPE_FLOAT)
     allocRemoteBuffer((void **)&(tmp->cM), tmp->allocsize*sizeof(float));
@@ -97,6 +98,28 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
 
   return SPGPU_SUCCESS;
 }
+
+//new
+void zeroEllDevice(void *remoteMatrix)
+{
+  struct EllDevice *tmp = (struct EllDevice *) remoteMatrix;
+  
+  if (tmp->dataType == SPGPU_TYPE_FLOAT)
+    cudaMemset((void  *)tmp->cM, 0, tmp->allocsize*sizeof(float));
+  else if (tmp->dataType == SPGPU_TYPE_DOUBLE)
+    cudaMemset((void  *)tmp->cM, 0, tmp->allocsize*sizeof(double));
+  else if (tmp->dataType == SPGPU_TYPE_COMPLEX_FLOAT)
+    cudaMemset((void  *)tmp->cM, 0, tmp->allocsize*sizeof(cuFloatComplex));
+  else if (tmp->dataType == SPGPU_TYPE_COMPLEX_DOUBLE)
+    cudaMemset((void  *)tmp->cM, 0, tmp->allocsize*sizeof(cuDoubleComplex));
+  else
+    return SPGPU_UNSUPPORTED; // Unsupported params
+  //fprintf(stderr,"From allocEllDevice: %d %d %d %p %p %p\n",tmp->maxRowSize,
+  //	  tmp->avgRowSize,tmp->allocsize,tmp->rS,tmp->rP,tmp->cM);
+
+  return;
+}
+
 
 void freeEllDevice(void* remoteMatrix)
 {
