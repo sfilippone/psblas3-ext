@@ -140,7 +140,7 @@ contains
     integer(psb_ipk_), intent(in)              :: n
     integer(psb_ipk_), intent(out)             :: info
 
-    
+
     if (psb_gpu_DeviceHasUVA()) then       
       if (allocated(x%combuf)) then 
         if (size(x%combuf)<n) then 
@@ -156,16 +156,28 @@ contains
       call psb_realloc(n,x%combuf,info)
     end if
     if (c_associated(x%dt_buf)) then 
-      call freeDouble(x%dt_buf)
+      if (x%dt_buf_sz < n) then
+        call freeDouble(x%dt_buf)
+        x%dt_buf = c_null_ptr
+        x%dt_buf_sz = 0
+      end if
     end if
-    info       =  allocateDouble(x%dt_buf,n)
-    x%dt_buf_sz = n
+    if (.not.c_associated(x%dt_buf)) then
+      info       =  allocateDouble(x%dt_buf,n)
+      x%dt_buf_sz = n
+    end if
     if (c_associated(x%i_buf)) then 
-      call freeInt(x%i_buf)
+      if (x%i_buf_sz < n) then
+        call freeInt(x%i_buf)
+        x%i_buf = c_null_ptr
+        x%i_buf_sz = 0
+      end if
     end if
-    info       =  allocateInt(x%i_buf,n)
-    x%i_buf_sz = n
-    
+    if (.not.c_associated(x%i_buf)) then
+      info       =  allocateInt(x%i_buf,n)
+      x%i_buf_sz = n
+    end if
+
   end subroutine d_gpu_new_buffer
 
   subroutine d_gpu_free_buffer(x,info)
@@ -253,6 +265,7 @@ contains
         if (x%dt_buf_sz < n) then 
           if (c_associated(x%dt_buf)) then 
             call freeDouble(x%dt_buf)
+            x%dt_buf = c_null_ptr
           end if
           info =  allocateDouble(x%dt_buf,n)
           x%dt_buf_sz=n
@@ -272,6 +285,7 @@ contains
       if (x%i_buf_sz < ni) then 
         if (c_associated(x%i_buf)) then 
           call freeInt(x%i_buf)
+          x%i_buf = c_null_ptr
         end if
         info =  allocateInt(x%i_buf,ni)
         x%i_buf_sz=ni
@@ -289,7 +303,8 @@ contains
       if (x%dt_buf_sz < n) then 
         if (c_associated(x%dt_buf)) then 
           call freeDouble(x%dt_buf)
-        end if
+            x%dt_buf = c_null_ptr
+          end if
         info =  allocateDouble(x%dt_buf,n)
         x%dt_buf_sz=n
       end if
@@ -423,6 +438,7 @@ contains
         if (y%dt_buf_sz < n) then 
           if (c_associated(y%dt_buf)) then 
             call freeDouble(y%dt_buf)
+            y%dt_buf = c_null_ptr
           end if
           info =  allocateDouble(y%dt_buf,n)
           y%dt_buf_sz=n
@@ -439,6 +455,7 @@ contains
       if (y%i_buf_sz < ni) then 
         if (c_associated(y%i_buf)) then 
           call freeInt(y%i_buf)
+          y%i_buf = c_null_ptr
         end if
         info =  allocateInt(y%i_buf,ni)
         y%i_buf_sz=ni
@@ -456,6 +473,7 @@ contains
       if (y%dt_buf_sz < n) then 
         if (c_associated(y%dt_buf)) then 
           call freeDouble(y%dt_buf)
+          y%dt_buf = c_null_ptr
         end if
         info =  allocateDouble(y%dt_buf,n)
         y%dt_buf_sz=n
@@ -761,26 +779,14 @@ contains
     class(psb_d_vect_gpu), intent(inout)  :: x
     integer(psb_ipk_), intent(out)        :: info
     
-    info = 0
-    if (c_associated(x%deviceVect)) then 
+    info = 0  
+    if (allocated(x%v)) deallocate(x%v, stat=info)
+    if (c_associated(x%deviceVect)) then
+!!$      write(0,*)'d_gpu_free Calling freeMultiVecDevice'
       call freeMultiVecDevice(x%deviceVect)
       x%deviceVect=c_null_ptr
     end if
-    if (allocated(x%pinned_buffer)) then 
-      call inner_unregister(x%pinned_buffer)
-      deallocate(x%pinned_buffer, stat=info)
-    end if
-    if (allocated(x%buffer)) then 
-      deallocate(x%buffer, stat=info)
-    end if
-    if (c_associated(x%dt_buf)) &
-         &  call freeDouble(x%dt_buf)
-    if (c_associated(x%i_buf)) &
-         &  call freeInt(x%i_buf)
-    x%dt_buf_sz=0
-    x%i_buf_sz=0
-
-    if (allocated(x%v)) deallocate(x%v, stat=info)
+    call x%free_buffer(info)
     call x%set_sync()
   end subroutine d_gpu_free
 
