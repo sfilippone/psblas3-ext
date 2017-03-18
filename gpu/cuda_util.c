@@ -194,7 +194,7 @@ int freeRemoteBuffer(void* buffer)
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
   else {
-    fprintf(stderr,"CUDA Error freeRemoteBuffer: %s\n", cudaGetErrorString(err));
+    fprintf(stderr,"CUDA Error freeRemoteBuffer: %s  %p\n", cudaGetErrorString(err),buffer);
     return SPGPU_UNSPECIFIED;
   }
 }
