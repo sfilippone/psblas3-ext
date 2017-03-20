@@ -36,6 +36,7 @@ module psb_i_gpu_vect_mod
   use psb_error_mod
   use psb_i_vect_mod
 #ifdef HAVE_SPGPU
+  use psb_gpu_env_mod
   use psb_i_vectordev_mod
 #endif
 
@@ -84,6 +85,7 @@ module psb_i_gpu_vect_mod
     procedure, pass(x) :: new_buffer   => i_gpu_new_buffer
     procedure, nopass  :: device_wait  => i_gpu_device_wait
     procedure, pass(x) :: free_buffer  => i_gpu_free_buffer
+    procedure, pass(x) :: maybe_free_buffer  => i_gpu_maybe_free_buffer
 
 #ifdef HAVE_FINAL
     final              :: i_gpu_vect_finalize
@@ -162,6 +164,18 @@ contains
     end if
 
   end subroutine i_gpu_new_buffer
+
+  subroutine i_gpu_maybe_free_buffer(x,info)
+    use psb_realloc_mod
+    use psb_gpu_env_mod
+    implicit none 
+    class(psb_i_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)             :: info
+
+    info = 0 
+    if (psb_gpu_get_maybe_free_buffer()) &
+         & call x%free_buffer(info)
+  end subroutine i_gpu_maybe_free_buffer
 
   subroutine i_gpu_free_buffer(x,info)
     use psb_realloc_mod

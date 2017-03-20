@@ -37,6 +37,7 @@ module psb_z_gpu_vect_mod
   use psb_z_vect_mod
   use psb_i_vect_mod
 #ifdef HAVE_SPGPU
+  use psb_gpu_env_mod
   use psb_i_gpu_vect_mod
   use psb_i_vectordev_mod
   use psb_z_vectordev_mod
@@ -87,6 +88,7 @@ module psb_z_gpu_vect_mod
     procedure, pass(x) :: new_buffer   => z_gpu_new_buffer
     procedure, nopass  :: device_wait  => z_gpu_device_wait
     procedure, pass(x) :: free_buffer  => z_gpu_free_buffer
+    procedure, pass(x) :: maybe_free_buffer  => z_gpu_maybe_free_buffer
     procedure, pass(x) :: dot_v    => z_gpu_dot_v
     procedure, pass(x) :: dot_a    => z_gpu_dot_a
     procedure, pass(y) :: axpby_v  => z_gpu_axpby_v
@@ -179,6 +181,18 @@ contains
     end if
 
   end subroutine z_gpu_new_buffer
+
+  subroutine z_gpu_maybe_free_buffer(x,info)
+    use psb_realloc_mod
+    use psb_gpu_env_mod
+    implicit none 
+    class(psb_z_vect_gpu), intent(inout) :: x
+    integer(psb_ipk_), intent(out)             :: info
+
+    info = 0 
+    if (psb_gpu_get_maybe_free_buffer()) &
+         & call x%free_buffer(info)
+  end subroutine z_gpu_maybe_free_buffer
 
   subroutine z_gpu_free_buffer(x,info)
     use psb_realloc_mod
