@@ -32,14 +32,14 @@
 
 module psb_gpu_env_mod
   use psb_const_mod
-  !use psb_penv_mod
-  !use psi_comm_buffers_mod, only : psb_buffer_queue
   use iso_c_binding
   use base_cusparse_mod
 !  interface psb_gpu_init
 !    module procedure  psb_gpu_init
 !  end interface
 #if defined(HAVE_CUDA)
+  use core_mod
+  
   interface 
     function psb_gpuGetHandle() &
          & result(res) bind(c,name='psb_gpuGetHandle')
@@ -114,13 +114,6 @@ module psb_gpu_env_mod
   end interface
 
   interface 
-    subroutine psb_cudaSync() &
-         & bind(c,name='cudaSync')
-      use iso_c_binding   
-    end subroutine psb_cudaSync
-  end interface
-
-  interface 
     subroutine psb_cudaReset() &
          & bind(c,name='cudaReset')
       use iso_c_binding   
@@ -182,7 +175,21 @@ module psb_gpu_env_mod
       character(c_char) :: cstring(*) 
     end subroutine psb_C_cpy_NameString
   end interface
-contains
+
+  logical, private :: gpu_do_maybe_free_buffer = .false.
+
+Contains
+  
+  function psb_gpu_get_maybe_free_buffer() result(res)
+    logical :: res
+    res = gpu_do_maybe_free_buffer
+  end function psb_gpu_get_maybe_free_buffer
+
+  subroutine psb_gpu_set_maybe_free_buffer(val)
+    logical, intent(in) :: val
+    gpu_do_maybe_free_buffer = val
+  end subroutine psb_gpu_set_maybe_free_buffer
+  
   ! !!!!!!!!!!!!!!!!!!!!!!
   !
   ! Environment handling 
