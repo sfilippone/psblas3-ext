@@ -29,37 +29,37 @@ EXEDIR=./runs
 all: mldpde mldpde2d
 
 ppde: ppde.o 
-	$(F90LINK)  ppde.o -o ppde $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  ppde.o -o ppde $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppde $(EXEDIR)
 mldpde.o: pde3d_exp_mod.o pde3d_gauss_mod.o pde3d_base_mod.o
 mldpde: mldpde.o pde3d_exp_mod.o pde3d_gauss_mod.o  pde3d_base_mod.o
-	$(F90LINK)  mldpde.o pde3d_exp_mod.o pde3d_gauss_mod.o pde3d_base_mod.o -o mldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  mldpde.o pde3d_exp_mod.o pde3d_gauss_mod.o pde3d_base_mod.o -o mldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv mldpde $(EXEDIR)
 mldpde2d.o:  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o
 mldpde2d: mldpde2d.o  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o
-	$(F90LINK)  mldpde2d.o  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o -o mldpde2d $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  mldpde2d.o  pde2d_exp_mod.o pde2d_gauss_mod.o pde2d_base_mod.o -o mldpde2d $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv mldpde2d $(EXEDIR)
 
 mmldpde: mmldpde.o 
-	$(F90LINK)  mmldpde.o -o mmldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  mmldpde.o -o mmldpde $(AINVLIBS) $(MLDLIBS) $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv mmldpde $(EXEDIR)
 
 ppeps2d: ppeps2d.o 
-	$(F90LINK)  ppeps2d.o -o ppeps2d  $(AINVLIBS) $(MLDLIBS)  $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  ppeps2d.o -o ppeps2d  $(AINVLIBS) $(MLDLIBS)  $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppeps2d $(EXEDIR)
  
 
 ppde2d: ppde2d.o 
-	$(F90LINK)  ppde2d.o -o ppde2d $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  ppde2d.o -o ppde2d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppde2d $(EXEDIR)
 
 taxpby: taxpby.o 
-	$(F90LINK)  taxpby.o -o taxpby $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  taxpby.o -o taxpby $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv taxpby $(EXEDIR)
 
 
 spde: spde.o 
-	$(F90LINK) spde.o  -o spde $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK) spde.o  -o spde $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv spde $(EXEDIR)
 
 

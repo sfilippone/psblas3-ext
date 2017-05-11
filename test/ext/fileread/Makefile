@@ -23,7 +23,7 @@ EXEDIR=./runs
 all:  df_sample
 
 df_sample: $(DFSOBJS)
-	$(F90LINK) $(LINKOPT) $(DFSOBJS) -o df_sample \
+	$(FLINK) $(LINKOPT) $(DFSOBJS) -o df_sample \
 	$(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv df_sample $(EXEDIR) 
 

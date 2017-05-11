@@ -23,21 +23,21 @@ all: ppde3d spde3d ppde2d spde2d
 
 
 ppde3d: ppde3d.o 
-	$(F90LINK)  ppde3d.o -o ppde3d $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  ppde3d.o -o ppde3d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppde3d $(EXEDIR)
 
 
 spde3d: spde3d.o 
-	$(F90LINK) spde3d.o  -o spde3d $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK) spde3d.o  -o spde3d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv spde3d $(EXEDIR)
 
 ppde2d: ppde2d.o 
-	$(F90LINK)  ppde2d.o -o ppde2d $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK)  ppde2d.o -o ppde2d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv ppde2d $(EXEDIR)
 
 
 spde2d: spde2d.o 
-	$(F90LINK) spde2d.o  -o spde2d $(PSBLAS_LIB) $(LDLIBS)
+	$(FLINK) spde2d.o  -o spde2d $(PSBLAS_LIB) $(LDLIBS)
 	/bin/mv spde2d $(EXEDIR)
 
 

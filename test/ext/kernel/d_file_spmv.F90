@@ -135,7 +135,16 @@ program d_file_spmv
       call psb_abort(ictxt)
     end if
 
-    nrt = aux_a%get_nrows()
+    !
+    ! Always get nnz from original matrix.
+    ! Some formats add fill-in and do not keep track
+    ! of how many were added. So if the original matrix 
+    ! contained some extra zeros, the count of entries
+    ! is not recoverable exactly.
+    !    
+    nrt  = aux_a%get_nrows()
+    annz = aux_a%get_nzeros()
+    call psb_bcast(ictxt,annz)
     call psb_bcast(ictxt,nrt)
 
     write(psb_out_unit,'("Generating an rhs...")')
@@ -150,18 +159,11 @@ program d_file_spmv
     do i=1, nrt
       b_col_glob(i) = 1.d0
     enddo
-    call psb_bcast(ictxt,b_col_glob(1:nrt))
 
   else
 
+    call psb_bcast(ictxt,annz)
     call psb_bcast(ictxt,nrt)
-    call psb_realloc(nrt,1,aux_b,info)
-    if (info /= 0) then
-      call psb_errpush(4000,name)
-      goto 9999
-    endif
-    b_col_glob =>aux_b(:,1)
-    call psb_bcast(ictxt,b_col_glob(1:nrt)) 
 
   end if
 
@@ -194,8 +196,7 @@ program d_file_spmv
       call part_block(i,nrt,np,ipv,nv)
       ivg(i) = ipv(1)
     enddo
-    call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,b_col_glob,bv,info,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
   else if (ipart == 2) then 
     if (iam==psb_root_) then 
       write(psb_out_unit,'("Partition type: graph")')
@@ -206,13 +207,13 @@ program d_file_spmv
     call psb_barrier(ictxt)
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,b_col_glob,bv,info,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
   else 
     if (iam==psb_root_) write(psb_out_unit,'("Partition type default: block")')
-    call psb_matdist(aux_a, a,  ictxt, &
-         & desc_a,b_col_glob,bv,info,parts=part_block)
+    call psb_matdist(aux_a, a,  ictxt,desc_a,info,parts=part_block)
   end if
+
+  call psb_scatter(b_col_glob,bv,desc_a,info,root=psb_root_)
 
   call psb_geall(x_col,desc_a,info)
   ns = size(x_col)

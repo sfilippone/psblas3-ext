@@ -1,4 +1,4 @@
-webbase-1M.mtx          ! Matrix file
+cube_4096_pen_10_P1.mtx ! Matrix file
 MM                     ! Matrix file format
 CSR                    ! CPU Storage format
 HLG                    ! GPU Storage format

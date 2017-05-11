@@ -184,19 +184,11 @@ program z_file_spmv
     do i=1, nrt
       b_col_glob(i) = 1.d0
     enddo
-    call psb_bcast(ictxt,b_col_glob(1:nrt))
 
   else
 
     call psb_bcast(ictxt,annz)
     call psb_bcast(ictxt,nrt)
-    call psb_realloc(nrt,1,aux_b,info)
-    if (info /= 0) then
-      call psb_errpush(4000,name)
-      goto 9999
-    endif
-    b_col_glob =>aux_b(:,1)
-    call psb_bcast(ictxt,b_col_glob(1:nrt)) 
 
   end if
 
@@ -241,8 +233,7 @@ program z_file_spmv
       call part_block(i,nrt,np,ipv,nv)
       ivg(i) = ipv(1)
     enddo
-    call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,info,b_glob=b_col_glob,b=bv,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
   else if (ipart == 2) then 
     if (iam==psb_root_) then 
       write(psb_out_unit,'("Partition type: graph")')
@@ -253,13 +244,13 @@ program z_file_spmv
     call psb_barrier(ictxt)
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, &
-         & desc_a,info,b_glob=b_col_glob,b=bv,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
   else 
     if (iam==psb_root_) write(psb_out_unit,'("Partition type default: block")')
-    call psb_matdist(aux_a, a,  ictxt, &
-         & desc_a,info,b_glob=b_col_glob,b=bv,parts=part_block)
+    call psb_matdist(aux_a, a,  ictxt,desc_a,info,parts=part_block)
   end if
+
+  call psb_scatter(b_col_glob,bv,desc_a,info,root=psb_root_)
 
   t2 = psb_wtime() - t0
 
