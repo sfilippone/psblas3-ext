@@ -7,6 +7,7 @@ LIBDIR=$(TOPDIR)/lib/
 INCDIR=$(TOPDIR)/include
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
+PSBMODDIR=$(PSBLASDIR)/modules
 PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 
 LDLIBS=$(PSBEXTLDLIBS)
@@ -14,7 +15,7 @@ LDLIBS=$(PSBEXTLDLIBS)
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) 
+FINCLUDES=$(FMFLAG)$(INCDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR)  $(FMFLAG)$(PSBMODDIR)
 
 DFSOBJS=df_sample.o getp.o
 

@@ -406,33 +406,45 @@ dnl
 dnl @author Michele Martone <michele.martone@uniroma2.it>
 dnl
 AC_DEFUN(PAC_FORTRAN_HAVE_PSBLAS,
-ac_objext='.o'
-ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
 dnl Warning : square brackets are EVIL!
-[AC_MSG_CHECKING([for working install of PSBLAS])
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-           end program test
-EOF
-if AC_TRY_EVAL(ac_compile) && test -s conftest${ac_objext}; then
-  ifelse([$1], , :, [rm -rf conftest*
-  $1])
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.$ac_ext >&AC_FD_CC
-ifelse([$2], , , [  rm -rf conftest*
-  $2
-])dnl
+[AC_MSG_CHECKING([for working installation of PSBLAS])
+ AC_LANG_PUSH([Fortran])
+ ac_objext='o'
+ ac_ext='f90'
+ ac_fc="${MPIFC-$FC}";
+ save_FCFLAGS="$FCFLAGS";
+dnl FCFLAGS=" $FMFLAG$PSBLAS_DIR/include $save_FCFLAGS"
+dnl save_FCFLAGS="$FCFLAGS";
+ save_LDFLAGS="$LDFLAGS";
+if test "x$pac_cv_psblas_incdir" != "x"; then 
+dnl  AC_MSG_NOTICE([psblas include dir $pac_cv_psblas_incdir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_incdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/include"
 fi
+if test "x$pac_cv_psblas_moddir" != "x"; then 
+dnl  AC_MSG_NOTICE([psblas modules dir $pac_cv_psblas_moddir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
+fi
+ FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+AC_COMPILE_IFELSE([
+		    program test
+		    use psb_base_mod
+		    end program test],
+		   [ifelse([$1], , :, [ $1   ])],
+		   [  ifelse([$2], , , [ $2 ])])
+AC_LANG_POP([Fortran])
 rm -f conftest*])
 
 
 dnl @synopsis PAC_FORTRAN_PSBLAS_VERSION( )
 dnl
 dnl Will try to compile, link and run  a program using the PSBLAS library. \
-dnl  Checks for version major and minor
+dnl  Checks for version major,  minor and patchlevel
 dnl
 dnl Will use MPIFC, otherwise '$FC'.
 dnl
@@ -442,56 +454,64 @@ dnl @author Michele Martone <michele.martone@uniroma2.it>
 dnl @author Salvatore Filippone <salvatore.filippone@uniroma2.it>
 dnl
 AC_DEFUN(PAC_FORTRAN_PSBLAS_VERSION,
-ac_exeext=''
-ac_objext='.o'
-ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
-ac_link='${MPIFC-$FC} -o conftest${ac_exeext} $FCFLAGS $LDFLAGS conftest.$ac_ext $FMFLAG$PSBLAS_DIR/include -L$PSBLAS_DIR/lib -lpsb_base $LIBS 1>&5'
-dnl Warning : square brackets are EVIL!
 [AC_MSG_CHECKING([for version of PSBLAS])
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_version_major_
-           end program test
-EOF
-if AC_TRY_EVAL(ac_link) && test -s conftest${ac_exeext}; then
- pac_cv_psblas_major=`./conftest${ac_exeext} | sed 's/^ *//'`
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.$ac_ext >&AC_FD_CC
-  pac_cv_psblas_major="unknown";
+AC_LANG_PUSH([Fortran])	  
+ac_exeext=''
+ac_objext='o'
+ac_ext='f90'
+save_FCFLAGS=$FCFLAGS;
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+save_LDFLAGS=$LDFLAGS;
+if test "x$pac_cv_psblas_libdir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas lib dir $pac_cv_psblas_libdir])
+ PSBLAS_LIBS="-L$pac_cv_psblas_libdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_LIBS="-L$pac_cv_psblas_dir/lib"
 fi
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_version_minor_
-           end program test
-EOF
-if AC_TRY_EVAL(ac_link) && test -s conftest${ac_exeext}; then
- pac_cv_psblas_minor=`./conftest${ac_exeext} | sed 's/^ *//'`
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.$ac_ext >&AC_FD_CC
-  pac_cv_psblas_minor="unknown";
+if test "x$pac_cv_psblas_moddir" != "x"; then 
+dnl  AC_MSG_NOTICE([psblas modules dir $pac_cv_psblas_moddir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
 fi
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_patchlevel_
-           end program test
-EOF
-if AC_TRY_EVAL(ac_link) && test -s conftest${ac_exeext}; then
- pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`
-else
-  echo "configure: failed program was:" >&AC_FD_CC
-  cat conftest.$ac_ext >&AC_FD_CC
-  pac_cv_psblas_patchlevel="unknown";
-fi
-rm -f conftest*
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+PSBLAS_LIBS="-lpsb_krylov -lpsb_prec -lpsb_util -lpsb_base $PSBLAS_LIBS"
+LDFLAGS=" $PSBLAS_LIBS $save_LDFLAGS"
+
+dnl ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
+dnl ac_link='${MPIFC-$FC} -o conftest${ac_exeext} $FCFLAGS $LDFLAGS conftest.$ac_ext $FMFLAG$PSBLAS_DIR/include -L$PSBLAS_DIR/lib -lpsb_base $LIBS 1>&5'
+dnl Warning : square brackets are EVIL!
+
+AC_LINK_IFELSE([
+		program test
+		use psb_base_mod
+		print *,psb_version_major_
+		end program test],
+	       [pac_cv_psblas_major=`./conftest${ac_exeext} | sed 's/^ *//'`],
+	       [pac_cv_psblas_major="unknown"])
+  
+AC_LINK_IFELSE([
+		program test
+		use psb_base_mod
+		print *,psb_version_minor_
+		end program test],
+	       [pac_cv_psblas_minor=`./conftest${ac_exeext} | sed 's/^ *//'`],
+	       [pac_cv_psblas_minor="unknown"])
+  
+AC_LINK_IFELSE([
+		program test
+		use psb_base_mod
+		print *,psb_patchlevel_
+		end program test],
+	       [pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`],
+	       [pac_cv_psblas_patchlevel="unknown"])
+LDFLAGS="$save_LDFLAGS";
+FCFLAGS="$save_FCFLAGS";
+
 AC_MSG_RESULT([Done])
-]
-)
+AC_LANG_POP([Fortran])])
 
 
 dnl @synopsis PAC_FORTRAN_TEST_TR15581( [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])

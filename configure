@@ -646,6 +646,7 @@ GPUTARGET
 CDEFINES
 FDEFINES
 INSTALL_DOCSDIR
+INSTALL_MODULESDIR
 INSTALL_INCLUDEDIR
 INSTALL_LIBDIR
 INSTALL_DIR
@@ -7669,98 +7670,232 @@ FIFLAG=-I
 #		The same for pg (Portland Group compilers).
 ###############################################################################
 
-ac_objext='.o'
-ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
-{ $as_echo "$as_me:$LINENO: checking for working install of PSBLAS" >&5
-$as_echo_n "checking for working install of PSBLAS... " >&6; }
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-           end program test
-EOF
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
+{ $as_echo "$as_me:$LINENO: checking for working installation of PSBLAS" >&5
+$as_echo_n "checking for working installation of PSBLAS... " >&6; }
+ ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+ ac_objext='o'
+ ac_ext='f90'
+ ac_fc="${MPIFC-$FC}";
+ save_FCFLAGS="$FCFLAGS";
+ save_LDFLAGS="$LDFLAGS";
+if test "x$pac_cv_psblas_incdir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_incdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/include"
+fi
+if test "x$pac_cv_psblas_moddir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
+fi
+ FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+cat >conftest.$ac_ext <<_ACEOF
+
+		    program test
+		    use psb_base_mod
+		    end program test
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_compile") 2>conftest.er1
   ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && test -s conftest${ac_objext}; then
-  rm -rf conftest*
-  { $as_echo "$as_me:$LINENO: result: yes." >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest.$ac_objext; then
+   { $as_echo "$as_me:$LINENO: result: yes." >&5
 $as_echo "yes." >&6; }
 else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  { { $as_echo "$as_me:$LINENO: error: no.
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	   { { $as_echo "$as_me:$LINENO: error: no.
   Could not find working version of PSBLAS." >&5
 $as_echo "$as_me: error: no.
   Could not find working version of PSBLAS." >&2;}
    { (exit 1); exit 1; }; }
 fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 rm -f conftest*
 
-ac_exeext=''
-ac_objext='.o'
-ac_ext='f90'
-ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
-ac_link='${MPIFC-$FC} -o conftest${ac_exeext} $FCFLAGS $LDFLAGS conftest.$ac_ext $FMFLAG$PSBLAS_DIR/include -L$PSBLAS_DIR/lib -lpsb_base $LIBS 1>&5'
 { $as_echo "$as_me:$LINENO: checking for version of PSBLAS" >&5
 $as_echo_n "checking for version of PSBLAS... " >&6; }
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_version_major_
-           end program test
-EOF
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && test -s conftest${ac_exeext}; then
- pac_cv_psblas_major=`./conftest${ac_exeext} | sed 's/^ *//'`
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  pac_cv_psblas_major="unknown";
+ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+ac_exeext=''
+ac_objext='o'
+ac_ext='f90'
+save_FCFLAGS=$FCFLAGS;
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+save_LDFLAGS=$LDFLAGS;
+if test "x$pac_cv_psblas_libdir" != "x"; then
+ PSBLAS_LIBS="-L$pac_cv_psblas_libdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_LIBS="-L$pac_cv_psblas_dir/lib"
 fi
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_version_minor_
-           end program test
-EOF
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && test -s conftest${ac_exeext}; then
- pac_cv_psblas_minor=`./conftest${ac_exeext} | sed 's/^ *//'`
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  pac_cv_psblas_minor="unknown";
+if test "x$pac_cv_psblas_moddir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
 fi
-cat > conftest.$ac_ext <<EOF
-           program test
-	       use psb_base_mod
-               print *,psb_patchlevel_
-           end program test
-EOF
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+PSBLAS_LIBS="-lpsb_krylov -lpsb_prec -lpsb_util -lpsb_base $PSBLAS_LIBS"
+LDFLAGS=" $PSBLAS_LIBS $save_LDFLAGS"
+
+
+cat >conftest.$ac_ext <<_ACEOF
+
+		program test
+		use psb_base_mod
+		print *,psb_version_major_
+		end program test
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
   ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && test -s conftest${ac_exeext}; then
- pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_psblas_major=`./conftest${ac_exeext} | sed 's/^ *//'`
 else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  pac_cv_psblas_patchlevel="unknown";
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_psblas_major="unknown"
 fi
-rm -f conftest*
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+
+cat >conftest.$ac_ext <<_ACEOF
+
+		program test
+		use psb_base_mod
+		print *,psb_version_minor_
+		end program test
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_psblas_minor=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_psblas_minor="unknown"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+
+cat >conftest.$ac_ext <<_ACEOF
+
+		program test
+		use psb_base_mod
+		print *,psb_patchlevel_
+		end program test
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_psblas_patchlevel=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_psblas_patchlevel="unknown"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LDFLAGS="$save_LDFLAGS";
+FCFLAGS="$save_FCFLAGS";
+
 { $as_echo "$as_me:$LINENO: result: Done" >&5
 $as_echo "Done" >&6; }
-
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 if test "x$pac_cv_psblas_major" == "xunknown"; then
   { { $as_echo "$as_me:$LINENO: error: PSBLAS version major \"$pac_cv_psblas_major\"." >&5
@@ -8282,6 +8417,7 @@ fi
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
+
 
 
 

@@ -1,6 +1,7 @@
 include ../../Make.inc
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
+PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../../lib
 INCDIR=../../include
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
@@ -10,7 +11,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(PSBINCDIR) $(FMFLAG)$(INCDIR) $(FIFLAG).. 
+FINCLUDES=$(FMFLAG)..  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FMFLAG)$(INCDIR) $(FIFLAG).. 
 LIBNAME=libpsb_ext.a
 
 OBJS= \
