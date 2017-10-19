@@ -131,7 +131,8 @@ case $docsdir in
    \/* )   eval "INSTALL_DOCSDIR=$docsdir";;
    * ) eval "INSTALL_DOCSDIR=$INSTALL_DIR/docs";;
 esac
-AC_MSG_RESULT([$INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR])
+INSTALL_MODULESDIR=$INSTALL_DIR/modules
+AC_MSG_RESULT([$INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_MODULESDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR])
 
 ###############################################################################
 # Compilers detection: FC,F77,CC should be set, if found.

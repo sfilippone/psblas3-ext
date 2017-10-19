@@ -3886,8 +3886,9 @@ case $docsdir in
    \/* )   eval "INSTALL_DOCSDIR=$docsdir";;
    * ) eval "INSTALL_DOCSDIR=$INSTALL_DIR/docs";;
 esac
-{ $as_echo "$as_me:$LINENO: result: $INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR" >&5
-$as_echo "$INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR" >&6; }
+INSTALL_MODULESDIR=$INSTALL_DIR/modules
+{ $as_echo "$as_me:$LINENO: result: $INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_MODULESDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR" >&5
+$as_echo "$INSTALL_DIR $INSTALL_INCLUDEDIR $INSTALL_MODULESDIR $INSTALL_LIBDIR $INSTALL_DOCSDIR" >&6; }
 
 ###############################################################################
 # Compilers detection: FC,F77,CC should be set, if found.

@@ -4,6 +4,7 @@ PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../../lib
 INCDIR=../../include
+MODDIR=../../modules
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -11,7 +12,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG)..  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FMFLAG)$(INCDIR) $(FIFLAG).. 
+FINCLUDES=$(FMFLAG)..  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FMFLAG)$(MODDIR) $(FMFLAG)$(INCDIR) $(FIFLAG).. 
 LIBNAME=libpsb_ext.a
 
 OBJS= \

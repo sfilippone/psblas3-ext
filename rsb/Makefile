@@ -7,6 +7,7 @@ PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../lib
 INCDIR=../include
+MODDIR=../modules
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -14,7 +15,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG). $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG) . $(LIBRSB_INCLUDES) $(LIBRSB_DEFINES)
+FINCLUDES=$(FMFLAG). $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG). $(LIBRSB_INCLUDES) $(LIBRSB_DEFINES)
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
 LIBNAME=libpsb_rsb.a
 
@@ -35,7 +36,7 @@ copy: cmp ilib
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
 mcopy: cmp
-	/bin/cp -p $(LIBNAME) *$(.mod) $(INCDIR)
+	/bin/cp -p *$(.mod) $(MODDIR)
 
 ilib: cmp 
 	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)

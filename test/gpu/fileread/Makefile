@@ -1,6 +1,7 @@
 TOPDIR=../../..
 include $(TOPDIR)/Make.inc
 LIBDIR=$(TOPDIR)lib/
+MODDIR=$(TOPDIR)/modules
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base \
@@ -18,7 +19,7 @@ LDLIBS=$(PSBGPULDLIBS)
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
+FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG)$(MODDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
           $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) 
 
 DFSOBJS=df_sample.o data_input.o

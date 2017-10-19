@@ -4,6 +4,7 @@ PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../../lib
 INCDIR=../../include
+MODDIR=../../modules
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -11,7 +12,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG)..   $(FMFLAG)$(INCDIR)  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG)..
+FINCLUDES=$(FMFLAG)..  $(FMFLAG)$(MODDIR) $(FMFLAG)$(INCDIR)  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG)..
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
 LIBNAME=libpsb_gpu.a
 

@@ -7,6 +7,7 @@ PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../lib
 INCDIR=../include
+MODDIR=../modules
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -14,7 +15,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG).   $(FMFLAG)$(INCDIR)  $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG).
+FINCLUDES=$(FMFLAG).   $(FMFLAG)$(INCDIR)  $(FMFLAG)$(MODDIR) $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG).
 CINCLUDES=-I$(GPU_INCDIR) -I$(CUDA_INCDIR)
 LIBNAME=libpsb_gpu.a
 
@@ -55,7 +56,8 @@ cmp: $(OBJS)
 
 copy: cmp ilib
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
-	/bin/cp -p *$(.mod) *.h $(INCDIR)
+	/bin/cp -p *$(.mod) $(MODDIR)
+	/bin/cp -p *.h $(INCDIR)
 
 dnsdev_mod.o hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
 psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o

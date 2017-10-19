@@ -7,6 +7,7 @@ PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
 LIBDIR=../lib
 INCDIR=../include
+MODDIR=../modules
 PSBLAS_LIB= -L$(PSBLIBDIR)  -lpsb_util  -lpsb_base
 #-lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
 LDLIBS=$(PSBLDLIBS)
@@ -14,7 +15,7 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 #CCOPT= -g
-FINCLUDES=$(FMFLAG). $(FMFLAG)$(INCDIR) $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG). $(LIBRSB_DEFINES) 
+FINCLUDES=$(FMFLAG). $(FMFLAG)$(INCDIR) $(FMFLAG)$(MODDIR) $(FMFLAG)$(PSBMODDIR) $(FMFLAG)$(PSBINCDIR) $(FIFLAG). $(LIBRSB_DEFINES) 
 CINCLUDES=
 LIBNAME=libpsb_ext.a
 
@@ -46,7 +47,7 @@ cmp: $(OBJS)
 copy: cmp ilib
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 mcopy: cmp 
-	/bin/cp -p *$(.mod) $(INCDIR)
+	/bin/cp -p *$(.mod) $(MODDIR)
 
 psb_ext_mod.o: psb_s_dia_mat_mod.o   psb_d_dia_mat_mod.o  \
 	psb_c_dia_mat_mod.o   psb_z_dia_mat_mod.o  \
