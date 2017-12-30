@@ -898,11 +898,6 @@ contains
     info = psb_success_
 
     select type(xx => x)
-    type is (psb_z_base_vect_type)
-      if ((beta /= zzero).and.(y%is_dev()))&
-           & call y%sync()
-      call psb_geaxpby(m,alpha,xx%v,beta,y%v,info)
-      call y%set_host()
     type is (psb_z_vect_gpu)
       ! Do something different here 
       if ((beta /= zzero).and.y%is_host())&
@@ -917,7 +912,9 @@ contains
       end if
       call y%set_dev()
     class default
-      call x%sync()
+      ! Do it on the host side
+      if ((alpha /= zzero).and.(x%is_dev()))&
+         & call x%sync()
       call y%axpby(m,alpha,x%v,beta,info)
     end select
 
@@ -931,8 +928,9 @@ contains
     class(psb_z_vect_gpu), intent(inout) :: y
     complex(psb_dpk_), intent (in)          :: alpha, beta
     integer(psb_ipk_), intent(out)       :: info
-
-    if (y%is_dev()) call y%sync()
+    
+    if ((beta /= zzero).and.(y%is_dev()))&
+         & call y%sync()
     call psb_geaxpby(m,alpha,x,beta,y%v,info)
     call y%set_host()
   end subroutine z_gpu_axpby_a
@@ -979,9 +977,9 @@ contains
     integer(psb_ipk_) :: i, n
     
     info = 0    
-    call y%sync()
+    if (y%is_dev()) call y%sync()
     call y%psb_z_base_vect_type%mlt(x,info)
-    call y%set_host()
+    ! set_host() is invoked in the base method
   end subroutine z_gpu_mlt_a
 
   subroutine z_gpu_mlt_a_2(alpha,x,y,beta,z,info)
@@ -997,7 +995,7 @@ contains
     info = 0    
     if (z%is_dev()) call z%sync()
     call z%psb_z_base_vect_type%mlt(alpha,x,y,beta,info)
-    call z%set_host()
+    ! set_host() is invoked in the base method
   end subroutine z_gpu_mlt_a_2
 
   subroutine z_gpu_mlt_v_2(alpha,x,y, beta,z,info,conjgx,conjgy)
