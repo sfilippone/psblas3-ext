@@ -280,11 +280,12 @@ int T_CSRGDevice2Host(T_Cmat *Matrix, int m, int n, int nz,
 int T_HYBGDeviceFree(T_Hmat *Matrix)
 {
   T_HYBGDeviceMat *hMat= Matrix->mat;
-  
-  cusparseDestroyMatDescr(hMat->descr);
-  cusparseDestroySolveAnalysisInfo(hMat->triang);
-  cusparseDestroyHybMat(hMat->hybA);
-  free(hMat);
+  if (hMat != NULL) {
+    cusparseDestroyMatDescr(hMat->descr);
+    cusparseDestroySolveAnalysisInfo(hMat->triang);
+    cusparseDestroyHybMat(hMat->hybA);
+    free(hMat);
+  }
   Matrix->mat = NULL;
   return(CUSPARSE_STATUS_SUCCESS);
 }
