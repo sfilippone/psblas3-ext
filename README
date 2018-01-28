@@ -71,6 +71,9 @@ diagonal scaling. We are working on an independent plugin for mld2p4
 approximate inverses.  
 
 
+Report bugs to:
+ https://github.com/sfilippone/psblas3-ext/issues
 
-Contact: Salvatore Filippone     salvatore.filippone@uniroma2.it
-	 Alessandro Fanfarillo   alessandro.fanfarillo@gmail.com   
+Contributors
+ Salvatore Filippone     
+ Alessandro Fanfarillo   

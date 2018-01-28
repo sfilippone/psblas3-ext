@@ -1,8 +1,8 @@
 !                Parallel Sparse BLAS   GPU plugin 
 !      (C) Copyright 2013
 !  
-!                         Salvatore Filippone    University of Rome Tor Vergata
-!                         Alessandro Fanfarillo  University of Rome Tor Vergata
+!                         Salvatore Filippone
+!                         Alessandro Fanfarillo
 !   
 !    Redistribution and use in source and binary forms, with or without
 !    modification, are permitted provided that the following conditions
