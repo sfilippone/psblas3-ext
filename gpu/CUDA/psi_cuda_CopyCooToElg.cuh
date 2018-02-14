@@ -32,7 +32,7 @@ void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nz
 __global__ void   CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, int nr, int nza, int hacksz, int ldv, int nzm,
 			  int *rS, int *devIdisp, int *devJa, VALUE_TYPE *devVal,  int *rP, VALUE_TYPE *cM)
 {
-  int ir, k, ipnt, rsz;
+  int ir, k, ipnt, rsz,jc;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
   int i=ii+ki; 
 
@@ -48,8 +48,11 @@ __global__ void   CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, 
     ir += ldv;
     ipnt++;
   }
+  // Here we are assuming that devJa[] has at least one valid entry
+  // Pick one valid value.
+  jc = devJa[devIdisp[1]];
   for (k=rsz; k<nzm; k++) {
-    rP[ir] = i;
+    rP[ir] = jc;
     cM[ir] = CONCAT(zero_,VALUE_TYPE)();
     ir += ldv;
   }

@@ -32,7 +32,7 @@ __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, in
 					  int *devJa, VALUE_TYPE *devVal, 
 					  int *rP, VALUE_TYPE *cM)
 {
-  int ir, k, ipnt, rsz;
+  int ir, k, ipnt, rsz,jc;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
   int i=ii+ki; 
 
@@ -53,8 +53,11 @@ __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, in
       ir += hacksz;
       ipnt++;
     }
+    // Here we are assuming that devJa[] has at least one valid entry
+    // Pick one valid value.
+    jc = devJa[devIdisp[1]];
     for (k=rsz; k<nzm; k++) {
-      rP[ir] = i;
+      rP[ir] = jc;
       cM[ir] = CONCAT(zero_,VALUE_TYPE)();
       ir += hacksz;
     }
