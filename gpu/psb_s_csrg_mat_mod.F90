@@ -257,12 +257,12 @@ contains
   function s_csrg_sizeof(a) result(res)
     implicit none 
     class(psb_s_csrg_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
     if (a%is_dev()) call a%sync()
     res = 8 
     res = res + psb_sizeof_sp  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irp)
-    res = res + psb_sizeof_int * size(a%ja)
+    res = res + psb_sizeof_ip * size(a%irp)
+    res = res + psb_sizeof_ip * size(a%ja)
     ! Should we account for the shadow data structure
     ! on the GPU device side? 
     ! res = 2*res

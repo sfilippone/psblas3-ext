@@ -39,7 +39,7 @@ module psb_s_dns_mat_mod
     !  psb_ipk_: kind for normal integers.
     !  psb_sizeof_dp: variable holding size in bytes of
     !                 a double
-    !  psb_sizeof_int: size in bytes of an integer
+    !  psb_sizeof_ip: size in bytes of an integer
     !
     !  psb_realloc(n,v,info)    Reallocate: does what it says
     !  psb_realloc(m,n,a,info)  on rank 1 and 2 arrays, may start
@@ -118,7 +118,7 @@ module psb_s_dns_mat_mod
   ! 
   interface 
     subroutine psb_s_dns_mold(a,b,info) 
-      import :: psb_s_dns_sparse_mat, psb_s_base_sparse_mat, psb_long_int_k_
+      import :: psb_s_dns_sparse_mat, psb_s_base_sparse_mat, psb_epk_
       class(psb_s_dns_sparse_mat), intent(in)                  :: a
       class(psb_s_base_sparse_mat), intent(inout), allocatable :: b
       integer, intent(out)                                 :: info
@@ -368,10 +368,10 @@ contains
   function s_dns_sizeof(a) result(res)
     implicit none 
     class(psb_s_dns_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
 
     res = psb_sizeof_dp  * size(a%val)
-    res = res + psb_sizeof_int 
+    res = res + psb_sizeof_ip 
       
   end function s_dns_sizeof
 

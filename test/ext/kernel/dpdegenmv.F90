@@ -418,7 +418,7 @@ program pdgenmv
   integer            :: ictxt, iam, np
 
   ! solver parameters
-  integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
+  integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
   integer, parameter :: ntests=200
   type(psb_d_coo_sparse_mat), target   :: acoo
@@ -572,8 +572,8 @@ program pdgenmv
     ! it is minimal in terms of coefficients. Other formats may either move
     ! more data (padding etc.) or less data (if they can save on the indices). 
     !
-    nbytes = nr*(2*psb_sizeof_dp + psb_sizeof_int)+&
-         & annz*(psb_sizeof_dp + psb_sizeof_int)
+    nbytes = nr*(2*psb_sizeof_dp + psb_sizeof_ip)+&
+         & annz*(psb_sizeof_dp + psb_sizeof_ip)
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth

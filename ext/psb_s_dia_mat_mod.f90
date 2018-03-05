@@ -419,11 +419,11 @@ contains
    function s_dia_sizeof(a) result(res)
      implicit none 
      class(psb_s_dia_sparse_mat), intent(in) :: a
-     integer(psb_long_int_k_) :: res
+     integer(psb_epk_) :: res
      if (a%is_dev()) call a%sync()
      res = 8 
      res = res + psb_sizeof_sp  * size(a%data)
-     res = res + psb_sizeof_int * size(a%offset)
+     res = res + psb_sizeof_ip * size(a%offset)
      
    end function s_dia_sizeof
 

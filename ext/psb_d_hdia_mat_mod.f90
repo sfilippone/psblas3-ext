@@ -44,7 +44,7 @@ module psb_d_hdia_mat_mod
     
     integer(psb_ipk_) :: nhacks, nzeros
     integer(psb_ipk_) :: hacksize = 32
-    integer(psb_long_int_k_) :: dim=0
+    integer(psb_epk_) :: dim=0
 
   contains
     ! procedure, pass(a) :: get_size     => d_hdia_get_size
@@ -421,14 +421,14 @@ contains
      use psb_realloc_mod, only : psb_size
      implicit none 
      class(psb_d_hdia_sparse_mat), intent(in) :: a
-     integer(psb_long_int_k_) :: res
+     integer(psb_epk_) :: res
      integer(psb_ipk_) :: i
 
      if (a%is_dev()) call a%sync()
      res = 0
      
-     res = res + psb_size(a%hackOffsets)*psb_sizeof_int
-     res = res + psb_size(a%diaOffsets)*psb_sizeof_int
+     res = res + psb_size(a%hackOffsets)*psb_sizeof_ip
+     res = res + psb_size(a%diaOffsets)*psb_sizeof_ip
      res = res + psb_size(a%val) * psb_sizeof_dp 
 
    end function d_hdia_sizeof

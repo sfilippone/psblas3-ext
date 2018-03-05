@@ -444,13 +444,13 @@ contains
   function z_ell_sizeof(a) result(res)
     implicit none 
     class(psb_z_ell_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
     if (a%is_dev()) call a%sync()
     res = 8 
     res = res + (2*psb_sizeof_dp)  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irn)
-    res = res + psb_sizeof_int * size(a%idiag)
-    res = res + psb_sizeof_int * size(a%ja)
+    res = res + psb_sizeof_ip * size(a%irn)
+    res = res + psb_sizeof_ip * size(a%idiag)
+    res = res + psb_sizeof_ip * size(a%ja)
       
   end function z_ell_sizeof
 

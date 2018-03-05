@@ -448,7 +448,7 @@ program ppde3d
 
   ! solver parameters
   integer(psb_ipk_) :: iter, itmax,itrace, istopc, irst
-  integer(psb_long_int_k_) :: amatsize, precsize, descsize, d2size
+  integer(psb_epk_) :: amatsize, precsize, descsize, d2size
   real(psb_dpk_)   :: err, eps
 
   ! other variables

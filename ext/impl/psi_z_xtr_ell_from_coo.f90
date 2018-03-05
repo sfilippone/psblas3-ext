@@ -50,12 +50,8 @@ subroutine psi_z_xtr_ell_from_coo(i,nr,mxrwl,iac,jac,valc, &
       val(ii,jj) = valc(kc) 
       kc = kc + 1
     end do
-    ! We are assuming that jac contains at least one valid entry
-    ! If the previous loop did not have any entries, pick one valid
-    ! value.
-    if (nc == 0) ic = jac(1)
     do jj = nc+1,mxrwl
-      ja(ii,jj)  = ic
+      ja(ii,jj)  = i+ii-1
       val(ii,jj) = zzero
     end do
   end do

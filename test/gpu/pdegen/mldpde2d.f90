@@ -111,7 +111,7 @@ program mldpde2d
 
   ! solver parameters
   integer            :: iter, itmax,itrace, istopc, irst,giter, nr
-  integer(psb_long_int_k_) :: amatsize, precsize, descsize, d2size, precnz,amatnz
+  integer(psb_epk_) :: amatsize, precsize, descsize, d2size, precnz,amatnz
   real(psb_dpk_)   :: err, eps, gerr, amxval
   integer, allocatable :: perm(:)
 
