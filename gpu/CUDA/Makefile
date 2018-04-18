@@ -24,8 +24,10 @@ LIBNAME=libpsb_gpu.a
 NVCC=nvcc
 #CUDEFINES=-gencode arch=compute_13,code=sm_13 -gencode arch=compute_20,code=sm_20\
 
-CUDEFINES=-gencode arch=compute_20,code=sm_20\
-	-gencode arch=compute_30,code=sm_30  -gencode arch=compute_35,code=sm_35
+#CUDEFINES=-gencode arch=compute_20,code=sm_20\
+#	-gencode arch=compute_30,code=sm_30  -gencode arch=compute_35,code=sm_35
+CUDEFINES=-gencode arch=compute_30,code=sm_30  -gencode arch=compute_35,code=sm_35 \
+ -gencode arch=compute_50,code=sm_50 
 
 CUDAOBJS=psi_cuda_c_CopyCooToElg.o psi_cuda_c_CopyCooToHlg.o \
 psi_cuda_d_CopyCooToElg.o psi_cuda_d_CopyCooToHlg.o \
