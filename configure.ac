@@ -314,10 +314,10 @@ fi
 if test "x$pac_cv_psblas_lpk" == "xunknown"; then
    AC_MSG_ERROR([PSBLAS wrong LPK "$pac_cv_psblas_lpk".])
 fi
-if ( $pac_cv_psblas_ipk != 4 )  ; then
-  AC_MSG_ERROR([I need psb_ipk_ to be 4 bytes]) 
-else
+if test "x$pac_cv_psblas_ipk" == "x4"; then
   AC_MSG_NOTICE([Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk])
+else
+  AC_MSG_ERROR([I need psb_ipk_ to be 4 bytes]) 
 fi
 
 

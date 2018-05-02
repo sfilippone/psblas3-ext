@@ -7140,11 +7140,11 @@ fi
 if test "x$pac_cv_psblas_lpk" == "xunknown"; then
    as_fn_error $? "PSBLAS wrong LPK \"$pac_cv_psblas_lpk\"." "$LINENO" 5
 fi
-if ( $pac_cv_psblas_ipk != 4 )  ; then
-  as_fn_error $? "I need psb_ipk_ to be 4 bytes" "$LINENO" 5
-else
+if test "x$pac_cv_psblas_ipk" == "x4"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&5
 $as_echo "$as_me: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&6;}
+else
+  as_fn_error $? "I need psb_ipk_ to be 4 bytes" "$LINENO" 5
 fi
 
 
