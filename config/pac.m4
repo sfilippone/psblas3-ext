@@ -575,9 +575,9 @@ AC_LINK_IFELSE([
 		program test
 		use iso_fortran_env
 		use psb_base_mod
-		if (psb_ipk_ == int32) then
+		if (psb_lpk_ == int32) then
 		  print *, '4'
-		elseif (psb_ipk_ == int64) then
+		elseif (psb_lpk_ == int64) then
 		  print *, '8'
 		else
 		  print *, '-1'
@@ -1723,7 +1723,7 @@ AC_DEFUN(PAC_CHECK_SPGPU,
 	 [SAVE_LIBS="$LIBS"
 	  SAVE_CPPFLAGS="$CPPFLAGS"
 	  PAC_CHECK_CUDA
-	  AC_MSG_NOTICE([From CUDA: $pac_cv_have_cuda ])
+dnl AC_MSG_NOTICE([From CUDA: $pac_cv_have_cuda ])
 	  if test "x$pac_cv_have_cuda" == "xyes"; then  
 	  AC_ARG_WITH(spgpu, AC_HELP_STRING([--with-spgpu=DIR], [Specify the directory for SPGPU library and includes.]),
 		      [psb_cv_spgpudir=$withval],

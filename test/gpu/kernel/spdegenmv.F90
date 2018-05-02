@@ -38,9 +38,12 @@
 !
 !
 module psb_s_pde3d_mod
-  use psb_base_mod, only : psb_spk_, psb_ipk_, psb_desc_type,&
+
+ 
+  use psb_base_mod, only : psb_spk_, psb_ipk_, psb_lpk_, psb_desc_type,&
        &  psb_sspmat_type, psb_s_vect_type, szero,&
-       &  psb_s_base_sparse_mat, psb_s_base_vect_type, psb_i_base_vect_type
+       &  psb_s_base_sparse_mat, psb_s_base_vect_type, &
+       &  psb_i_base_vect_type, psb_l_base_vect_type
 
   interface 
     function s_func_3d(x,y,z) result(val)
@@ -54,7 +57,6 @@ module psb_s_pde3d_mod
     module procedure  psb_s_gen_pde3d
   end interface psb_gen_pde3d
   
-
 contains
 
   function s_null_func_3d(x,y,z) result(val)
@@ -65,15 +67,80 @@ contains
     val = szero
 
   end function s_null_func_3d
+  !
+  ! functions parametrizing the differential equation 
+  !  
+  function b1(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) :: b1
+    real(psb_spk_), intent(in) :: x,y,z
+    b1=sone/sqrt((3*sone))
+  end function b1
+  function b2(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  b2
+    real(psb_spk_), intent(in) :: x,y,z
+    b2=sone/sqrt((3*sone))
+  end function b2
+  function b3(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  b3
+    real(psb_spk_), intent(in) :: x,y,z      
+    b3=sone/sqrt((3*sone))
+  end function b3
+  function c(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  c
+    real(psb_spk_), intent(in) :: x,y,z      
+    c=szero
+  end function c
+  function a1(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  a1   
+    real(psb_spk_), intent(in) :: x,y,z
+    a1=sone/80
+  end function a1
+  function a2(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  a2
+    real(psb_spk_), intent(in) :: x,y,z
+    a2=sone/80
+  end function a2
+  function a3(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  a3
+    real(psb_spk_), intent(in) :: x,y,z
+    a3=sone/80
+  end function a3
+  function g(x,y,z)
+    use psb_base_mod, only : psb_spk_, sone, szero
+    implicit none 
+    real(psb_spk_) ::  g
+    real(psb_spk_), intent(in) :: x,y,z
+    g = szero
+    if (x == sone) then
+      g = sone
+    else if (x == szero) then 
+      g = exp(y**2-z**2)
+    end if
+  end function g
 
-!    
-!
-!  subroutine to allocate and fill in the coefficient matrix and
-!  the rhs. 
-!
-  subroutine psb_s_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,&
-       & a1,a2,a3,b1,b2,b3,c,g,info,f,amold,vmold,imold,nrl)
+  
+  !
+  !  subroutine to allocate and fill in the coefficient matrix and
+  !  the rhs. 
+  !
+  subroutine psb_s_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,info,&
+       & f,amold,vmold,imold,partition,nrl,iv)
     use psb_base_mod
+    use psb_util_mod
     !
     !   Discretizes the partial differential equation
     ! 
@@ -90,7 +157,6 @@ contains
     ! Note that if b1=b2=b3=c=0., the PDE is the  Laplace equation.
     !
     implicit none
-    procedure(s_func_3d)  :: b1,b2,b3,c,a1,a2,a3,g
     integer(psb_ipk_)     :: idim
     type(psb_sspmat_type) :: a
     type(psb_s_vect_type) :: xv,bv
@@ -99,9 +165,9 @@ contains
     character(len=*)      :: afmt
     procedure(s_func_3d), optional :: f
     class(psb_s_base_sparse_mat), optional :: amold
-    class(psb_s_base_vect_type), optional :: vmold
+    class(psb_s_base_vect_type), optional :: vmold 
     class(psb_i_base_vect_type), optional :: imold
-    integer(psb_ipk_), optional :: nrl
+    integer(psb_ipk_), optional :: partition, nrl,iv(:)
 
     ! Local variables.
 
@@ -110,16 +176,24 @@ contains
     type(psb_s_coo_sparse_mat)  :: acoo
     type(psb_s_csr_sparse_mat)  :: acsr
     real(psb_spk_)           :: zt(nb),x,y,z
-    integer(psb_ipk_) :: m,n,nnz,glob_row,nlr,i,ii,ib,k
+    integer(psb_ipk_) :: nnz,nr,nlr,i,j,ii,ib,k, partition_
+    integer(psb_lpk_) :: m,n,glob_row,nt
     integer(psb_ipk_) :: ix,iy,iz,ia,indx_owner
-    integer(psb_ipk_) :: np, iam, nr, nt
+    ! For 3D partition
+    ! Note: integer control variables going directly into an MPI call
+    ! must be 4 bytes, i.e. psb_mpk_
+    integer(psb_mpk_) :: npdims(3), npp, minfo
+    integer(psb_ipk_) :: npx,npy,npz, iamx,iamy,iamz,mynx,myny,mynz
+    integer(psb_ipk_), allocatable :: bndx(:),bndy(:),bndz(:)
+    ! Process grid
+    integer(psb_ipk_) :: np, iam
     integer(psb_ipk_) :: icoeff
-    integer(psb_ipk_), allocatable     :: irow(:),icol(:),myidx(:)
+    integer(psb_lpk_), allocatable     :: irow(:),icol(:),myidx(:)
     real(psb_spk_), allocatable :: val(:)
     ! deltah dimension of each grid cell
     ! deltat discretization time
     real(psb_spk_)            :: deltah, sqdeltah, deltah2
-    real(psb_spk_), parameter :: rhs=0.e0,one=1.e0,zero=0.e0
+    real(psb_spk_), parameter :: rhs=szero,one=sone,zero=szero
     real(psb_dpk_)    :: t0, t1, t2, t3, tasb, talc, ttot, tgen, tcdasb
     integer(psb_ipk_) :: err_act
     procedure(s_func_3d), pointer :: f_
@@ -138,41 +212,144 @@ contains
       f_ => s_null_func_3d
     end if
 
-    deltah   = 1.e0/(idim+2)
+    deltah   = sone/(idim+2)
     sqdeltah = deltah*deltah
-    deltah2  = 2.e0* deltah
+    deltah2  = (2*sone)* deltah
 
+    if (present(partition)) then
+      if ((1<= partition).and.(partition <= 3)) then
+        partition_ = partition
+      else
+        write(*,*) 'Invalid partition choice ',partition,' defaulting to 3'
+        partition_ = 3
+      end if
+    else
+      partition_ = 3
+    end if
+    
     ! initialize array descriptor and sparse matrix storage. provide an
     ! estimate of the number of non zeroes 
-
-    m   = idim*idim*idim
+    
+    m   = (1_psb_lpk_*idim)*idim*idim
     n   = m
-    nnz = ((n*9)/(np))
+    nnz = ((n*7)/(np))
     if(iam == psb_root_) write(psb_out_unit,'("Generating Matrix (size=",i0,")...")')n
+    t0 = psb_wtime()
+    select case(partition_)
+    case(1)
+      ! A BLOCK partition 
+      if (present(nrl)) then 
+        nr = nrl
+      else
+        !
+        ! Using a simple BLOCK distribution.
+        !
+        nt = (m+np-1)/np
+        nr = max(0,min(nt,m-(iam*nt)))
+      end if
 
-    if (present(nrl)) then 
-      nr = nrl
-    else
-      !
-      ! Using a simple BLOCK distribution.
-      !
-      nt = (m+np-1)/np
-      nr = max(0,min(nt,m-(iam*nt)))
-    end if
+      nt = nr
+      call psb_sum(ictxt,nt) 
+      if (nt /= m) then 
+        write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
+        info = -1
+        call psb_barrier(ictxt)
+        call psb_abort(ictxt)
+        return    
+      end if
 
-    nt = nr
-    call psb_sum(ictxt,nt) 
-    if (nt /= m) then 
-      write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
+      !
+      ! First example  of use of CDALL: specify for each process a number of
+      ! contiguous rows
+      ! 
+      call psb_cdall(ictxt,desc_a,info,nl=nr)
+      myidx = desc_a%get_global_indices()
+      nlr = size(myidx)
+
+    case(2)
+      ! A  partition  defined by the user through IV
+      
+      if (present(iv)) then 
+        if (size(iv) /= m) then
+          write(psb_err_unit,*) iam, 'Initialization error: wrong IV size',size(iv),m
+          info = -1
+          call psb_barrier(ictxt)
+          call psb_abort(ictxt)
+          return    
+        end if
+      else
+        write(psb_err_unit,*) iam, 'Initialization error: IV not present'
+        info = -1
+        call psb_barrier(ictxt)
+        call psb_abort(ictxt)
+        return    
+      end if
+
+      !
+      ! Second example  of use of CDALL: specify for each row the
+      ! process that owns it 
+      ! 
+      call psb_cdall(ictxt,desc_a,info,vg=iv)
+      myidx = desc_a%get_global_indices()
+      nlr = size(myidx)
+
+    case(3)
+      ! A 3-dimensional partition
+
+      ! A nifty MPI function will split the process list
+      npdims = 0
+      call mpi_dims_create(np,3,npdims,info)
+      npx = npdims(1)
+      npy = npdims(2)
+      npz = npdims(3)
+
+      allocate(bndx(0:npx),bndy(0:npy),bndz(0:npz))
+      ! We can reuse idx2ijk for process indices as well. 
+      call idx2ijk(iamx,iamy,iamz,iam,npx,npy,npz,base=0)
+      ! Now let's split the 3D cube in hexahedra
+      call dist1Didx(bndx,idim,npx)
+      mynx = bndx(iamx+1)-bndx(iamx)
+      call dist1Didx(bndy,idim,npy)
+      myny = bndy(iamy+1)-bndy(iamy)
+      call dist1Didx(bndz,idim,npz)
+      mynz = bndz(iamz+1)-bndz(iamz)
+
+      ! How many indices do I own? 
+      nlr = mynx*myny*mynz
+      allocate(myidx(nlr))
+      ! Now, let's generate the list of indices I own
+      nr = 0
+      do i=bndx(iamx),bndx(iamx+1)-1
+        do j=bndy(iamy),bndy(iamy+1)-1
+          do k=bndz(iamz),bndz(iamz+1)-1
+            nr = nr + 1
+            call ijk2idx(myidx(nr),i,j,k,idim,idim,idim)
+          end do
+        end do
+      end do
+      if (nr /= nlr) then
+        write(psb_err_unit,*) iam,iamx,iamy,iamz, 'Initialization error: NR vs NLR ',&
+             & nr,nlr,mynx,myny,mynz
+        info = -1
+        call psb_barrier(ictxt)
+        call psb_abort(ictxt)
+      end if
+
+      !
+      ! Third example  of use of CDALL: specify for each process
+      ! the set of global indices it owns.
+      ! 
+      call psb_cdall(ictxt,desc_a,info,vl=myidx)
+      
+    case default
+      write(psb_err_unit,*) iam, 'Initialization error: should not get here'
       info = -1
       call psb_barrier(ictxt)
       call psb_abort(ictxt)
-      return    
-    end if
+      return
+    end select
 
-    call psb_barrier(ictxt)
-    t0 = psb_wtime()
-    call psb_cdall(ictxt,desc_a,info,nl=nr)
+    
     if (info == psb_success_) call psb_spall(a,desc_a,info,nnz=nnz)
     ! define  rhs from boundary conditions; also build initial guess 
     if (info == psb_success_) call psb_geall(xv,desc_a,info)
@@ -200,8 +377,6 @@ contains
       goto 9999
     endif
 
-    myidx = desc_a%get_global_indices()
-    nlr = size(myidx)
 
     ! loop over rows belonging to current process in a block
     ! distribution.
@@ -216,18 +391,8 @@ contains
         ! local matrix pointer 
         glob_row=myidx(i)
         ! compute gridpoint coordinates
-        if (mod(glob_row,(idim*idim)) == 0) then
-          ix = glob_row/(idim*idim)
-        else
-          ix = glob_row/(idim*idim)+1
-        endif
-        if (mod((glob_row-(ix-1)*idim*idim),idim) == 0) then
-          iy = (glob_row-(ix-1)*idim*idim)/idim
-        else
-          iy = (glob_row-(ix-1)*idim*idim)/idim+1
-        endif
-        iz = glob_row-(ix-1)*idim*idim-(iy-1)*idim
-        ! x, y, x coordinates
+        call idx2ijk(ix,iy,iz,glob_row,idim,idim,idim)
+        ! x, y, z coordinates
         x = (ix-1)*deltah
         y = (iy-1)*deltah
         z = (iz-1)*deltah
@@ -240,7 +405,7 @@ contains
         if (ix == 1) then 
           zt(k) = g(szero,y,z)*(-val(icoeff)) + zt(k)
         else
-          icol(icoeff) = (ix-2)*idim*idim+(iy-1)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix-1,iy,iz,idim,idim,idim)
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -249,7 +414,7 @@ contains
         if (iy == 1) then 
           zt(k) = g(x,szero,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-2)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix,iy-1,iz,idim,idim,idim)          
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -258,15 +423,15 @@ contains
         if (iz == 1) then 
           zt(k) = g(x,y,szero)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz-1)
+          call ijk2idx(icol(icoeff),ix,iy,iz-1,idim,idim,idim)          
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
 
         !  term depending on     (x,y,z)
-        val(icoeff)=2.e0*(a1(x,y,z)+a2(x,y,z)+a3(x,y,z))/sqdeltah &
+        val(icoeff)=(2*sone)*(a1(x,y,z)+a2(x,y,z)+a3(x,y,z))/sqdeltah &
              & + c(x,y,z)
-        icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz)
+        call ijk2idx(icol(icoeff),ix,iy,iz,idim,idim,idim)          
         irow(icoeff) = glob_row
         icoeff       = icoeff+1                  
         !  term depending on     (x,y,z+1)
@@ -274,7 +439,7 @@ contains
         if (iz == idim) then 
           zt(k) = g(x,y,sone)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy-1)*idim+(iz+1)
+          call ijk2idx(icol(icoeff),ix,iy,iz+1,idim,idim,idim)          
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -283,7 +448,7 @@ contains
         if (iy == idim) then 
           zt(k) = g(x,sone,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix-1)*idim*idim+(iy)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix,iy+1,iz,idim,idim,idim)          
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -292,7 +457,7 @@ contains
         if (ix==idim) then 
           zt(k) = g(sone,y,z)*(-val(icoeff))   + zt(k)
         else
-          icol(icoeff) = (ix)*idim*idim+(iy-1)*idim+(iz)
+          call ijk2idx(icol(icoeff),ix+1,iy,iz,idim,idim,idim)          
           irow(icoeff) = glob_row
           icoeff       = icoeff+1
         endif
@@ -302,7 +467,7 @@ contains
       if(info /= psb_success_) exit
       call psb_geins(ib,myidx(ii:ii+ib-1),zt(1:ib),bv,desc_a,info)
       if(info /= psb_success_) exit
-      zt(:)=0.e0
+      zt(:)=szero
       call psb_geins(ib,myidx(ii:ii+ib-1),zt(1:ib),xv,desc_a,info)
       if(info /= psb_success_) exit
     end do
@@ -375,6 +540,7 @@ contains
 
 end module psb_s_pde3d_mod
 
+
 program pdgenmv
   use psb_base_mod
   use psb_util_mod 
@@ -430,18 +596,19 @@ program pdgenmv
   class(psb_s_base_sparse_mat), pointer :: agmold, acmold
   ! other variables
   logical, parameter :: dump=.false.
-  integer            :: info, i, j, nr, ig, nrg
+  integer(psb_ipk_)  :: info, i, j, nr, nrg
+  integer(psb_lpk_)  :: ig
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
 
   info=psb_success_
 
-  
+
   call psb_init(ictxt)
   call psb_info(ictxt,iam,np)
 
 #ifdef HAVE_GPU
-  call psb_gpu_init(ictxt, iam)
+  call psb_gpu_init(ictxt)
 #endif
 
   if (iam < 0) then 
@@ -451,7 +618,6 @@ program pdgenmv
   endif
   if(psb_get_errstatus() /= 0) goto 9999
   name='pdegenmv-gpu'
-  call psb_set_errverbosity(2)
   !
   ! Hello world
   !
@@ -473,8 +639,7 @@ program pdgenmv
   !
   call psb_barrier(ictxt)
   t1 = psb_wtime()
-  call psb_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,'CSR  ',&
-       & a1,a2,a3,b1,b2,b3,c,g,info)  
+  call psb_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,'CSR  ',info,partition=3)  
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
@@ -525,12 +690,12 @@ program pdgenmv
     agmold => aelg
   case('HLG')
     agmold => ahlg
-  case('DNSG')
-    agmold => adnsg
   case('HDIAG')
     agmold => ahdiag
   case('CSRG')
     agmold => acsrg
+  case('DNSG')
+    agmold => adnsg
   case('HYBG')
     agmold => ahybg
   case default
@@ -656,7 +821,6 @@ program pdgenmv
   eps = psb_geamax(bv,desc_a,info)
 
   call psb_amx(ictxt,t2)
-  
   eps = maxval(abs(x1(1:nr)-x2(1:nr)))
   call psb_amx(ictxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
@@ -814,61 +978,5 @@ contains
 
   end subroutine get_parms
 
-  !
-  ! functions parametrizing the differential equation 
-  !  
-  function a1(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) :: a1
-    real(psb_spk_), intent(in) :: x,y,z
-    a1=1.e0
-  end function a1
-  function a2(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) ::  a2
-    real(psb_spk_), intent(in) :: x,y,z
-    a2=2.e1*y
-  end function a2
-  function a3(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) ::  a3
-    real(psb_spk_), intent(in) :: x,y,z      
-    a3=1.e0
-  end function a3
-  function c(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) :: c
-    real(psb_spk_), intent(in) :: x,y,z      
-    c=1.e0
-  end function c
-  function b1(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) ::  b1   
-    real(psb_spk_), intent(in) :: x,y,z
-    b1=1.e0
-  end function b1
-  function b2(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) ::  b2
-    real(psb_spk_), intent(in) :: x,y,z
-    b2=1.e0
-  end function b2
-  function b3(x,y,z)
-    use psb_base_mod, only : psb_spk_
-    real(psb_spk_) ::  b3
-    real(psb_spk_), intent(in) :: x,y,z
-    b3=1.e0
-  end function b3
-  function g(x,y,z)
-    use psb_base_mod, only : psb_spk_, sone, szero
-    real(psb_spk_) ::  g
-    real(psb_spk_), intent(in) :: x,y,z
-    g = szero
-    if (x == sone) then
-      g = sone
-    else if (x == szero) then 
-      g = exp(y**2-z**2)
-    end if
-  end function g
 
 end program pdgenmv
