@@ -313,6 +313,15 @@ PAC_CHECK_SPGPU
 if test "x$psb_cv_have_spgpu" == "xyes" ; then 
    GPUTARGET=gpud;
 fi
+PAC_ARG_WITH_CUDACC
+if test "x$pac_cv_cudacc" == "x"; then
+   pac_cv_cudacc="30,35,37,50";
+fi
+CUDEFINES="";
+for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
+do
+  CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
+done
 
 
 ###############################################################################
@@ -330,6 +339,7 @@ AC_SUBST(CUDA_DIR)
 AC_SUBST(CUDA_DEFINES)
 AC_SUBST(CUDA_INCLUDES)
 AC_SUBST(CUDA_LIBS)
+AC_SUBST(CUDEFINES)
 AC_SUBST(LIBRSB_LIBS)
 AC_SUBST(LIBRSB_INCLUDES)
 AC_SUBST(LIBRSB_INCDIR)
@@ -364,7 +374,7 @@ dnl Please note that brackets around variable identifiers are absolutely needed 
 AC_MSG_NOTICE([
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
 	CUDA_LIBS  : ${CUDA_LIBS}
-
+        CUDEFINES  : ${CUDEFINES}
 
 	If you are satisfied, run 'make' to build ${PACKAGE_NAME} and its documentation; otherwise
 	type  ./configure --help=short for a complete list of configure options specific to ${PACKAGE_NAME}.
