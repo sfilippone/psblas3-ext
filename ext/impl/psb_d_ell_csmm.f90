@@ -96,10 +96,10 @@ subroutine psb_d_ell_csmm(alpha,a,x,beta,y,info,trans)
     goto 9999
   end if
 
-  call  psb_d_ell_csmm_inner(m,n,nxy,alpha,size(a%ja,2),&
-       & a%ja,size(a%ja,1),a%val,size(a%val,1), &
-       & a%is_triangle(),a%is_unit(),x,size(x,1), &
-       & beta,y,size(y,1),tra,ctra,acc) 
+  call  psb_d_ell_csmm_inner(m,n,nxy,alpha,size(a%ja,2,kind=psb_ipk_),&
+       & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_), &
+       & a%is_triangle(),a%is_unit(),x,size(x,1,kind=psb_ipk_), &
+       & beta,y,size(y,1,kind=psb_ipk_),tra,ctra,acc) 
 
 
   call psb_erractionrestore(err_act)

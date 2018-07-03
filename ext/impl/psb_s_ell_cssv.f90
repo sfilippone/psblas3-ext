@@ -103,7 +103,8 @@ subroutine psb_s_ell_cssv(alpha,a,x,beta,y,info,trans)
 
 !!$    write(0,*) 'Into ell_sv',tra,a%is_lower(),a%is_unit(),x(1:m)
     call inner_ellsv(tra,ctra,a%is_lower(),a%is_unit(),a%get_nrows(),&
-         & size(a%ja,2),a%irn,a%idiag,a%ja,size(a%ja,1),a%val,size(a%val,1),&
+         & size(a%ja,2,kind=psb_ipk_),a%irn,a%idiag,&
+         & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_),&
          & x,y,info) 
 
     if (info /= 0) then 
@@ -133,7 +134,8 @@ subroutine psb_s_ell_cssv(alpha,a,x,beta,y,info,trans)
     endif
 
     call inner_ellsv(tra,ctra,a%is_lower(),a%is_unit(),a%get_nrows(),&
-         & size(a%ja,2),a%irn,a%idiag,a%ja,size(a%ja,1),a%val,size(a%val,1),&
+         & size(a%ja,2,kind=psb_ipk_),a%irn,a%idiag,&
+         & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_),&
          & x,tmp,info) 
 
     if (info == 0) &

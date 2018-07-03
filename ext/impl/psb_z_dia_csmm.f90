@@ -87,7 +87,7 @@ subroutine psb_z_dia_csmm(alpha,a,x,beta,y,info,trans)
   nxy = min(size(x,2) , size(y,2) )
 
   call  psb_z_dia_csmm_inner(m,n,nxy,alpha,&
-       & a%data,size(a%data,1), size(a%data,2), a%offset,&
+       & a%data,size(a%data,1,kind=psb_ipk_), size(a%data,2,kind=psb_ipk_), a%offset,&
        & x,size(x,1,kind=psb_ipk_), beta, y,size(y,1,kind=psb_ipk_))
 
   call psb_erractionrestore(err_act)
