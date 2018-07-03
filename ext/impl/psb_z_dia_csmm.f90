@@ -74,13 +74,13 @@ subroutine psb_z_dia_csmm(alpha,a,x,beta,y,info,trans)
 
   if (size(x,1)<n) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,n/))
     goto 9999
   end if
 
   if (size(y,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 
@@ -88,7 +88,7 @@ subroutine psb_z_dia_csmm(alpha,a,x,beta,y,info,trans)
 
   call  psb_z_dia_csmm_inner(m,n,nxy,alpha,&
        & a%data,size(a%data,1), size(a%data,2), a%offset,&
-       & x,size(x,1), beta, y,size(y,1))
+       & x,size(x,1,kind=psb_ipk_), beta, y,size(y,1,kind=psb_ipk_))
 
   call psb_erractionrestore(err_act)
   return

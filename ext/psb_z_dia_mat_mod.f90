@@ -503,8 +503,8 @@ contains
     if (allocated(a%data)) deallocate(a%data)
     if (allocated(a%offset)) deallocate(a%offset)
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
     
     return
 

@@ -87,8 +87,8 @@ module psb_s_dns_mat_mod
   !  
   interface
     subroutine  psb_s_dns_reallocate_nz(nz,a) 
-      import :: psb_s_dns_sparse_mat
-      integer, intent(in) :: nz
+      import :: psb_s_dns_sparse_mat, psb_ipk_
+      integer(psb_ipk_), intent(in) :: nz
       class(psb_s_dns_sparse_mat), intent(inout) :: a
     end subroutine psb_s_dns_reallocate_nz
   end interface
@@ -118,10 +118,10 @@ module psb_s_dns_mat_mod
   ! 
   interface 
     subroutine psb_s_dns_mold(a,b,info) 
-      import :: psb_s_dns_sparse_mat, psb_s_base_sparse_mat, psb_epk_
+      import :: psb_s_dns_sparse_mat, psb_s_base_sparse_mat, psb_epk_, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(in)                  :: a
       class(psb_s_base_sparse_mat), intent(inout), allocatable :: b
-      integer, intent(out)                                 :: info
+      integer(psb_ipk_), intent(out)                             :: info
     end subroutine psb_s_dns_mold
   end interface
 
@@ -137,10 +137,10 @@ module psb_s_dns_mat_mod
   !
   interface
     subroutine  psb_s_dns_allocate_mnnz(m,n,a,nz) 
-      import :: psb_s_dns_sparse_mat
-      integer, intent(in) :: m,n
+      import :: psb_s_dns_sparse_mat, psb_ipk_
+      integer(psb_ipk_), intent(in) :: m,n
       class(psb_s_dns_sparse_mat), intent(inout) :: a
-      integer, intent(in), optional :: nz
+      integer(psb_ipk_), intent(in), optional :: nz
     end subroutine psb_s_dns_allocate_mnnz
   end interface
   
@@ -154,10 +154,10 @@ module psb_s_dns_mat_mod
   !  
   interface 
     subroutine psb_s_cp_dns_to_coo(a,b,info) 
-      import :: psb_s_coo_sparse_mat, psb_s_dns_sparse_mat
-      class(psb_s_dns_sparse_mat), intent(in) :: a
+      import :: psb_s_coo_sparse_mat, psb_s_dns_sparse_mat, psb_ipk_
+      class(psb_s_dns_sparse_mat), intent(in)    :: a
       class(psb_s_coo_sparse_mat), intent(inout) :: b
-      integer, intent(out)            :: info
+      integer(psb_ipk_), intent(out)             :: info
     end subroutine psb_s_cp_dns_to_coo
   end interface
   
@@ -171,10 +171,10 @@ module psb_s_dns_mat_mod
   !  
   interface 
     subroutine psb_s_cp_dns_from_coo(a,b,info) 
-      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(inout) :: a
       class(psb_s_coo_sparse_mat), intent(in)    :: b
-      integer, intent(out)                        :: info
+      integer(psb_ipk_), intent(out)             :: info
     end subroutine psb_s_cp_dns_from_coo
   end interface
   
@@ -188,10 +188,10 @@ module psb_s_dns_mat_mod
   !  
   interface 
     subroutine psb_s_mv_dns_to_coo(a,b,info) 
-      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(inout) :: a
-      class(psb_s_coo_sparse_mat), intent(inout)   :: b
-      integer, intent(out)            :: info
+      class(psb_s_coo_sparse_mat), intent(inout) :: b
+      integer(psb_ipk_), intent(out)             :: info
     end subroutine psb_s_mv_dns_to_coo
   end interface
   
@@ -205,10 +205,10 @@ module psb_s_dns_mat_mod
   !  
   interface 
     subroutine psb_s_mv_dns_from_coo(a,b,info) 
-      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat
+      import :: psb_s_dns_sparse_mat, psb_s_coo_sparse_mat, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(inout) :: a
       class(psb_s_coo_sparse_mat), intent(inout) :: b
-      integer, intent(out)                        :: info
+      integer(psb_ipk_), intent(out)             :: info
     end subroutine psb_s_mv_dns_from_coo
   end interface
   
@@ -250,16 +250,16 @@ module psb_s_dns_mat_mod
   interface 
     subroutine psb_s_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
          & jmin,jmax,iren,append,nzin,rscale,cscale)
-      import :: psb_s_dns_sparse_mat, psb_spk_
+      import :: psb_s_dns_sparse_mat, psb_spk_, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(in) :: a
-      integer, intent(in)                  :: imin,imax
-      integer, intent(out)                 :: nz
-      integer, allocatable, intent(inout)  :: ia(:), ja(:)
+      integer(psb_ipk_), intent(in)                  :: imin,imax
+      integer(psb_ipk_), intent(out)                 :: nz
+      integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
       real(psb_spk_), allocatable,  intent(inout)    :: val(:)
-      integer,intent(out)                  :: info
-      logical, intent(in), optional        :: append
-      integer, intent(in), optional        :: iren(:)
-      integer, intent(in), optional        :: jmin,jmax, nzin
+      integer(psb_ipk_),intent(out)                  :: info
+      logical, intent(in), optional           :: append
+      integer(psb_ipk_), intent(in), optional :: iren(:)
+      integer(psb_ipk_), intent(in), optional :: jmin,jmax, nzin
       logical, intent(in), optional        :: rscale,cscale
     end subroutine psb_s_dns_csgetrow
   end interface
@@ -285,12 +285,12 @@ module psb_s_dns_mat_mod
   !
   interface 
     subroutine psb_s_dns_csmv(alpha,a,x,beta,y,info,trans) 
-      import :: psb_s_dns_sparse_mat, psb_spk_
+      import :: psb_s_dns_sparse_mat, psb_spk_, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(in) :: a
-      real(psb_spk_), intent(in)          :: alpha, beta, x(:)
-      real(psb_spk_), intent(inout)       :: y(:)
-      integer, intent(out)                :: info
-      character, optional, intent(in)     :: trans
+      real(psb_spk_), intent(in)       :: alpha, beta, x(:)
+      real(psb_spk_), intent(inout)    :: y(:)
+      integer(psb_ipk_), intent(out)    :: info
+      character, optional, intent(in)   :: trans
     end subroutine psb_s_dns_csmv
   end interface
   
@@ -313,11 +313,11 @@ module psb_s_dns_mat_mod
   !
   interface 
     subroutine psb_s_dns_csmm(alpha,a,x,beta,y,info,trans) 
-      import :: psb_s_dns_sparse_mat, psb_spk_
+      import :: psb_s_dns_sparse_mat, psb_spk_, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(in) :: a
       real(psb_spk_), intent(in)          :: alpha, beta, x(:,:)
       real(psb_spk_), intent(inout)       :: y(:,:)
-      integer, intent(out)                :: info
+      integer(psb_ipk_), intent(out)      :: info
       character, optional, intent(in)     :: trans
     end subroutine psb_s_dns_csmm
   end interface
@@ -350,10 +350,10 @@ module psb_s_dns_mat_mod
   ! 
   interface 
     subroutine psb_s_dns_get_diag(a,d,info) 
-      import :: psb_s_dns_sparse_mat, psb_spk_
+      import :: psb_s_dns_sparse_mat, psb_spk_, psb_ipk_
       class(psb_s_dns_sparse_mat), intent(in) :: a
       real(psb_spk_), intent(out)     :: d(:)
-      integer, intent(out)            :: info
+      integer(psb_ipk_), intent(out)  :: info
     end subroutine psb_s_dns_get_diag
   end interface
   
@@ -394,7 +394,7 @@ contains
   function s_dns_get_nzeros(a) result(res)
     implicit none 
     class(psb_s_dns_sparse_mat), intent(in) :: a
-    integer :: res
+    integer(psb_ipk_) :: res
     res = a%nnz
   end function s_dns_get_nzeros
 
@@ -407,7 +407,7 @@ contains
   function s_dns_get_size(a) result(res)
     implicit none 
     class(psb_s_dns_sparse_mat), intent(in) :: a
-    integer :: res
+    integer(psb_ipk_) :: res
 
     res = size(a%val)
 
@@ -427,8 +427,8 @@ contains
     implicit none
     
     class(psb_s_dns_sparse_mat), intent(in) :: a
-    integer, intent(in)                  :: idx
-    integer                              :: res
+    integer(psb_ipk_), intent(in)                  :: idx
+    integer(psb_ipk_)                              :: res
     
     res = 0 
  
@@ -456,8 +456,8 @@ contains
     ! Mark the object as empty just in case
     ! 
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
     
     return
 

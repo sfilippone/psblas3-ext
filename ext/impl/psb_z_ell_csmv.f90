@@ -77,19 +77,19 @@ subroutine psb_z_ell_csmv(alpha,a,x,beta,y,info,trans)
 
   if (size(x,1)<n) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,n/))
     goto 9999
   end if
 
   if (size(y,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 
 
-  call psb_z_ell_csmv_inner(m,n,alpha,size(a%ja,2),&
-       & a%ja,size(a%ja,1),a%val,size(a%val,1),&
+  call psb_z_ell_csmv_inner(m,n,alpha,size(a%ja,2,kind=psb_ipk_),&
+       & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_),&
        & a%is_triangle(),a%is_unit(),&
        & x,beta,y,tra,ctra) 
 

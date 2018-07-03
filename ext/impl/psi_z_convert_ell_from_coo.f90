@@ -82,6 +82,6 @@ subroutine psi_z_convert_ell_from_coo(a,tmp,info,hacksize)
 
   call psi_z_xtr_ell_from_coo(1,nr,nzm,tmp%ia,tmp%ja,tmp%val,&
        & a%ja,a%val,a%irn,a%idiag,ldv)
-  
+
 end subroutine psi_z_convert_ell_from_coo
 

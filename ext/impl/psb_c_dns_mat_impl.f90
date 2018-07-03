@@ -199,7 +199,7 @@ subroutine psb_c_dns_get_diag(a,d,info)
   mnm = min(a%get_nrows(),a%get_ncols())
   if (size(d) < mnm) then 
     info=psb_err_input_asize_invalid_i_
-    call psb_errpush(info,name,i_err=(/2,size(d),0,0,0/))
+    call psb_errpush(info,name,i_err=(/2,size(d,kind=psb_ipk_)/))
     goto 9999
   end if
 
@@ -319,12 +319,12 @@ subroutine  psb_c_dns_allocate_mnnz(m,n,a,nz)
   info = psb_success_
   if (m < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/1,0,0,0,0/))
+    call psb_errpush(info,name,i_err=(/1_psb_ipk_/))
     goto 9999
   endif
   if (n < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/2,0,0,0,0/))
+    call psb_errpush(info,name,i_err=(/2_psb_ipk_/))
     goto 9999
   endif
   

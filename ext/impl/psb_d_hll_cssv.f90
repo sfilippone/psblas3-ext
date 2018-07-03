@@ -76,13 +76,13 @@ subroutine psb_d_hll_cssv(alpha,a,x,beta,y,info,trans)
 
   if (size(x)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,m/))
     goto 9999
   end if
 
   if (size(y)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 

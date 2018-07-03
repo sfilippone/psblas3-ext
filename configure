@@ -658,6 +658,7 @@ LIBRSB_DIR
 LIBRSB_INCDIR
 LIBRSB_INCLUDES
 LIBRSB_LIBS
+CUDEFINES
 CUDA_LIBS
 CUDA_INCLUDES
 CUDA_DEFINES
@@ -769,6 +770,7 @@ enable_serial
 enable_dependency_tracking
 with_cuda
 with_spgpu
+with_cudacc
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1430,6 +1432,8 @@ Optional Packages:
   --with-cuda=DIR         Specify the directory for CUDA library and includes.
   --with-spgpu=DIR        Specify the directory for SPGPU library and
                           includes.
+  --with-cudacc           A comma-separated list of CCs to compile to, for
+                          example, --with-cudacc=30,35,37,50,60
 
 Some influential environment variables:
   CC          C compiler command
@@ -8067,15 +8071,8 @@ if test "x$pac_cv_psblas_lpk" == "xunknown"; then
 $as_echo "$as_me: error: PSBLAS wrong LPK \"$pac_cv_psblas_lpk\"." >&2;}
    { (exit 1); exit 1; }; }
 fi
-if test "x$pac_cv_psblas_ipk" == "x4"; then
-  { $as_echo "$as_me:$LINENO: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&5
+{ $as_echo "$as_me:$LINENO: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&5
 $as_echo "$as_me: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&6;}
-else
-  { { $as_echo "$as_me:$LINENO: error: I need psb_ipk_ to be 4 bytes" >&5
-$as_echo "$as_me: error: I need psb_ipk_ to be 4 bytes" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
 
 SAVE_LIBS="$LIBS"
 	  SAVE_CPPFLAGS="$CPPFLAGS"
@@ -8563,9 +8560,37 @@ if test "x$psb_cv_have_spgpu" == "xyes" ; then
 fi
 
 
+# Check whether --with-cudacc was given.
+if test "${with_cudacc+set}" = set; then
+  withval=$with_cudacc; pac_cv_cudacc=$withval
+else
+  pac_cv_cudacc=''
+fi
+
+
+
+if test "x$pac_cv_cudacc" == "x"; then
+   pac_cv_cudacc="30,35,37,50";
+fi
+CUDEFINES="";
+for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
+do
+  CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
+done
+if test "x$pac_cv_psblas_ipk" != "x4"; then
+  { $as_echo "$as_me:$LINENO: For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU" >&5
+$as_echo "$as_me: For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU" >&6;}
+  GPUTARGET="";
+  CUDEFINES="";
+  CUDA_INCLUDES="";
+  CUDA_LIBS="";
+fi
+
+
 ###############################################################################
 # Variable substitutions : the Make.inc.in will have these @VARIABLES@
 # substituted.
+
 
 
 
@@ -9909,7 +9934,7 @@ fi
 { $as_echo "$as_me:$LINENO:
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
 	CUDA_LIBS  : ${CUDA_LIBS}
-
+        CUDEFINES  : ${CUDEFINES}
 
 	If you are satisfied, run 'make' to build ${PACKAGE_NAME} and its documentation; otherwise
 	type  ./configure --help=short for a complete list of configure options specific to ${PACKAGE_NAME}.
@@ -9917,7 +9942,7 @@ fi
 $as_echo "$as_me:
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
 	CUDA_LIBS  : ${CUDA_LIBS}
-
+        CUDEFINES  : ${CUDEFINES}
 
 	If you are satisfied, run 'make' to build ${PACKAGE_NAME} and its documentation; otherwise
 	type  ./configure --help=short for a complete list of configure options specific to ${PACKAGE_NAME}.

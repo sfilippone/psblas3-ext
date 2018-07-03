@@ -341,11 +341,11 @@ ac_objext='.o'
 ac_ext='f90'
 ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
 dnl Warning : square brackets are EVIL!
-[AC_MSG_CHECKING([for version of PSBLAS supporting psb_long_int_k_])
+[AC_MSG_CHECKING([for version of PSBLAS supporting psb_epk_])
 cat > conftest.$ac_ext <<EOF
            program test
 	       use psb_sparse_mod
-               integer(psb_long_int_k_) :: val 
+               integer(psb_epk_) :: val 
            end program test
 EOF
 if AC_TRY_EVAL(ac_compile) && test -s conftest${ac_objext}; then
@@ -1872,3 +1872,26 @@ LIBS="$SAVE_LIBS"
 CPPFLAGS="$SAVE_CPPFLAGS"
 ])
 dnl
+
+dnl @synopsis PAC_ARG_WITH_CUDACC
+dnl
+dnl Test for --with-cudacc="set_of_cc".
+dnl 
+dnl Defines the CC to compile for
+dnl
+dnl
+dnl Example use:
+dnl
+dnl PAC_ARG_WITH_CUDACC
+dnl 
+dnl @author Salvatore Filippone <salvatore.filippone@uniroma2.it>
+dnl
+AC_DEFUN([PAC_ARG_WITH_CUDACC],
+[
+AC_ARG_WITH(cudacc,
+AC_HELP_STRING([--with-cudacc], [A comma-separated list of CCs to compile to, for example,
+ --with-cudacc=30,35,37,50,60]),
+[pac_cv_cudacc=$withval],
+[pac_cv_cudacc=''])
+]
+)

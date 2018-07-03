@@ -537,9 +537,9 @@ contains
     if (allocated(a%val)) deallocate(a%val)
     if (allocated(a%val)) deallocate(a%hkoffs)
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
-    call a%set_hksz(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
+    call a%set_hksz(izero)
     
     return
 

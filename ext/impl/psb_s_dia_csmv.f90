@@ -77,19 +77,19 @@ subroutine psb_s_dia_csmv(alpha,a,x,beta,y,info,trans)
 
   if (size(x,1)<n) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,n/))
     goto 9999
   end if
 
   if (size(y,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 
 
-  call psb_s_dia_csmv_inner(m,n,alpha,size(a%data,1),&
-       & size(a%data,2),a%data,a%offset,x,beta,y) 
+  call psb_s_dia_csmv_inner(m,n,alpha,size(a%data,1,kind=psb_ipk_),&
+       & size(a%data,2,kind=psb_ipk_),a%data,a%offset,x,beta,y) 
 
   call psb_erractionrestore(err_act)
   return

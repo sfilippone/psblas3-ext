@@ -46,12 +46,12 @@ subroutine  psb_s_dia_allocate_mnnz(m,n,a,nz)
   info = psb_success_
   if (m < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/ione,izero,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/ione/))
     goto 9999
   endif
   if (n < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/2*ione,izero,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/2*ione/))
     goto 9999
   endif
   if (present(nz)) then 
@@ -61,7 +61,7 @@ subroutine  psb_s_dia_allocate_mnnz(m,n,a,nz)
   end if
   if (nz_ < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/3*ione,izero,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione/))
     goto 9999
   endif
 
