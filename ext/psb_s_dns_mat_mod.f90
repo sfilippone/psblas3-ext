@@ -249,7 +249,7 @@ module psb_s_dns_mat_mod
   !
   interface 
     subroutine psb_s_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
-         & jmin,jmax,iren,append,nzin,rscale,cscale)
+         & jmin,jmax,iren,append,nzin,rscale,cscale,chksz)
       import :: psb_s_dns_sparse_mat, psb_spk_
       class(psb_s_dns_sparse_mat), intent(in) :: a
       integer, intent(in)                  :: imin,imax
@@ -260,7 +260,7 @@ module psb_s_dns_mat_mod
       logical, intent(in), optional        :: append
       integer, intent(in), optional        :: iren(:)
       integer, intent(in), optional        :: jmin,jmax, nzin
-      logical, intent(in), optional        :: rscale,cscale
+      logical, intent(in), optional        :: rscale,cscale,chksz
     end subroutine psb_s_dns_csgetrow
   end interface
 

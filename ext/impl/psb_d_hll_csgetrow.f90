@@ -31,7 +31,7 @@
   
 
 subroutine psb_d_hll_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
-     & jmin,jmax,iren,append,nzin,rscale,cscale)
+     & jmin,jmax,iren,append,nzin,rscale,cscale,chksz)
   use psb_base_mod
   use psb_d_hll_mat_mod, psb_protect_name => psb_d_hll_csgetrow
   implicit none
@@ -45,9 +45,9 @@ subroutine psb_d_hll_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   logical, intent(in), optional                 :: append
   integer(psb_ipk_), intent(in), optional       :: iren(:)
   integer(psb_ipk_), intent(in), optional       :: jmin,jmax, nzin
-  logical, intent(in), optional                 :: rscale,cscale
+  logical, intent(in), optional                 :: rscale,cscale,chksz
 
-  logical            :: append_, rscale_, cscale_ 
+  logical            :: append_, rscale_, cscale_, chksz_ 
   integer(psb_ipk_)  :: nzin_, jmin_, jmax_, err_act, i
   character(len=20)  :: name='hll_getrow'
   logical, parameter :: debug=.false.
@@ -96,9 +96,14 @@ subroutine psb_d_hll_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
     goto 9999
   end if
+  if (present(chksz)) then 
+    chksz_ = chksz
+  else
+    chksz_ = .true.
+  endif
 
   if (a%is_dev()) call a%sync()
-  call hll_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,append_,info,&
+  call hll_getrow(imin,imax,jmin_,jmax_,a,nz,ia,ja,val,nzin_,append_,chksz_,info,&
        & iren)
   
   if (rscale_) then 
@@ -122,7 +127,7 @@ subroutine psb_d_hll_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
 
 contains
 
-  subroutine hll_getrow(imin,imax,jmin,jmax,a,nz,ia,ja,val,nzin,append,info,&
+  subroutine hll_getrow(imin,imax,jmin,jmax,a,nz,ia,ja,val,nzin,append,chksz,info,&
        & iren)
 
     implicit none
@@ -133,7 +138,7 @@ contains
     integer(psb_ipk_), allocatable, intent(inout) :: ia(:), ja(:)
     real(psb_dpk_), allocatable,  intent(inout)  :: val(:)
     integer(psb_ipk_), intent(in)                 :: nzin
-    logical, intent(in)                           :: append
+    logical, intent(in)                           :: append,chksz
     integer(psb_ipk_)                             :: info
     integer(psb_ipk_), optional                   :: iren(:)
     integer(psb_ipk_) :: nzin_, nza, idx,i,j,k, nzt, irw, lrw, hksz, hk, mxrwl, irs
@@ -142,7 +147,7 @@ contains
 
     debug_unit  = psb_get_debug_unit()
     debug_level = psb_get_debug_level()
-
+    info = psb_success_
     nza = a%get_nzeros()
     irw = imin
     lrw = min(imax,a%get_nrows())
@@ -161,10 +166,11 @@ contains
     nz  = 0 
     hksz = a%get_hksz()
 
-    call psb_ensure_size(nzin_+nzt,ia,info)
-    if (info == psb_success_) call psb_ensure_size(nzin_+nzt,ja,info)
-    if (info == psb_success_) call psb_ensure_size(nzin_+nzt,val,info)
-
+    if (chksz) then 
+      call psb_ensure_size(nzin_+nzt,ia,info)
+      if (info == psb_success_) call psb_ensure_size(nzin_+nzt,ja,info)
+      if (info == psb_success_) call psb_ensure_size(nzin_+nzt,val,info)
+    end if
     if (info /= psb_success_) return
     
     if (present(iren)) then 
