@@ -255,7 +255,7 @@ module psb_c_ell_mat_mod
   
   interface 
     subroutine psb_c_ell_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
-         & jmin,jmax,iren,append,nzin,rscale,cscale)
+         & jmin,jmax,iren,append,nzin,rscale,cscale,chksz)
       import :: psb_c_ell_sparse_mat, psb_spk_, psb_ipk_
       class(psb_c_ell_sparse_mat), intent(in)        :: a
       integer(psb_ipk_), intent(in)                  :: imin,imax
@@ -266,7 +266,7 @@ module psb_c_ell_mat_mod
       logical, intent(in), optional        :: append
       integer(psb_ipk_), intent(in), optional        :: iren(:)
       integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
-      logical, intent(in), optional        :: rscale,cscale
+      logical, intent(in), optional        :: rscale,cscale,chksz
     end subroutine psb_c_ell_csgetrow
   end interface
 

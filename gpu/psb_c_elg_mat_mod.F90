@@ -50,8 +50,8 @@ module psb_c_elg_mat_mod
     ! a copy of ELL, indistinguishable.
     ! 
 #ifdef HAVE_SPGPU
-    type(c_ptr) :: deviceMat = c_null_ptr
-    integer     :: devstate  = is_host
+    type(c_ptr)       :: deviceMat = c_null_ptr
+    integer(psb_ipk_) :: devstate  = is_host
 
   contains
     procedure, nopass  :: get_fmt       => c_elg_get_fmt

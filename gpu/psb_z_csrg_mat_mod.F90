@@ -49,8 +49,8 @@ module psb_z_csrg_mat_mod
     ! 
     ! 
 #ifdef HAVE_SPGPU
-    type(z_Cmat) :: deviceMat
-    integer     :: devstate  = is_host
+    type(z_Cmat)    :: deviceMat
+    integer(psb_ipk_) :: devstate  = is_host
     
   contains
     procedure, nopass  :: get_fmt       => z_csrg_get_fmt
