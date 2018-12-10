@@ -40,7 +40,7 @@ AC_INIT([PSBLAS_EXT],1.0, salvatore.filippone@uniroma2.it)
 
 # VERSION is the file containing the PSBLAS version code
 # FIXME
-psblas_ext_cv_version="1.0"
+psblas_ext_cv_version="1.2"
 # A sample source file
 dnl AC_CONFIG_AUX_DIR(config)
 
@@ -299,10 +299,8 @@ if test "x$pac_cv_psblas_patchlevel" == "xunknown"; then
    AC_MSG_ERROR([PSBLAS patchlevel "$pac_cv_psblas_patchlevel".])
 fi
 if (( $pac_cv_psblas_major < 3 )) ||
-    ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 3 )) ) ||
-    ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor == 3 )) &&
-      (( $pac_cv_psblas_patchlevel < 1 ))   )  ; then
-  AC_MSG_ERROR([I need at least PSBLAS version 3.3.1]) 
+     (   (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 7 )) )  ; then
+  AC_MSG_ERROR([I need at least PSBLAS version 3.7]) 		    
 else
   AC_MSG_NOTICE([Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel.])
 fi
