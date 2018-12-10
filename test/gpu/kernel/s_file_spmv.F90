@@ -59,7 +59,7 @@ program s_file_spmv
   type(psb_desc_type):: desc_a
 
   integer            :: ictxt, iam, np
-  integer(psb_long_int_k_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
+  integer(psb_epk_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
   real(psb_spk_)   :: err, eps, samatsize, sgmatsize
 
   character(len=5)   :: acfmt, agfmt
@@ -454,8 +454,8 @@ program s_file_spmv
     ! it is minimal in terms of coefficients. Other formats may either move
     ! more data (padding etc.) or less data (if they can save on the indices). 
     !
-    nbytes = nr*(2*psb_sizeof_sp + psb_sizeof_int)+&
-         & annz*(psb_sizeof_sp + psb_sizeof_int)
+    nbytes = nr*(2*psb_sizeof_sp + psb_sizeof_ip)+&
+         & annz*(psb_sizeof_sp + psb_sizeof_ip)
     bdwdth = ntests*nbytes/(t2*1.d6)
     write(psb_out_unit,*)
     write(psb_out_unit,'("MBYTES/S                  (CPU)  : ",F20.3)') bdwdth

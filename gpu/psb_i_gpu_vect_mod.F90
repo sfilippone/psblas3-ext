@@ -61,11 +61,11 @@ module psb_i_gpu_vect_mod
 
     procedure, pass(x) :: all      => i_gpu_all
     procedure, pass(x) :: zero     => i_gpu_zero
-    procedure, pass(x) :: asb      => i_gpu_asb
+    procedure, pass(x) :: asb_m    => i_gpu_asb_m
     procedure, pass(x) :: sync     => i_gpu_sync
     procedure, pass(x) :: sync_space => i_gpu_sync_space
     procedure, pass(x) :: bld_x    => i_gpu_bld_x
-    procedure, pass(x) :: bld_n    => i_gpu_bld_n
+    procedure, pass(x) :: bld_mn   => i_gpu_bld_mn
     procedure, pass(x) :: free     => i_gpu_free
     procedure, pass(x) :: ins_a    => i_gpu_ins_a
     procedure, pass(x) :: ins_v    => i_gpu_ins_v
@@ -563,8 +563,8 @@ contains
 
   end subroutine i_gpu_bld_x
 
-  subroutine i_gpu_bld_n(x,n)
-    integer(psb_ipk_), intent(in) :: n
+  subroutine i_gpu_bld_mn(x,n)
+    integer(psb_mpk_), intent(in) :: n
     class(psb_i_vect_gpu), intent(inout) :: x
     integer(psb_ipk_) :: info
 
@@ -573,8 +573,7 @@ contains
       call psb_errpush(info,'i_gpu_bld_n',i_err=(/n,n,n,n,n/))
     end if
     
-  end subroutine i_gpu_bld_n
-
+  end subroutine i_gpu_bld_mn
 
   subroutine i_gpu_set_host(x)
     implicit none 
@@ -664,14 +663,14 @@ contains
     call x%set_host()
   end subroutine i_gpu_zero
 
-  subroutine i_gpu_asb(n, x, info)
+  subroutine i_gpu_asb_m(n, x, info)
     use psi_serial_mod
     use psb_realloc_mod
     implicit none 
-    integer(psb_ipk_), intent(in)        :: n
+    integer(psb_mpk_), intent(in)        :: n
     class(psb_i_vect_gpu), intent(inout) :: x
     integer(psb_ipk_), intent(out)       :: info
-    integer(psb_ipk_) :: nd
+    integer(psb_mpk_) :: nd
     
     if (x%is_dev()) then 
       nd  = getMultiVecDeviceSize(x%deviceVect)
@@ -689,7 +688,7 @@ contains
       end if
     end if
 
-  end subroutine i_gpu_asb
+  end subroutine i_gpu_asb_m
 
   subroutine i_gpu_sync_space(x,info)
     use psb_base_mod, only : psb_realloc

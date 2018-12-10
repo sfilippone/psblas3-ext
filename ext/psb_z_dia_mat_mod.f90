@@ -419,11 +419,11 @@ contains
    function z_dia_sizeof(a) result(res)
      implicit none 
      class(psb_z_dia_sparse_mat), intent(in) :: a
-     integer(psb_long_int_k_) :: res
+     integer(psb_epk_) :: res
      if (a%is_dev()) call a%sync()
      res = 8 
      res = res + (2*psb_sizeof_dp)  * size(a%data)
-     res = res + psb_sizeof_int * size(a%offset)
+     res = res + psb_sizeof_ip * size(a%offset)
      
    end function z_dia_sizeof
 
@@ -503,8 +503,8 @@ contains
     if (allocated(a%data)) deallocate(a%data)
     if (allocated(a%offset)) deallocate(a%offset)
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
     
     return
 

@@ -409,7 +409,7 @@ contains
   function d_rsb_sizeof(a) result(res)
     implicit none 
     class(psb_d_rsb_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
 
     
 

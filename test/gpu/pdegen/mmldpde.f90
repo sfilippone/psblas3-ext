@@ -107,7 +107,7 @@ program ppde
 
   ! solver parameters
   integer            :: iter, itmax,itrace, istopc, irst,giter, nmin,nmax,ninc
-  integer(psb_long_int_k_) :: amatsize, precsize, descsize, d2size
+  integer(psb_epk_) :: amatsize, precsize, descsize, d2size
   real(psb_dpk_)   :: err, eps, gerr
 
   ! other variables

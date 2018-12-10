@@ -444,13 +444,13 @@ contains
   function s_ell_sizeof(a) result(res)
     implicit none 
     class(psb_s_ell_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
     if (a%is_dev()) call a%sync()
     res = 8 
     res = res + psb_sizeof_sp  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irn)
-    res = res + psb_sizeof_int * size(a%idiag)
-    res = res + psb_sizeof_int * size(a%ja)
+    res = res + psb_sizeof_ip * size(a%irn)
+    res = res + psb_sizeof_ip * size(a%idiag)
+    res = res + psb_sizeof_ip * size(a%ja)
       
   end function s_ell_sizeof
 
@@ -534,8 +534,8 @@ contains
     if (allocated(a%ja))  deallocate(a%ja)
     if (allocated(a%val)) deallocate(a%val)
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
     
     return
 

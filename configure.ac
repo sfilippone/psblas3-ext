@@ -307,7 +307,14 @@ else
   AC_MSG_NOTICE([Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel.])
 fi
 
-
+PAC_FORTRAN_PSBLAS_INTEGER_SIZES()
+if test "x$pac_cv_psblas_ipk" == "xunknown"; then
+  AC_MSG_ERROR([PSBLAS wrong IPK  "$pac_cv_psblas_ipk".])
+fi
+if test "x$pac_cv_psblas_lpk" == "xunknown"; then
+   AC_MSG_ERROR([PSBLAS wrong LPK "$pac_cv_psblas_lpk".])
+fi
+AC_MSG_NOTICE([Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk])
 
 PAC_CHECK_SPGPU
 if test "x$psb_cv_have_spgpu" == "xyes" ; then 
@@ -315,13 +322,21 @@ if test "x$psb_cv_have_spgpu" == "xyes" ; then
 fi
 PAC_ARG_WITH_CUDACC
 if test "x$pac_cv_cudacc" == "x"; then
-   pac_cv_cudacc="30,35,37,50";
+   pac_cv_cudacc="30,35,37,50,60";
 fi
 CUDEFINES="";
 for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
 do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
+
+if test "x$pac_cv_psblas_ipk" != "x4"; then
+  AC_MSG_NOTICE([For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU])
+  GPUTARGET="";
+  CUDEFINES="";
+  CUDA_INCLUDES="";
+  CUDA_LIBS="";
+fi
 
 
 ###############################################################################

@@ -23,11 +23,11 @@ subroutine psb_s_dns_csmv(alpha,a,x,beta,y,info,trans)
   class(psb_s_dns_sparse_mat), intent(in) :: a
   real(psb_spk_), intent(in)          :: alpha, beta, x(:)
   real(psb_spk_), intent(inout)       :: y(:)
-  integer, intent(out)                :: info
+  integer(psb_ipk_), intent(out)                :: info
   character, optional, intent(in)     :: trans
-
+  !
   character :: trans_
-  Integer(psb_ipk_)  :: err_act, m, n, lda
+  integer(psb_ipk_)  :: err_act, m, n, lda
   character(len=20)  :: name='s_dns_csmv'
   logical, parameter :: debug=.false.
 
@@ -93,11 +93,11 @@ subroutine psb_s_dns_csmm(alpha,a,x,beta,y,info,trans)
   class(psb_s_dns_sparse_mat), intent(in) :: a
   real(psb_spk_), intent(in)          :: alpha, beta, x(:,:)
   real(psb_spk_), intent(inout)       :: y(:,:)
-  integer, intent(out)                :: info
+  integer(psb_ipk_), intent(out)                :: info
   character, optional, intent(in)     :: trans
-
+  !
   character :: trans_
-  Integer(psb_ipk_)  :: err_act,m,n,k, lda, ldx, ldy
+  integer(psb_ipk_)  :: err_act,m,n,k, lda, ldx, ldy
   character(len=20)  :: name='s_dns_csmm'
   logical, parameter :: debug=.false.
 
@@ -155,8 +155,8 @@ function psb_s_dns_csnmi(a) result(res)
   implicit none 
   class(psb_s_dns_sparse_mat), intent(in) :: a
   real(psb_spk_)         :: res
-
-  integer   :: i
+  !
+  integer(psb_ipk_) :: i
   real(psb_spk_) :: acc
 
   res = szero 
@@ -186,9 +186,9 @@ subroutine psb_s_dns_get_diag(a,d,info)
   implicit none 
   class(psb_s_dns_sparse_mat), intent(in) :: a
   real(psb_spk_), intent(out)     :: d(:)
-  integer, intent(out)            :: info
-
-  Integer :: err_act, mnm, i
+  integer(psb_ipk_), intent(out)            :: info
+  !
+  integer(psb_ipk_) :: err_act, mnm, i
   character(len=20)  :: name='get_diag'
   logical, parameter :: debug=.false.
 
@@ -199,7 +199,7 @@ subroutine psb_s_dns_get_diag(a,d,info)
   mnm = min(a%get_nrows(),a%get_ncols())
   if (size(d) < mnm) then 
     info=psb_err_input_asize_invalid_i_
-    call psb_errpush(info,name,i_err=(/2,size(d),0,0,0/))
+    call psb_errpush(info,name,i_err=(/2_psb_ipk_,size(d,kind=psb_ipk_)/))
     goto 9999
   end if
 
@@ -234,9 +234,10 @@ subroutine  psb_s_dns_reallocate_nz(nz,a)
   use psb_base_mod
   use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_reallocate_nz
   implicit none 
-  integer, intent(in) :: nz
+  integer(psb_ipk_), intent(in) :: nz
   class(psb_s_dns_sparse_mat), intent(inout) :: a
-  Integer :: err_act
+  !
+  integer(psb_ipk_) :: err_act
   character(len=20)  :: name='s_dns_reallocate_nz'
   logical, parameter :: debug=.false.
 
@@ -272,8 +273,9 @@ subroutine psb_s_dns_mold(a,b,info)
   implicit none 
   class(psb_s_dns_sparse_mat), intent(in)  :: a
   class(psb_s_base_sparse_mat), intent(inout), allocatable  :: b
-  integer, intent(out)                    :: info
-  Integer :: err_act
+  integer(psb_ipk_), intent(out)                  :: info
+  !
+  integer(psb_ipk_) :: err_act
   character(len=20)  :: name='dns_mold'
   logical, parameter :: debug=.false.
 
@@ -308,10 +310,11 @@ subroutine  psb_s_dns_allocate_mnnz(m,n,a,nz)
   use psb_base_mod
   use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_allocate_mnnz
   implicit none 
-  integer, intent(in) :: m,n
+  integer(psb_ipk_), intent(in) :: m,n
   class(psb_s_dns_sparse_mat), intent(inout) :: a
-  integer, intent(in), optional :: nz
-  Integer :: err_act, info, nz_
+  integer(psb_ipk_), intent(in), optional :: nz
+  !
+  integer(psb_ipk_) :: err_act, info, nz_
   character(len=20)  :: name='allocate_mnz'
   logical, parameter :: debug=.false.
 
@@ -319,12 +322,12 @@ subroutine  psb_s_dns_allocate_mnnz(m,n,a,nz)
   info = psb_success_
   if (m < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/1,0,0,0,0/))
+    call psb_errpush(info,name,i_err=(/1_psb_ipk_/))
     goto 9999
   endif
   if (n < 0) then 
     info = psb_err_iarg_neg_
-    call psb_errpush(info,name,i_err=(/2,0,0,0,0/))
+    call psb_errpush(info,name,i_err=(/2_psb_ipk_/))
     goto 9999
   endif
   
@@ -397,19 +400,19 @@ subroutine psb_s_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_csgetrow
   implicit none
 
-  class(psb_s_dns_sparse_mat), intent(in) :: a
-  integer, intent(in)                  :: imin,imax
-  integer, intent(out)                 :: nz
-  integer, allocatable, intent(inout)  :: ia(:), ja(:)
-  real(psb_spk_), allocatable,  intent(inout)    :: val(:)
-  integer,intent(out)                  :: info
+  class(psb_s_dns_sparse_mat), intent(in)      :: a
+  integer(psb_ipk_), intent(in)                  :: imin,imax
+  integer(psb_ipk_), intent(out)                 :: nz
+  integer(psb_ipk_), allocatable, intent(inout)  :: ia(:), ja(:)
+  real(psb_spk_), allocatable,  intent(inout)   :: val(:)
+  integer(psb_ipk_),intent(out)                  :: info
   logical, intent(in), optional        :: append
-  integer, intent(in), optional        :: iren(:)
-  integer, intent(in), optional        :: jmin,jmax, nzin
+  integer(psb_ipk_), intent(in), optional        :: iren(:)
+  integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
   logical, intent(in), optional        :: rscale,cscale
-
+  !
   logical :: append_, rscale_, cscale_ 
-  integer :: nzin_, jmin_, jmax_, err_act, i,j,k
+  integer(psb_ipk_) :: nzin_, jmin_, jmax_, err_act, i,j,k
   character(len=20)  :: name='csget'
   logical, parameter :: debug=.false.
 
@@ -517,7 +520,8 @@ subroutine  psb_s_dns_trim(a)
   use psb_s_dns_mat_mod, psb_protect_name => psb_s_dns_trim
   implicit none 
   class(psb_s_dns_sparse_mat), intent(inout) :: a
-  Integer :: err_act
+  !
+  integer(psb_ipk_) :: err_act
   character(len=20)  :: name='trim'
   logical, parameter :: debug=.false.
 
@@ -548,13 +552,12 @@ subroutine psb_s_cp_dns_from_coo(a,b,info)
 
   class(psb_s_dns_sparse_mat), intent(inout) :: a
   class(psb_s_coo_sparse_mat), intent(in)    :: b
-  integer, intent(out)                        :: info
-
+  integer(psb_ipk_), intent(out)               :: info
+  !
   type(psb_s_coo_sparse_mat)   :: tmp
-  !locals
-  Integer             :: nza, nr, i,err_act, nc
-  Integer, Parameter  :: maxtry=8
-  integer             :: debug_level, debug_unit
+  integer(psb_ipk_)             :: nza, nr, i,err_act, nc
+  integer(psb_ipk_), parameter  :: maxtry=8
+  integer(psb_ipk_)             :: debug_level, debug_unit
   character(len=20)   :: name
 
   info = psb_success_
@@ -622,10 +625,10 @@ subroutine psb_s_cp_dns_to_coo(a,b,info)
 
   class(psb_s_dns_sparse_mat), intent(in)  :: a
   class(psb_s_coo_sparse_mat), intent(inout) :: b
-  integer, intent(out)                      :: info
+  integer(psb_ipk_), intent(out)               :: info
 
   !locals
-  Integer             :: nza, nr, nc,i,j,k,err_act
+  Integer(Psb_Ipk_)             :: nza, nr, nc,i,j,k,err_act
 
   info = psb_success_
 
@@ -673,7 +676,7 @@ subroutine psb_s_mv_dns_to_coo(a,b,info)
 
   class(psb_s_dns_sparse_mat), intent(inout) :: a
   class(psb_s_coo_sparse_mat), intent(inout) :: b
-  integer, intent(out)                       :: info
+  integer(psb_ipk_), intent(out)              :: info
 
   info = psb_success_
 
@@ -700,7 +703,7 @@ subroutine psb_s_mv_dns_from_coo(a,b,info)
 
   class(psb_s_dns_sparse_mat), intent(inout) :: a
   class(psb_s_coo_sparse_mat), intent(inout) :: b
-  integer, intent(out)                        :: info
+  integer(psb_ipk_), intent(out)               :: info
 
   info = psb_success_
 

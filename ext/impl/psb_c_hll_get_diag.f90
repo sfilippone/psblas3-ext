@@ -51,7 +51,7 @@ subroutine psb_c_hll_get_diag(a,d,info)
   ld = size(d)
   if (ld< mnm) then 
     info=psb_err_input_asize_invalid_i_
-    call psb_errpush(info,name,i_err=(/2*ione,ld,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/2*ione,ld/))
     goto 9999
   end if
 
