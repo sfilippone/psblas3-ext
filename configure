@@ -1433,7 +1433,7 @@ Optional Packages:
   --with-spgpu=DIR        Specify the directory for SPGPU library and
                           includes.
   --with-cudacc           A comma-separated list of CCs to compile to, for
-                          example, --with-cudacc=30,35,37,50
+                          example, --with-cudacc=30,35,37,50,60
 
 Some influential environment variables:
   CC          C compiler command
@@ -1903,7 +1903,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # VERSION is the file containing the PSBLAS version code
 # FIXME
-psblas_ext_cv_version="1.0"
+psblas_ext_cv_version="1.2"
 # A sample source file
 
 # A sample source file
@@ -7918,16 +7918,159 @@ $as_echo "$as_me: error: PSBLAS patchlevel \"$pac_cv_psblas_patchlevel\"." >&2;}
    { (exit 1); exit 1; }; }
 fi
 if (( $pac_cv_psblas_major < 3 )) ||
-    ( (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 5 )) ) ; then
-  { { $as_echo "$as_me:$LINENO: error: I need at least PSBLAS version 3.5.0" >&5
-$as_echo "$as_me: error: I need at least PSBLAS version 3.5.0" >&2;}
+     (   (( $pac_cv_psblas_major == 3 )) && (( $pac_cv_psblas_minor < 7 )) )  ; then
+  { { $as_echo "$as_me:$LINENO: error: I need at least PSBLAS version 3.7" >&5
+$as_echo "$as_me: error: I need at least PSBLAS version 3.7" >&2;}
    { (exit 1); exit 1; }; }
 else
   { $as_echo "$as_me:$LINENO: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel." >&5
 $as_echo "$as_me: Am configuring with PSBLAS version $pac_cv_psblas_major.$pac_cv_psblas_minor.$pac_cv_psblas_patchlevel." >&6;}
 fi
 
+{ $as_echo "$as_me:$LINENO: checking for PSBLAS integer sizes" >&5
+$as_echo_n "checking for PSBLAS integer sizes... " >&6; }
+ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
+ac_exeext=''
+ac_objext='o'
+ac_ext='f90'
+save_FCFLAGS=$FCFLAGS;
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+save_LDFLAGS=$LDFLAGS;
+if test "x$pac_cv_psblas_libdir" != "x"; then
+ PSBLAS_LIBS="-L$pac_cv_psblas_libdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_LIBS="-L$pac_cv_psblas_dir/lib"
+fi
+if test "x$pac_cv_psblas_moddir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
+fi
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+PSBLAS_LIBS="-lpsb_krylov -lpsb_prec -lpsb_util -lpsb_base $PSBLAS_LIBS"
+LDFLAGS=" $PSBLAS_LIBS $save_LDFLAGS"
+
+
+cat >conftest.$ac_ext <<_ACEOF
+
+		program test
+		use iso_fortran_env
+		use psb_base_mod
+		if (psb_ipk_ == int32) then
+		  print *, '4'
+		elseif (psb_ipk_ == int64) then
+		  print *, '8'
+		else
+		  print *, '-1'
+		end if
+		end program test
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_psblas_ipk=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_psblas_ipk="unknown"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+
+cat >conftest.$ac_ext <<_ACEOF
+
+		program test
+		use iso_fortran_env
+		use psb_base_mod
+		if (psb_lpk_ == int32) then
+		  print *, '4'
+		elseif (psb_lpk_ == int64) then
+		  print *, '8'
+		else
+		  print *, '-1'
+		end if
+		end program test
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_fc_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext && {
+	 test "$cross_compiling" = yes ||
+	 $as_test_x conftest$ac_exeext
+       }; then
+  pac_cv_psblas_lpk=`./conftest${ac_exeext} | sed 's/^ *//'`
+else
+  $as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	pac_cv_psblas_lpk="unknown"
+fi
+
+rm -rf conftest.dSYM
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+LDFLAGS="$save_LDFLAGS";
+FCFLAGS="$save_FCFLAGS";
+
+{ $as_echo "$as_me:$LINENO: result: Done" >&5
+$as_echo "Done" >&6; }
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+if test "x$pac_cv_psblas_ipk" == "xunknown"; then
+  { { $as_echo "$as_me:$LINENO: error: PSBLAS wrong IPK  \"$pac_cv_psblas_ipk\"." >&5
+$as_echo "$as_me: error: PSBLAS wrong IPK  \"$pac_cv_psblas_ipk\"." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test "x$pac_cv_psblas_lpk" == "xunknown"; then
+   { { $as_echo "$as_me:$LINENO: error: PSBLAS wrong LPK \"$pac_cv_psblas_lpk\"." >&5
+$as_echo "$as_me: error: PSBLAS wrong LPK \"$pac_cv_psblas_lpk\"." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+{ $as_echo "$as_me:$LINENO: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&5
+$as_echo "$as_me: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&6;}
 
 SAVE_LIBS="$LIBS"
 	  SAVE_CPPFLAGS="$CPPFLAGS"
@@ -8163,8 +8306,6 @@ fi
 LIBS="$SAVE_LIBS"
 CPPFLAGS="$SAVE_CPPFLAGS"
 
-	  { $as_echo "$as_me:$LINENO: From CUDA: $pac_cv_have_cuda " >&5
-$as_echo "$as_me: From CUDA: $pac_cv_have_cuda " >&6;}
 	  if test "x$pac_cv_have_cuda" == "xyes"; then
 
 # Check whether --with-spgpu was given.
@@ -8427,13 +8568,22 @@ fi
 
 
 if test "x$pac_cv_cudacc" == "x"; then
-   pac_cv_cudacc="30,35,37,50";
+   pac_cv_cudacc="30,35,37,50,60";
 fi
 CUDEFINES="";
 for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
 do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
+
+if test "x$pac_cv_psblas_ipk" != "x4"; then
+  { $as_echo "$as_me:$LINENO: For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU" >&5
+$as_echo "$as_me: For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU" >&6;}
+  GPUTARGET="";
+  CUDEFINES="";
+  CUDA_INCLUDES="";
+  CUDA_LIBS="";
+fi
 
 
 ###############################################################################

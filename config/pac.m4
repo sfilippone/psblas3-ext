@@ -341,11 +341,11 @@ ac_objext='.o'
 ac_ext='f90'
 ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
 dnl Warning : square brackets are EVIL!
-[AC_MSG_CHECKING([for version of PSBLAS supporting psb_long_int_k_])
+[AC_MSG_CHECKING([for version of PSBLAS supporting psb_epk_])
 cat > conftest.$ac_ext <<EOF
            program test
 	       use psb_sparse_mod
-               integer(psb_long_int_k_) :: val 
+               integer(psb_epk_) :: val 
            end program test
 EOF
 if AC_TRY_EVAL(ac_compile) && test -s conftest${ac_objext}; then
@@ -512,6 +512,85 @@ FCFLAGS="$save_FCFLAGS";
 
 AC_MSG_RESULT([Done])
 AC_LANG_POP([Fortran])])
+
+
+
+dnl @synopsis PAC_FORTRAN_PSBLAS_INTEGER_SIZES( )
+dnl
+dnl Will try to compile, link and run  a program using the PSBLAS library. \
+dnl  Checks for size of integers
+dnl
+dnl Will use MPIFC, otherwise '$FC'.
+dnl
+dnl
+dnl @author Salvatore Filippone <salvatore.filippone@uniroma2.it>
+dnl
+AC_DEFUN(PAC_FORTRAN_PSBLAS_INTEGER_SIZES,
+[AC_MSG_CHECKING([for PSBLAS integer sizes])
+AC_LANG_PUSH([Fortran])	  
+ac_exeext=''
+ac_objext='o'
+ac_ext='f90'
+save_FCFLAGS=$FCFLAGS;
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+save_LDFLAGS=$LDFLAGS;
+if test "x$pac_cv_psblas_libdir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas lib dir $pac_cv_psblas_libdir])
+ PSBLAS_LIBS="-L$pac_cv_psblas_libdir"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_LIBS="-L$pac_cv_psblas_dir/lib"
+fi
+if test "x$pac_cv_psblas_moddir" != "x"; then 
+dnl  AC_MSG_NOTICE([psblas modules dir $pac_cv_psblas_moddir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_moddir $PSBLAS_INCLUDES"
+elif test "x$pac_cv_psblas_dir" != "x"; then 
+dnl AC_MSG_NOTICE([psblas dir $pac_cv_psblas_dir])
+ PSBLAS_INCLUDES="$FMFLAG$pac_cv_psblas_dir/modules $PSBLAS_INCLUDES"
+fi
+FCFLAGS=" $PSBLAS_INCLUDES $save_FCFLAGS"
+PSBLAS_LIBS="-lpsb_krylov -lpsb_prec -lpsb_util -lpsb_base $PSBLAS_LIBS"
+LDFLAGS=" $PSBLAS_LIBS $save_LDFLAGS"
+
+dnl ac_compile='${MPIFC-$FC} -c -o conftest${ac_objext} $FMFLAG$PSBLAS_DIR/include $FMFLAG$PSBLAS_DIR/lib conftest.$ac_ext  1>&5'
+dnl ac_link='${MPIFC-$FC} -o conftest${ac_exeext} $FCFLAGS $LDFLAGS conftest.$ac_ext $FMFLAG$PSBLAS_DIR/include -L$PSBLAS_DIR/lib -lpsb_base $LIBS 1>&5'
+dnl Warning : square brackets are EVIL!
+
+AC_LINK_IFELSE([
+		program test
+		use iso_fortran_env
+		use psb_base_mod
+		if (psb_ipk_ == int32) then
+		  print *, '4'
+		elseif (psb_ipk_ == int64) then
+		  print *, '8'
+		else
+		  print *, '-1'
+		end if
+		end program test],
+	       [pac_cv_psblas_ipk=`./conftest${ac_exeext} | sed 's/^ *//'`],
+	       [pac_cv_psblas_ipk="unknown"])
+  
+AC_LINK_IFELSE([
+		program test
+		use iso_fortran_env
+		use psb_base_mod
+		if (psb_lpk_ == int32) then
+		  print *, '4'
+		elseif (psb_lpk_ == int64) then
+		  print *, '8'
+		else
+		  print *, '-1'
+		end if
+		end program test],
+	       [pac_cv_psblas_lpk=`./conftest${ac_exeext} | sed 's/^ *//'`],
+	       [pac_cv_psblas_lpk="unknown"])
+LDFLAGS="$save_LDFLAGS";
+FCFLAGS="$save_FCFLAGS";
+
+AC_MSG_RESULT([Done])
+AC_LANG_POP([Fortran])])
+
 
 
 dnl @synopsis PAC_FORTRAN_TEST_TR15581( [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
@@ -1644,7 +1723,7 @@ AC_DEFUN(PAC_CHECK_SPGPU,
 	 [SAVE_LIBS="$LIBS"
 	  SAVE_CPPFLAGS="$CPPFLAGS"
 	  PAC_CHECK_CUDA
-	  AC_MSG_NOTICE([From CUDA: $pac_cv_have_cuda ])
+dnl AC_MSG_NOTICE([From CUDA: $pac_cv_have_cuda ])
 	  if test "x$pac_cv_have_cuda" == "xyes"; then  
 	  AC_ARG_WITH(spgpu, AC_HELP_STRING([--with-spgpu=DIR], [Specify the directory for SPGPU library and includes.]),
 		      [psb_cv_spgpudir=$withval],
@@ -1811,7 +1890,7 @@ AC_DEFUN([PAC_ARG_WITH_CUDACC],
 [
 AC_ARG_WITH(cudacc,
 AC_HELP_STRING([--with-cudacc], [A comma-separated list of CCs to compile to, for example,
- --with-cudacc=30,35,37,50]),
+ --with-cudacc=30,35,37,50,60]),
 [pac_cv_cudacc=$withval],
 [pac_cv_cudacc=''])
 ]

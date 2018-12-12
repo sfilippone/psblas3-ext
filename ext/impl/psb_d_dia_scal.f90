@@ -64,7 +64,7 @@ subroutine psb_d_dia_scal(d,a,info,side)
     m = a%get_nrows()
     if (size(d) < m) then 
       info=psb_err_input_asize_invalid_i_
-      call psb_errpush(info,name,i_err=(/2*ione,size(d),izero,izero,izero/))
+      call psb_errpush(info,name,i_err=(/2*ione,size(d,kind=psb_ipk_)/))
       goto 9999
     end if
     

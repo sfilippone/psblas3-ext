@@ -45,7 +45,7 @@ subroutine psb_d_hll_cssm(alpha,a,x,beta,y,info,trans)
   integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc, ldx, ldy, hksz, nxy, mk, mxrwl
   real(psb_dpk_), allocatable :: tmp(:,:), acc(:)
   logical            :: tra, ctra
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_hll_cssm'
   logical, parameter :: debug=.false.
 
@@ -80,13 +80,13 @@ subroutine psb_d_hll_cssm(alpha,a,x,beta,y,info,trans)
   ldy = size(y,1)
   if (ldx<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3,m,0,0,0/))
+    call psb_errpush(info,name,i_err=(/3_psb_ipk_,m/))
     goto 9999
   end if
 
   if (ldy<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5,m,0,0,0/))
+    call psb_errpush(info,name,i_err=(/5_psb_ipk_,m/))
     goto 9999
   end if
 

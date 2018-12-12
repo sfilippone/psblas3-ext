@@ -171,7 +171,7 @@ contains
             ic = gtl(ic)
             if ((ir > 0).and.(ir <= nr)) then 
               nc = a%irn(ir)
-              ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
+              ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
               if (ip>0) then 
                 a%val(ir,ip) = val(i)
               else
@@ -197,7 +197,7 @@ contains
             ic = gtl(ic)
             if ((ir > 0).and.(ir <= nr)) then 
               nc = a%irn(ir)
-              ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
+              ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
               if (ip>0) then 
                 a%val(ir,ip) = a%val(ir,ip) + val(i)
               else
@@ -234,7 +234,7 @@ contains
           if ((ir > 0).and.(ir <= nr)) then 
 
             nc = a%irn(ir)
-            ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
+            ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
             if (ip>0) then 
               a%val(ir,ip) = val(i)
             else
@@ -255,7 +255,7 @@ contains
           ic = ja(i) 
           if ((ir > 0).and.(ir <= nr)) then 
             nc = a%irn(ir)
-            ip = psb_ibsrch(ic,nc,a%ja(ir,1:nc))    
+            ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
             if (ip>0) then 
               a%val(ir,ip) = a%val(ir,ip) + val(i)
             else

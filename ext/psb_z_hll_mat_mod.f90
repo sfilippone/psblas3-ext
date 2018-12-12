@@ -436,14 +436,14 @@ contains
   function z_hll_sizeof(a) result(res)
     implicit none 
     class(psb_z_hll_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_)                :: res
+    integer(psb_epk_)                :: res
     if (a%is_dev()) call a%sync()
     res = 8 
     res = res + (2*psb_sizeof_dp)  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irn)
-    res = res + psb_sizeof_int * size(a%idiag)
-    res = res + psb_sizeof_int * size(a%ja)
-    res = res + psb_sizeof_int * size(a%hkoffs)
+    res = res + psb_sizeof_ip * size(a%irn)
+    res = res + psb_sizeof_ip * size(a%idiag)
+    res = res + psb_sizeof_ip * size(a%ja)
+    res = res + psb_sizeof_ip * size(a%hkoffs)
       
   end function z_hll_sizeof
 
@@ -537,9 +537,9 @@ contains
     if (allocated(a%val)) deallocate(a%val)
     if (allocated(a%val)) deallocate(a%hkoffs)
     call a%set_null()
-    call a%set_nrows(0)
-    call a%set_ncols(0)
-    call a%set_hksz(0)
+    call a%set_nrows(izero)
+    call a%set_ncols(izero)
+    call a%set_hksz(izero)
     
     return
 

@@ -235,11 +235,11 @@ contains
   function d_diag_sizeof(a) result(res)
     implicit none 
     class(psb_d_diag_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
 
     res = 8 
     res = res + psb_sizeof_dp  * size(a%data)
-    res = res + psb_sizeof_int * size(a%offset)
+    res = res + psb_sizeof_ip * size(a%offset)
 
     ! Should we account for the shadow data structure
     ! on the GPU device side? 

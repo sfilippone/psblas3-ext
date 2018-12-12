@@ -75,13 +75,13 @@ subroutine psb_c_ell_cssm(alpha,a,x,beta,y,info,trans)
 
   if (size(x,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,m/))
     goto 9999
   end if
 
   if (size(y,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 
@@ -109,8 +109,9 @@ subroutine psb_c_ell_cssm(alpha,a,x,beta,y,info,trans)
     endif
 
     call inner_ellsm(tra,ctra,a%is_lower(),a%is_unit(),a%get_nrows(),nxy,&
-         & size(a%ja,2),a%irn,a%idiag,a%ja,size(a%ja,1),a%val,size(a%val,1),&
-         & x,size(x,1),y,size(y,1),acc,info) 
+         & size(a%ja,2,kind=psb_ipk_),a%irn,a%idiag,&
+         & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_),&
+         & x,size(x,1,kind=psb_ipk_),y,size(y,1,kind=psb_ipk_),acc,info) 
 
     if (info /= 0) then 
       info = psb_err_invalid_mat_state_
@@ -138,8 +139,9 @@ subroutine psb_c_ell_cssm(alpha,a,x,beta,y,info,trans)
     endif
 
     call inner_ellsm(tra,ctra,a%is_lower(),a%is_unit(),a%get_nrows(),nxy,&
-         & size(a%ja,2),a%irn,a%idiag,a%ja,size(a%ja,1),a%val,size(a%val,1),&
-         & x,size(x,1),tmp,size(tmp,1),acc,info) 
+         & size(a%ja,2,kind=psb_ipk_),a%irn,a%idiag,&
+         & a%ja,size(a%ja,1,kind=psb_ipk_),a%val,size(a%val,1,kind=psb_ipk_),&
+         & x,size(x,1,kind=psb_ipk_),tmp,size(tmp,1,kind=psb_ipk_),acc,info) 
 
     if (info == 0) &
          & call psb_geaxpby(m,nxy,alpha,tmp,beta,y,info)

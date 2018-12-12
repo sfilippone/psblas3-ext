@@ -38,7 +38,7 @@ subroutine psb_c_mv_hll_from_coo(a,b,info)
 
   class(psb_c_hll_sparse_mat), intent(inout) :: a
   class(psb_c_coo_sparse_mat), intent(inout) :: b
-  integer, intent(out)                        :: info
+  integer(psb_ipk_), intent(out)               :: info
   
   !locals
   integer(psb_ipk_) :: hksz

@@ -81,13 +81,13 @@ subroutine psb_d_hdia_csmv(alpha,a,x,beta,y,info,trans)
   
   if (size(x,1)<n) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/3*ione,n/))
     goto 9999
   end if
 
   if (size(y,1)<m) then 
     info = 36
-    call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/5*ione,m/))
     goto 9999
   end if
 

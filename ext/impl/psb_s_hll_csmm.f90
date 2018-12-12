@@ -74,13 +74,13 @@ subroutine psb_s_hll_csmm(alpha,a,x,beta,y,info,trans)
     n = a%get_nrows()
     if (ldx<n) then 
       info = 36
-      call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+      call psb_errpush(info,name,i_err=(/3*ione,n/))
       goto 9999
     end if
 
     if (ldy<m) then 
       info = 36
-      call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+      call psb_errpush(info,name,i_err=(/5*ione,m/))
       goto 9999
     end if
 
@@ -116,13 +116,13 @@ subroutine psb_s_hll_csmm(alpha,a,x,beta,y,info,trans)
 
     if (ldx<n) then 
       info = 36
-      call psb_errpush(info,name,i_err=(/3*ione,n,izero,izero,izero/))
+      call psb_errpush(info,name,i_err=(/3*ione,n/))
       goto 9999
     end if
 
     if (ldy<m) then 
       info = 36
-      call psb_errpush(info,name,i_err=(/5*ione,m,izero,izero,izero/))
+      call psb_errpush(info,name,i_err=(/5*ione,m/))
       goto 9999
     end if
 

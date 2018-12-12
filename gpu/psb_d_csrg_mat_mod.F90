@@ -49,8 +49,8 @@ module psb_d_csrg_mat_mod
     ! 
     ! 
 #ifdef HAVE_SPGPU
-    type(d_Cmat) :: deviceMat
-    integer     :: devstate  = is_host
+    type(d_Cmat)    :: deviceMat
+    integer(psb_ipk_) :: devstate  = is_host
     
   contains
     procedure, nopass  :: get_fmt       => d_csrg_get_fmt
@@ -257,12 +257,12 @@ contains
   function d_csrg_sizeof(a) result(res)
     implicit none 
     class(psb_d_csrg_sparse_mat), intent(in) :: a
-    integer(psb_long_int_k_) :: res
+    integer(psb_epk_) :: res
     if (a%is_dev()) call a%sync()
     res = 8 
     res = res + psb_sizeof_dp  * size(a%val)
-    res = res + psb_sizeof_int * size(a%irp)
-    res = res + psb_sizeof_int * size(a%ja)
+    res = res + psb_sizeof_ip * size(a%irp)
+    res = res + psb_sizeof_ip * size(a%ja)
     ! Should we account for the shadow data structure
     ! on the GPU device side? 
     ! res = 2*res

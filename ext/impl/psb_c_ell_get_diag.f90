@@ -49,7 +49,7 @@ subroutine psb_c_ell_get_diag(a,d,info)
   mnm = min(a%get_nrows(),a%get_ncols())
   if (size(d) < mnm) then 
     info=psb_err_input_asize_invalid_i_
-    call psb_errpush(info,name,i_err=(/2*ione,size(d),izero,izero,izero/))
+    call psb_errpush(info,name,i_err=(/2*ione,size(d,kind=psb_ipk_)/))
     goto 9999
   end if
 
