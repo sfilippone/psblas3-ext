@@ -228,7 +228,7 @@ contains
 
     if (is_unit) then 
       do i=1, min(m,n)
-        y(i) = y(i) + alpha*x(i)
+        y(ir+i-1) = y(ir+i-1) + alpha*x(ir+i-1)
       end do
     end if
 
