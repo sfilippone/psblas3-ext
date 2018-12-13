@@ -566,11 +566,11 @@ program pdgenmv
   real(psb_dpk_) :: t1, t2, tprec, tcnv, flops, tflops, tt1, tt2, bdwdth
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a
+  type(psb_dspmat_type) :: a, aref
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type) :: xv, bv
+  type(psb_d_vect_type) :: xv, bv, bref
   
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
@@ -578,7 +578,7 @@ program pdgenmv
 
   ! solver parameters
   integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
-  real(psb_dpk_)   :: err, eps
+  real(psb_dpk_)   :: err, rdiff
   integer(psb_ipk_), parameter :: ntests=200
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
@@ -665,6 +665,7 @@ program pdgenmv
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
   end select
+  call a%cscnv(aref,info,mold=acsr)
   call a%cscnv(info,mold=acoo)
   
   call psb_barrier(ictxt)
@@ -682,6 +683,7 @@ program pdgenmv
   call xv%set(done)
   nr       = desc_a%get_local_rows() 
 
+  
   call psb_barrier(ictxt)
   t1 = psb_wtime()
   do i=1,ntests 
@@ -690,6 +692,10 @@ program pdgenmv
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
+  call psb_geasb(bref,desc_a,info,scratch=.true.)
+  call psb_spmm(done,aref,xv,dzero,bref,desc_a,info)
+  call psb_geaxpby(-done,bv,done,bref,desc_a,info)
+  rdiff = psb_geamax(bref,desc_a,info)
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
@@ -714,6 +720,8 @@ program pdgenmv
     flops  = flops / (t2)
     tflops = tflops / (tt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+    write(psb_out_unit,'("Max diff with CSR            (CPU)   : ",G20.12)')&
+         & rdiff
     write(psb_out_unit,'("Conversion time         (ms) (CPU)   : ",F20.3)')&
          & tcnv*1.d3
     write(psb_out_unit,&
@@ -775,7 +783,9 @@ contains
     call psb_info(ictxt, iam, np)
 
     if (iam == 0) then
+      write(*,*) 'CPU side format?'
       read(psb_inp_unit,*) acfmt
+      write(*,*) 'Size of discretization cube?'
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)
