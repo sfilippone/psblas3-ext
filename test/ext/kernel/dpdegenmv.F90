@@ -400,27 +400,27 @@ program pdgenmv
 
   ! input parameters
   character(len=5)  :: acfmt
-  integer   :: idim
+  integer(psb_ipk_) :: idim
 
   ! miscellaneous 
-  real(psb_dpk_), parameter :: one = 1.d0
+  real(psb_dpk_), parameter :: one = done
   real(psb_dpk_) :: t1, t2, tprec, tcnv, flops, tflops, tt1, tt2, bdwdth
 
   ! sparse matrix and preconditioner
-  type(psb_dspmat_type) :: a
+  type(psb_dspmat_type) :: a, aref
   ! descriptor
   type(psb_desc_type)   :: desc_a
   ! dense matrices
-  type(psb_d_vect_type) :: xv, bv
+  type(psb_d_vect_type) :: xv, bv, bref
   
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
-  integer            :: ictxt, iam, np
+  integer(psb_ipk_)          :: ictxt, iam, np
 
   ! solver parameters
   integer(psb_long_int_k_) :: amatsize, precsize, descsize, annz, nbytes
-  real(psb_dpk_)   :: err, eps
-  integer, parameter :: ntests=200
+  real(psb_dpk_)   :: err, rdiff
+  integer(psb_ipk_), parameter :: ntests=200
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_csc_sparse_mat), target   :: acsc
@@ -433,7 +433,7 @@ program pdgenmv
   class(psb_d_base_sparse_mat), pointer :: acmold
   ! other variables
   logical, parameter :: dump=.false.
-  integer            :: info, i, nr
+  integer(psb_ipk_)  :: info, i, nr
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
 
@@ -448,9 +448,9 @@ program pdgenmv
     call psb_exit(ictxt)
     stop
   endif
-  if(psb_get_errstatus() /= 0) goto 9999
-  name='pde90'
-  call psb_set_errverbosity(2)
+  if(psb_errstatus_fatal()) goto 9999
+  name='pde3d90'
+  call psb_set_errverbosity(itwo)
   !
   ! Hello world
   !
@@ -507,6 +507,7 @@ program pdgenmv
     write(*,*) 'Unknown format defaulting to HLL'
     acmold => ahll
   end select
+  call a%cscnv(aref,info,mold=acsr)
   call a%cscnv(info,mold=acoo)
   
   call psb_barrier(ictxt)
@@ -532,6 +533,10 @@ program pdgenmv
   call psb_barrier(ictxt)
   t2 = psb_wtime() - t1
   call psb_amx(ictxt,t2)
+  call psb_geasb(bref,desc_a,info,scratch=.true.)
+  call psb_spmm(done,aref,xv,dzero,bref,desc_a,info)
+  call psb_geaxpby(-done,bv,done,bref,desc_a,info)
+  rdiff = psb_geamax(bref,desc_a,info)
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
@@ -556,6 +561,8 @@ program pdgenmv
     flops  = flops / (t2)
     tflops = tflops / (tt2)
     write(psb_out_unit,'("Storage type for    A: ",a)') a%get_fmt()
+    write(psb_out_unit,'("Max diff with CSR            (CPU)   : ",G20.12)')&
+         & rdiff
     write(psb_out_unit,'("Conversion time         (ms) (CPU)   : ",F20.3)')&
          & tcnv*1.d3
     write(psb_out_unit,&
@@ -608,16 +615,18 @@ contains
   ! get iteration parameters from standard input
   !
   subroutine  get_parms(ictxt,acfmt,idim)
-    integer      :: ictxt
-    character(len=*) :: acfmt
-    integer      :: idim
-    integer      :: np, iam
-    integer      :: intbuf(10), ip
+    integer(psb_ipk_) :: ictxt
+    character(len=*)  :: acfmt
+    integer(psb_ipk_) :: idim
+    integer(psb_ipk_) :: np, iam
+    integer(psb_ipk_) :: intbuf(10), ip
 
     call psb_info(ictxt, iam, np)
 
     if (iam == 0) then
+      write(*,*) 'CPU side format?'
       read(psb_inp_unit,*) acfmt
+      write(*,*) 'Size of discretization cube?'
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)
