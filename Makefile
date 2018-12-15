@@ -25,7 +25,7 @@ install: all
 	(./mkdir.sh  $(INSTALL_MODULESDIR) && \
 	   $(INSTALL_DATA) modules/*$(.mod) $(INSTALL_MODULESDIR))
 	(./mkdir.sh  $(INSTALL_INCLUDEDIR) && \
-	   $(INSTALL_DATA)  include/*.h $(INSTALL_INCLUDEDIR))
+	   ($(INSTALL_DATA)  include/*.h $(INSTALL_INCLUDEDIR) || true) )
 
 clean: 
 	cd ext &&  $(MAKE) clean
