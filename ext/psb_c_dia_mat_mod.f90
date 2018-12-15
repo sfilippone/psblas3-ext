@@ -81,7 +81,7 @@ module psb_c_dia_mat_mod
   end type psb_c_dia_sparse_mat
 
   private :: c_dia_get_nzeros, c_dia_free,  c_dia_get_fmt, &
-       & c_dia_get_size, c_dia_sizeof, c_dia_get_nz_row
+       & c_dia_sizeof !, c_dia_get_size, c_dia_get_nz_row
 
   interface
     subroutine  psb_c_dia_reallocate_nz(nz,a) 
