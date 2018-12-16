@@ -41,7 +41,7 @@ subroutine psb_z_cp_hll_to_coo(a,b,info)
   integer(psb_ipk_), intent(out)             :: info
 
   !locals
-  Integer(Psb_ipk_)   :: nza, nr, nc,i,j, jj,k,ir, isz,err_act,  hksz, hk, mxrwl,&
+  integer(psb_ipk_)   :: nza, nr, nc,i,j, jj,k,ir, isz,err_act,  hksz, hk, mxrwl,&
        & irs, nzblk, kc
   integer(psb_ipk_)   :: debug_level, debug_unit
   character(len=20)   :: name

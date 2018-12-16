@@ -65,9 +65,9 @@ subroutine psb_s_hll_get_diag(a,d,info)
       ir    = min(hksz,mnm-i+1) 
       mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
       k     = a%hkoffs(j) + 1
-      call psb_s_hll_get_diag_inner(i,ir,mxrwl,a%irn(i),&
+      call psb_s_hll_get_diag_inner(ir,mxrwl,a%irn(i),&
            & a%ja(k),hksz,a%val(k),hksz,&
-           & a%idiag,d,info) 
+           & a%idiag(i:),d(i:),info) 
       if (info /= psb_success_) goto 9999
       j = j + 1 
     end do
@@ -86,9 +86,9 @@ subroutine psb_s_hll_get_diag(a,d,info)
 
 contains
 
-  subroutine psb_s_hll_get_diag_inner(ir,m,n,irn,ja,ldj,val,ldv,&
+  subroutine psb_s_hll_get_diag_inner(m,n,irn,ja,ldj,val,ldv,&
        & idiag,d,info) 
-    integer(psb_ipk_), intent(in)    :: ir,m,n,ldj,ldv,ja(ldj,*),irn(*), idiag(*)
+    integer(psb_ipk_), intent(in)    :: m,n,ldj,ldv,ja(ldj,*),irn(*), idiag(*)
     real(psb_spk_), intent(in)      :: val(ldv,*)
     real(psb_spk_), intent(inout)   :: d(*)
     integer(psb_ipk_), intent(out)   :: info
@@ -98,7 +98,7 @@ contains
     info = psb_success_
     
     do i=1,m
-      d(ir+i-1) = val(i,idiag(i))
+      d(i) = val(i,idiag(i))
     end do
 
   end subroutine psb_s_hll_get_diag_inner
