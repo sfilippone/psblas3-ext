@@ -33,9 +33,12 @@
 module psi_i_ext_util_mod
 
   use psb_base_mod, only : psb_ipk_
+  !
+  ! Hack size for HLL format. 
+  !
   integer(psb_ipk_), parameter     :: psb_hksz_def_ = 32
   integer(psb_ipk_), private, save :: psb_hksz      = psb_hksz_def_ 
-
+  logical, private, save           :: psb_hll_use_vector = .true.
 contains
 
   function psi_get_hksz() result(res)
@@ -49,6 +52,24 @@ contains
     integer(psb_ipk_), intent(in) :: size
     if (size > 0) psb_hksz = size
   end subroutine psi_set_hksz
+
+  subroutine  psi_set_hll_vector(val) 
+    implicit none 
+    logical, optional :: val 
+    if (present(val)) then
+      psb_hll_use_vector = val
+    else
+      psb_hll_use_vector = .true.
+    end if
+    
+  end subroutine psi_set_hll_vector
+
+  function  psi_get_hll_vector() result(res)
+    implicit none
+    logical :: res
+
+    res = psb_hll_use_vector
+  end function psi_get_hll_vector
   
 
   !

@@ -422,13 +422,14 @@ program pdgenmv
   real(psb_dpk_)   :: err, rdiff
   integer(psb_ipk_), parameter :: ntests=200
   type(psb_d_coo_sparse_mat), target   :: acoo
-  type(psb_d_csr_sparse_mat), target   :: acsr
+  type(psb_d_csr_sparse_mat), target   :: acsr, acsr2
   type(psb_d_csc_sparse_mat), target   :: acsc
   type(psb_d_ell_sparse_mat), target   :: aell
   type(psb_d_hll_sparse_mat), target   :: ahll
   type(psb_d_dia_sparse_mat), target   :: adia
   type(psb_d_hdia_sparse_mat), target  :: ahdia
   type(psb_d_dns_sparse_mat), target   :: adns
+  integer(psb_ipk_)          :: hksz
 
   class(psb_d_base_sparse_mat), pointer :: acmold
   ! other variables
@@ -490,6 +491,9 @@ program pdgenmv
   case('ELL')
     acmold => aell
   case('HLL')
+    write(*,*) 'Give me a hack size '
+    read(*,*) hksz
+    call psi_set_hksz(hksz)
     acmold => ahll
   case('DIA')
     acmold => adia
@@ -515,7 +519,8 @@ program pdgenmv
   call a%cscnv(info,mold=acmold)
   tcnv = psb_wtime()-t1
   call psb_amx(ictxt,tcnv)
-
+  call a%cscnv(acsr2,info,dupl=psb_dupl_add_)
+  write(0,*) iam,' Check on NRMI ',aref%get_fmt(),aref%spnmi(), a%get_fmt(),a%spnmi(),acsr2%get_fmt(),acsr2%spnmi()
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
     call psb_error()

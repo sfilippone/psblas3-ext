@@ -417,7 +417,7 @@ program pdgenmv
   class(psb_s_base_sparse_mat), pointer :: acmold
   ! other variables
   logical, parameter :: dump=.false.
-  integer            :: info, i, nr
+  integer            :: info, i, nr, hksz
   character(len=20)  :: name,ch_err
   character(len=40)  :: fname
 
@@ -474,6 +474,9 @@ program pdgenmv
   case('ELL')
     acmold => aell
   case('HLL')
+    write(*,*) 'Give me a hack size '
+    read(*,*) hksz
+    call psi_set_hksz(hksz)
     acmold => ahll
   case('DIA')
     acmold => adia
@@ -601,7 +604,9 @@ contains
     call psb_info(ictxt, iam, np)
 
     if (iam == 0) then
+      write(*,*) 'CPU side format?'
       read(psb_inp_unit,*) acfmt
+      write(*,*) 'Size of discretization cube?'
       read(psb_inp_unit,*) idim
     endif
     call psb_bcast(ictxt,acfmt)
