@@ -133,6 +133,7 @@ subroutine psb_s_hll_cssm(alpha,a,x,beta,y,info,trans)
       else
 
         k = mod(m,hksz)
+        if (k==0) k=hksz
         do i=m-k+1,1,-hksz
           ir   = min(hksz,m-i+1) 
           j     = (i-1)/hksz + 1
@@ -156,6 +157,7 @@ subroutine psb_s_hll_cssm(alpha,a,x,beta,y,info,trans)
       if (a%is_lower()) then 
 
         mk = mod(m,hksz)
+        if (k==0) k=hksz
         do i=m-mk+1,1,-hksz
           ir   = min(hksz,m-i+1) 
           j     = (i-1)/hksz + 1
@@ -223,6 +225,7 @@ subroutine psb_s_hll_cssm(alpha,a,x,beta,y,info,trans)
       else
 
         mk = mod(m,hksz)
+        if (k==0) k=hksz
         do i=m-mk+1,1,-hksz
           ir   = min(hksz,m-i+1) 
           j     = (i-1)/hksz + 1
@@ -245,6 +248,7 @@ subroutine psb_s_hll_cssm(alpha,a,x,beta,y,info,trans)
       if (a%is_lower()) then 
 
         mk = mod(m,hksz)
+        if (k==0) k=hksz
         do i=m-mk+1,1,-hksz
           ir   = min(hksz,m-i+1) 
           j     = (i-1)/hksz + 1
