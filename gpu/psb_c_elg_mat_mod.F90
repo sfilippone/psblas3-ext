@@ -150,19 +150,18 @@ module psb_c_elg_mat_mod
   end interface
   
   interface 
-    subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
       import :: psb_c_elg_sparse_mat, psb_spk_, psb_ipk_
       class(psb_c_elg_sparse_mat), intent(inout) :: a
       complex(psb_spk_), intent(in)      :: val(:)
       integer(psb_ipk_), intent(in)             :: nz,ia(:), ja(:),&
            &  imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)            :: info
-      integer(psb_ipk_), intent(in), optional   :: gtl(:)
     end subroutine psb_c_elg_csput_a
   end interface
 
   interface 
-    subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
       import :: psb_c_elg_sparse_mat, psb_dpk_, psb_ipk_, psb_c_base_vect_type,&
            & psb_i_base_vect_type
       class(psb_c_elg_sparse_mat), intent(inout) :: a
@@ -170,7 +169,6 @@ module psb_c_elg_mat_mod
       class(psb_i_base_vect_type), intent(inout) :: ia, ja
       integer(psb_ipk_), intent(in)              :: nz, imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)             :: info
-      integer(psb_ipk_), intent(in), optional    :: gtl(:)
     end subroutine psb_c_elg_csput_v
   end interface
 

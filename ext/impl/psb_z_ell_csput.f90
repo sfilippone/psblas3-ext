@@ -30,7 +30,7 @@
 !   
   
 
-subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
   
   use psb_base_mod
   use psb_z_ell_mat_mod, psb_protect_name => psb_z_ell_csput_a
@@ -40,10 +40,9 @@ subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   complex(psb_dpk_), intent(in)               :: val(:)
   integer(psb_ipk_), intent(in)             :: nz, ia(:), ja(:), imin,imax,jmin,jmax
   integer(psb_ipk_), intent(out)            :: info
-  integer(psb_ipk_), intent(in), optional   :: gtl(:)
 
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='z_ell_csput_a'
   logical, parameter :: debug=.false.
   integer(psb_ipk_)  :: nza, i,j,k, nzl, isza, int_err(5), debug_level, debug_unit
@@ -91,7 +90,7 @@ subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   else  if (a%is_upd()) then 
     if (a%is_dev()) call a%sync()
     call  psb_z_ell_srch_upd(nz,ia,ja,val,a,&
-         & imin,imax,jmin,jmax,info,gtl)
+         & imin,imax,jmin,jmax,info)
 
     if (info < 0) then 
       info = psb_err_internal_error_
@@ -121,7 +120,7 @@ subroutine psb_z_ell_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
 contains
 
   subroutine psb_z_ell_srch_upd(nz,ia,ja,val,a,&
-       & imin,imax,jmin,jmax,info,gtl)
+       & imin,imax,jmin,jmax,info)
 
     implicit none 
 
@@ -130,9 +129,8 @@ contains
     integer(psb_ipk_), intent(in)  :: ia(:),ja(:)
     complex(psb_dpk_), intent(in)    :: val(:)
     integer(psb_ipk_), intent(out) :: info
-    integer(psb_ipk_), intent(in), optional  :: gtl(:)
     integer(psb_ipk_)    :: i,ir,ic, ilr, ilc, ip, &
-         & i1,i2,nr,nc,nnz,dupl,ng
+         & i1,i2,nr,nc,nnz,dupl
     integer(psb_ipk_)    :: debug_level, debug_unit
     character(len=20)    :: name='z_ell_srch_upd'
 
@@ -153,127 +151,58 @@ contains
     nr  = a%get_nrows()
     nc  = a%get_ncols()
 
-    if (present(gtl)) then 
-      ng = size(gtl)
+    select case(dupl)
+    case(psb_dupl_ovwrt_,psb_dupl_err_)
+      ! Overwrite.
+      ! Cannot test for error, should have been caught earlier.
 
-      select case(dupl)
-      case(psb_dupl_ovwrt_,psb_dupl_err_)
-        ! Overwrite.
-        ! Cannot test for error, should have been caught earlier.
+      ilr = -1 
+      ilc = -1 
+      do i=1, nz
+        ir = ia(i)
+        ic = ja(i) 
 
-        ilr = -1 
-        ilc = -1 
-        do i=1, nz
-          ir = ia(i)
-          ic = ja(i) 
-          if ((ir >=1).and.(ir<=ng).and.(ic>=1).and.(ic<=ng)) then 
-            ir = gtl(ir)
-            ic = gtl(ic)
-            if ((ir > 0).and.(ir <= nr)) then 
-              nc = a%irn(ir)
-              ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
-              if (ip>0) then 
-                a%val(ir,ip) = val(i)
-              else
-                info = max(info,3)
-              end if
-            else
-              info = max(info,2)
-            end if
+        if ((ir > 0).and.(ir <= nr)) then 
+
+          nc = a%irn(ir)
+          ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
+          if (ip>0) then 
+            a%val(ir,ip) = val(i)
           else
-            info = max(info,1)
+            info = max(info,3)
           end if
-        end do
+        else
+          info = max(info,2)
+        end if
 
-      case(psb_dupl_add_)
-        ! Add
-        ilr = -1 
-        ilc = -1 
-        do i=1, nz
-          ir = ia(i)
-          ic = ja(i) 
-          if ((ir >=1).and.(ir<=ng).and.(ic>=1).and.(ic<=ng)) then 
-            ir = gtl(ir)
-            ic = gtl(ic)
-            if ((ir > 0).and.(ir <= nr)) then 
-              nc = a%irn(ir)
-              ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
-              if (ip>0) then 
-                a%val(ir,ip) = a%val(ir,ip) + val(i)
-              else
-                info = max(info,3)
-              end if
-            else
-              info = max(info,2)
-            end if
+      end do
+
+    case(psb_dupl_add_)
+      ! Add
+      ilr = -1 
+      ilc = -1 
+      do i=1, nz
+        ir = ia(i)
+        ic = ja(i) 
+        if ((ir > 0).and.(ir <= nr)) then 
+          nc = a%irn(ir)
+          ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
+          if (ip>0) then 
+            a%val(ir,ip) = a%val(ir,ip) + val(i)
           else
-            info = max(info,1)
+            info = max(info,3)
           end if
-        end do
+        else
+          info = max(info,2)
+        end if
+      end do
 
-      case default
-        info = -3
-        if (debug_level >= psb_debug_serial_) &
-             & write(debug_unit,*) trim(name),&
-             & ': Duplicate handling: ',dupl
-      end select
-
-    else
-
-      select case(dupl)
-      case(psb_dupl_ovwrt_,psb_dupl_err_)
-        ! Overwrite.
-        ! Cannot test for error, should have been caught earlier.
-
-        ilr = -1 
-        ilc = -1 
-        do i=1, nz
-          ir = ia(i)
-          ic = ja(i) 
-
-          if ((ir > 0).and.(ir <= nr)) then 
-
-            nc = a%irn(ir)
-            ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
-            if (ip>0) then 
-              a%val(ir,ip) = val(i)
-            else
-              info = max(info,3)
-            end if
-          else
-            info = max(info,2)
-          end if
-
-        end do
-
-      case(psb_dupl_add_)
-        ! Add
-        ilr = -1 
-        ilc = -1 
-        do i=1, nz
-          ir = ia(i)
-          ic = ja(i) 
-          if ((ir > 0).and.(ir <= nr)) then 
-            nc = a%irn(ir)
-            ip = psb_bsrch(ic,nc,a%ja(ir,1:nc))    
-            if (ip>0) then 
-              a%val(ir,ip) = a%val(ir,ip) + val(i)
-            else
-              info = max(info,3)
-            end if
-          else
-            info = max(info,2)
-          end if
-        end do
-
-      case default
-        info = -3
-        if (debug_level >= psb_debug_serial_) &
-             & write(debug_unit,*) trim(name),&
-             & ': Duplicate handling: ',dupl
-      end select
-
-    end if
+    case default
+      info = -3
+      if (debug_level >= psb_debug_serial_) &
+           & write(debug_unit,*) trim(name),&
+           & ': Duplicate handling: ',dupl
+    end select
 
   end subroutine psb_z_ell_srch_upd
 end subroutine psb_z_ell_csput_a

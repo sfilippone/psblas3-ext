@@ -30,7 +30,7 @@
 !   
   
 
-subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
 
   use psb_base_mod
   use iso_c_binding
@@ -46,10 +46,9 @@ subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   complex(psb_spk_), intent(in)               :: val(:)
   integer(psb_ipk_), intent(in)             :: nz, ia(:), ja(:), imin,imax,jmin,jmax
   integer(psb_ipk_), intent(out)            :: info
-  integer(psb_ipk_), intent(in), optional   :: gtl(:)
 
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='c_elg_csput_a'
   logical, parameter :: debug=.false.
   integer(psb_ipk_)  :: nza, i,j,k, nzl, isza, int_err(5), debug_level, debug_unit
@@ -99,7 +98,7 @@ subroutine psb_c_elg_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
 !!$    write(*,*) 'elg_csput_a '
       if (a%is_dev()) call a%sync()
       call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
-           &  imin,imax,jmin,jmax,info,gtl) 
+           &  imin,imax,jmin,jmax,info) 
       if (info /= psb_success_) then
         call psb_errpush(info,name)
         goto 9999
@@ -125,7 +124,7 @@ end subroutine psb_c_elg_csput_a
 
 
 
-subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
 
   use psb_base_mod
   use iso_c_binding
@@ -143,10 +142,9 @@ subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
   class(psb_i_base_vect_type), intent(inout) :: ia, ja
   integer(psb_ipk_), intent(in)             :: nz, imin,imax,jmin,jmax
   integer(psb_ipk_), intent(out)            :: info
-  integer(psb_ipk_), intent(in), optional   :: gtl(:)
 
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='c_elg_csput_v'
   logical, parameter :: debug=.false.
   integer(psb_ipk_)  :: nza, i,j,k, nzl, isza, int_err(5), debug_level, debug_unit, nrw
@@ -197,49 +195,39 @@ subroutine psb_c_elg_csput_v(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl)
     info = psb_err_invalid_mat_state_
 
   else  if (a%is_upd()) then 
-
-    if (present(gtl)) then 
-      if (a%is_dev()) call a%sync()
-      call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
-           &  imin,imax,jmin,jmax,info,gtl) 
-      if (info /= psb_success_) then
-        call psb_errpush(info,name)
-        goto 9999
-      end if
-      call a%set_host()
-    else
-      t1=psb_wtime()
-      gpu_invoked = .false. 
-      select type (ia)
+    
+    t1=psb_wtime()
+    gpu_invoked = .false. 
+    select type (ia)
+    class is (psb_i_vect_gpu) 
+      select type (ja)
       class is (psb_i_vect_gpu) 
-        select type (ja)
-        class is (psb_i_vect_gpu) 
-          select type (val)
-          class is (psb_c_vect_gpu) 
-            if (a%is_host())   call a%sync()
-            if (val%is_host()) call val%sync()
-            if (ia%is_host())  call ia%sync()
-            if (ja%is_host())  call ja%sync()
-            info = csputEllDeviceFloatComplex(a%deviceMat,nz,&
-                 & ia%deviceVect,ja%deviceVect,val%deviceVect)
-            call a%set_dev()
-            gpu_invoked=.true.
-          end select
+        select type (val)
+        class is (psb_c_vect_gpu) 
+          if (a%is_host())   call a%sync()
+          if (val%is_host()) call val%sync()
+          if (ia%is_host())  call ia%sync()
+          if (ja%is_host())  call ja%sync()
+          info = csputEllDeviceFloatComplex(a%deviceMat,nz,&
+               & ia%deviceVect,ja%deviceVect,val%deviceVect)
+          call a%set_dev()
+          gpu_invoked=.true.
         end select
       end select
-      if (.not.gpu_invoked) then 
+    end select
+    if (.not.gpu_invoked) then 
 !!$        write(0,*)'Not gpu_invoked '
-        if (a%is_dev()) call a%sync()
-        call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
-             &  imin,imax,jmin,jmax,info,gtl) 
-        call a%set_host()
-      end if
-      
-      if (info /= 0) then 
-        info = psb_err_internal_error_
-      end if
-
+      if (a%is_dev()) call a%sync()
+      call a%psb_c_ell_sparse_mat%csput(nz,ia,ja,val,&
+           &  imin,imax,jmin,jmax,info) 
+      call a%set_host()
     end if
+    
+    if (info /= 0) then 
+      info = psb_err_internal_error_
+    end if
+    
+    
   else 
     ! State is wrong.
     info = psb_err_invalid_mat_state_

@@ -225,14 +225,13 @@ module psb_d_hll_mat_mod
   end interface
 
   interface 
-    subroutine psb_d_hll_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info,gtl) 
+    subroutine psb_d_hll_csput_a(nz,ia,ja,val,a,imin,imax,jmin,jmax,info) 
       import :: psb_d_hll_sparse_mat, psb_dpk_, psb_ipk_
       class(psb_d_hll_sparse_mat), intent(inout) :: a
       real(psb_dpk_), intent(in)                 :: val(:)
       integer(psb_ipk_), intent(in)              :: nz,ia(:), ja(:),&
            &  imin,imax,jmin,jmax
       integer(psb_ipk_), intent(out)             :: info
-      integer(psb_ipk_), intent(in), optional    :: gtl(:)
     end subroutine psb_d_hll_csput_a
   end interface
   
