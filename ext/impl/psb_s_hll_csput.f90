@@ -166,7 +166,7 @@ contains
             nc = a%irn(ir)
           end if
 
-          ip = psb_ibsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
+          ip = psb_bsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
           if (ip>0) then 
             a%val(hkzpnt+ihkr+(ip-1)*hksz) = val(i)
           else
@@ -202,7 +202,7 @@ contains
             nc = a%irn(ir)
           end if
 
-          ip = psb_ibsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
+          ip = psb_bsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
           if (ip>0) then 
             a%val(hkzpnt+ihkr+(ip-1)*hksz) = val(i)
           else
