@@ -126,19 +126,15 @@ contains
     real(psb_dpk_), intent(in)     :: val(:)
     integer(psb_ipk_), intent(out) :: info
     integer(psb_ipk_), intent(in), optional :: gtl(:)
-    integer(psb_ipk_)  :: i,ir,ic, ilr, ilc, ip, &
-         & i1,i2,nr,nc,nnz,dupl,ng
+    integer(psb_ipk_)  :: i,ir,ic, ip, i1,i2,nr,nc,nnz,dupl,ng,&
+         & hksz, hk, hkzpnt, ihkr, mxrwl, lastrow
     integer(psb_ipk_)  :: debug_level, debug_unit
     character(len=20)  :: name='d_hll_srch_upd'
 
     info = psb_success_
     debug_unit  = psb_get_debug_unit()
     debug_level = psb_get_debug_level()
-    info = psb_err_missing_override_method_
 
-    return
-
-    ! TO BE FINISHED
     dupl = a%get_dupl()
 
     if (.not.a%is_sorted()) then 
@@ -146,157 +142,105 @@ contains
       return
     end if
 
-    ilr = -1 
-    ilc = -1 
+    lastrow  = -1 
     nnz = a%get_nzeros()
     nr  = a%get_nrows()
     nc  = a%get_ncols()
+    hksz = a%get_hksz()
+    
+    if (present(gtl)) then
 
-!!$    if (present(gtl)) then 
-!!$      ng = size(gtl)
-!!$
-!!$      select case(dupl)
-!!$      case(psb_dupl_ovwrt_,psb_dupl_err_)
-!!$        ! Overwrite.
-!!$        ! Cannot test for error, should have been caught earlier.
-!!$
-!!$        ilr = -1 
-!!$        ilc = -1 
-!!$        do i=1, nz
-!!$          ir = ia(i)
-!!$          ic = ja(i) 
-!!$          if ((ir >=1).and.(ir<=ng).and.(ic>=1).and.(ic<=ng)) then 
-!!$            ir = gtl(ir)
-!!$            ic = gtl(ic)
-!!$            if ((ir > 0).and.(ir <= nr)) then 
-!!$              nc = a%irn(ir)
-!!$              ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
-!!$              if (ip>0) then 
-!!$                a%val(i,ip) = val(i)
-!!$              else
-!!$                if (debug_level >= psb_debug_serial_) &
-!!$                     & write(debug_unit,*) trim(name),&
-!!$                     & ': Was searching ',ic,' in: ',nc,&
-!!$                     & ' : ',a%ja(i,1:nc)
-!!$                info = i
-!!$                return
-!!$              end if
-!!$
-!!$            else
-!!$
-!!$              if (debug_level >= psb_debug_serial_) &
-!!$                   & write(debug_unit,*) trim(name),&
-!!$                   & ': Discarding row that does not belong to us.'
-!!$            end if
-!!$          end if
-!!$        end do
-!!$
-!!$      case(psb_dupl_add_)
-!!$        ! Add
-!!$        ilr = -1 
-!!$        ilc = -1 
-!!$        do i=1, nz
-!!$          ir = ia(i)
-!!$          ic = ja(i) 
-!!$          if ((ir >=1).and.(ir<=ng).and.(ic>=1).and.(ic<=ng)) then 
-!!$            ir = gtl(ir)
-!!$            ic = gtl(ic)
-!!$            if ((ir > 0).and.(ir <= nr)) then 
-!!$              nc = a%irn(ir)
-!!$              ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
-!!$              if (ip>0) then 
-!!$                a%val(i,ip) = a%val(i,ip) + val(i)
-!!$              else
-!!$                if (debug_level >= psb_debug_serial_) &
-!!$                     & write(debug_unit,*) trim(name),&
-!!$                     & ': Was searching ',ic,' in: ',nc,&
-!!$                     & ' : ',a%ja(i,1:nc)
-!!$                info = i
-!!$                return
-!!$              end if
-!!$            else
-!!$              if (debug_level >= psb_debug_serial_) &
-!!$                   & write(debug_unit,*) trim(name),&
-!!$                   & ': Discarding row that does not belong to us.'
-!!$            end if
-!!$
-!!$          end if
-!!$        end do
-!!$
-!!$      case default
-!!$        info = -3
-!!$        if (debug_level >= psb_debug_serial_) &
-!!$             & write(debug_unit,*) trim(name),&
-!!$             & ': Duplicate handling: ',dupl
-!!$      end select
-!!$
-!!$    else
-!!$
-!!$      select case(dupl)
-!!$      case(psb_dupl_ovwrt_,psb_dupl_err_)
-!!$        ! Overwrite.
-!!$        ! Cannot test for error, should have been caught earlier.
-!!$
-!!$        ilr = -1 
-!!$        ilc = -1 
-!!$        do i=1, nz
-!!$          ir = ia(i)
-!!$          ic = ja(i) 
-!!$
-!!$          if ((ir > 0).and.(ir <= nr)) then 
-!!$
-!!$            nc = a%irn(ir)
-!!$            ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
-!!$            if (ip>0) then 
-!!$              a%val(i,ip) = val(i)
-!!$            else
-!!$              if (debug_level >= psb_debug_serial_) &
-!!$                   & write(debug_unit,*) trim(name),&
-!!$                   & ': Was searching ',ic,' in: ',nc,&
-!!$                   & ' : ',a%ja(i,1:nc)
-!!$              info = i
-!!$              return
-!!$            end if
-!!$
-!!$          else
-!!$            if (debug_level >= psb_debug_serial_) &
-!!$                 & write(debug_unit,*) trim(name),&
-!!$                 & ': Discarding row that does not belong to us.'
-!!$          end if
-!!$
-!!$        end do
-!!$
-!!$      case(psb_dupl_add_)
-!!$        ! Add
-!!$        ilr = -1 
-!!$        ilc = -1 
-!!$        do i=1, nz
-!!$          ir = ia(i)
-!!$          ic = ja(i) 
-!!$          if ((ir > 0).and.(ir <= nr)) then 
-!!$            nc = a%irn(ir)
-!!$            ip = psb_ibsrch(ic,nc,a%ja(i,1:nc))    
-!!$            if (ip>0) then 
-!!$              a%val(i,ip) = a%val(i,ip) + val(i)
-!!$            else
-!!$              info = i
-!!$              return
-!!$            end if
-!!$          else
-!!$            if (debug_level >= psb_debug_serial_) &
-!!$                 & write(debug_unit,*) trim(name),&
-!!$                 & ': Discarding row that does not belong to us.'
-!!$          end if
-!!$        end do
-!!$
-!!$      case default
-!!$        info = -3
-!!$        if (debug_level >= psb_debug_serial_) &
-!!$             & write(debug_unit,*) trim(name),&
-!!$             & ': Duplicate handling: ',dupl
-!!$      end select
-!!$
-!!$    end if
+      info = psb_err_missing_override_method_
+      
+      return
+      
+
+    else
+
+      select case(dupl)
+      case(psb_dupl_ovwrt_,psb_dupl_err_)
+        ! Overwrite.
+        ! Cannot test for error, should have been caught earlier.
+
+        do i=1, nz
+          ir = ia(i)
+          ic = ja(i) 
+
+          if ((ir > 0).and.(ir <= nr)) then 
+            if (ir /= lastrow) then 
+              hk      = ((ir-1)/hksz)
+              lastrow = ir
+              ihkr    = ir - hk*hksz
+              hk      = hk + 1
+              hkzpnt  = a%hkoffs(hk) 
+              mxrwl   = (a%hkoffs(hk+1) - a%hkoffs(hk))/hksz
+              nc = a%irn(ir)
+            end if
+
+            ip = psb_ibsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
+            if (ip>0) then 
+              a%val(hkzpnt+ihkr+(ip-1)*hksz) = val(i)
+            else
+              if (debug_level >= psb_debug_serial_) &
+                   & write(debug_unit,*) trim(name),&
+                   & ': Was searching ',ic,' in: ',nc,&
+                   & ' : ',a%ja(hkzpnt+ir:hkzpnt+ir+(nc-1)*hksz:hksz)
+              info = i
+              return
+            end if
+
+          else
+            if (debug_level >= psb_debug_serial_) &
+                 & write(debug_unit,*) trim(name),&
+                 & ': Discarding row that does not belong to us.'
+          end if
+
+        end do
+
+      case(psb_dupl_add_)
+        ! Add
+        do i=1, nz
+          ir = ia(i)
+          ic = ja(i) 
+          if ((ir > 0).and.(ir <= nr)) then
+            if (ir /= lastrow) then 
+              hk      = ((ir-1)/hksz)
+              lastrow = ir
+              ihkr    = ir - hk*hksz
+              hk      = hk + 1
+              hkzpnt  = a%hkoffs(hk) 
+              mxrwl   = (a%hkoffs(hk+1) - a%hkoffs(hk))/hksz
+              nc = a%irn(ir)
+            end if
+
+            ip = psb_ibsrch(ic,nc,a%ja(hkzpnt+ihkr:hkzpnt+ihkr+(nc-1)*hksz:hksz))
+            if (ip>0) then 
+              a%val(hkzpnt+ihkr+(ip-1)*hksz) = val(i)
+            else
+              if (debug_level >= psb_debug_serial_) &
+                   & write(debug_unit,*) trim(name),&
+                   & ': Was searching ',ic,' in: ',nc,&
+                   & ' : ',a%ja(hkzpnt+ir:hkzpnt+ir+(nc-1)*hksz:hksz)
+              info = i
+              return
+            end if
+
+          else
+            if (debug_level >= psb_debug_serial_) &
+                 & write(debug_unit,*) trim(name),&
+                 & ': Discarding row that does not belong to us.'
+          end if
+        end do
+
+      case default
+        info = -3
+        if (debug_level >= psb_debug_serial_) &
+             & write(debug_unit,*) trim(name),&
+             & ': Duplicate handling: ',dupl
+      end select
+
+    end if
 
   end subroutine psb_d_hll_srch_upd
+
 end subroutine psb_d_hll_csput_a
