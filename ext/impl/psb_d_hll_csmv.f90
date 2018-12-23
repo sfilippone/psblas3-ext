@@ -42,7 +42,7 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
   character, optional, intent(in)         :: trans
 
   character          :: trans_
-  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc, ic, hksz, hk, mxrwl, mmhk
+  integer(psb_ipk_)  :: i,j,k,m,n, nnz, ir, jc, ic, hksz, hkpnt, mxrwl, mmhk
   logical            :: tra, ctra
   integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='d_hll_csmv'
@@ -98,9 +98,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
     do i=1,n,hksz
       ir    = min(hksz,n-i+1) 
       mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
-      k     = a%hkoffs(j) + 1
+      hkpnt = a%hkoffs(j) + 1
       call psb_d_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
-           & alpha,a%ja(k),hksz,a%val(k),hksz,&
+           & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
            & a%is_triangle(),a%is_unit(),&
            & x,done,y,tra,ctra,info) 
       if (info /= psb_success_) goto 9999
@@ -139,9 +139,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_notra_4(i,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
               if (info /= psb_success_) goto 9999
@@ -154,9 +154,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_notra_8(i,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
               if (info /= psb_success_) goto 9999
@@ -169,9 +169,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_notra_16(i,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
               if (info /= psb_success_) goto 9999
@@ -184,9 +184,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_notra_24(i,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
               if (info /= psb_success_) goto 9999
@@ -199,9 +199,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_notra_32(i,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
               if (info /= psb_success_) goto 9999
@@ -214,9 +214,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
-              k     = a%hkoffs(j) + 1
+              hkpnt = a%hkoffs(j) + 1
               call psb_d_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
-                   & alpha,a%ja(k),hksz,a%val(k),hksz,&
+                   & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,tra,ctra,info) 
               if (info /= psb_success_) goto 9999
@@ -230,9 +230,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
         ir    = m-mmhk
         mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
         if (mxrwl>0) then 
-          k     = a%hkoffs(j) + 1
+          hkpnt = a%hkoffs(j) + 1
           call psb_d_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
-               & alpha,a%ja(k),hksz,a%val(k),hksz,&
+               & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                & a%is_triangle(),a%is_unit(),&
                & x,beta,y,tra,ctra,info) 
           if (info /= psb_success_) goto 9999
@@ -246,9 +246,9 @@ subroutine psb_d_hll_csmv(alpha,a,x,beta,y,info,trans)
       do i=1,m,hksz
         ir    = min(hksz,m-i+1) 
         mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
-        k     = a%hkoffs(j) + 1
+        hkpnt = a%hkoffs(j) + 1
         call psb_d_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
-             & alpha,a%ja(k),hksz,a%val(k),hksz,&
+             & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
              & a%is_triangle(),a%is_unit(),&
              & x,beta,y,tra,ctra,info) 
         if (info /= psb_success_) goto 9999
