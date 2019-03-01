@@ -71,8 +71,9 @@ program d_file_spmv
   type(psb_d_hdia_sparse_mat), target   :: ahdia
   class(psb_d_base_sparse_mat), pointer :: acmold
   ! other variables
-  integer            :: i,info,j,nrt, ns, nr, ipart
-  integer            :: internal, m,ii,nnzero
+  integer(psb_ipk_)  :: i,info,j, ns, nr, ipart
+  integer(psb_ipk_)  :: internal, m,ii,nnzero
+  integer(psb_lpk_)  :: ig, nrt
   real(psb_dpk_) :: t1, t2, tprec, flops
   real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth
   integer :: nrhs, nrow, n_row, dim, nv, ne
@@ -192,9 +193,9 @@ program d_file_spmv
     call psb_barrier(ictxt)
     if (iam==psb_root_) write(psb_out_unit,'("Partition type: block")')
     allocate(ivg(nrt),ipv(np))
-    do i=1,nrt
-      call part_block(i,nrt,np,ipv,nv)
-      ivg(i) = ipv(1)
+    do ig=1,nrt
+      call part_block(ig,nrt,np,ipv,nv)
+      ivg(ig) = ipv(1)
     enddo
     call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
   else if (ipart == 2) then 
