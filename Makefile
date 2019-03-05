@@ -25,7 +25,7 @@ install: all
 	(./mkdir.sh  $(INSTALL_MODULESDIR) && \
 	   $(INSTALL_DATA) modules/*$(.mod) $(INSTALL_MODULESDIR))
 	(./mkdir.sh  $(INSTALL_INCLUDEDIR) && \
-		   (if test -f include/*.h ; then \
+		   (if test -f include/cintrf.h ; then \
 		$(INSTALL_DATA)  include/*.h $(INSTALL_INCLUDEDIR); fi) )
 
 clean: 
