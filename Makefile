@@ -18,13 +18,13 @@ rsbd:
 	cd rsb && $(MAKE) lib LIBNAME=$(PSB_RSBLIBNAME)
 
 install: all
-	(./mkdir.sh  $(INSTALL_INCLUDEDIR) &&\
+	(mkdir -p $(INSTALL_INCLUDEDIR) &&\
 	   $(INSTALL_DATA) Make.inc  $(INSTALL_INCLUDEDIR)/Make.inc.ext)
-	(./mkdir.sh  $(INSTALL_LIBDIR) &&\
+	(mkdir -p $(INSTALL_LIBDIR) &&\
 	   $(INSTALL_DATA) lib/*.a  $(INSTALL_LIBDIR))
-	(./mkdir.sh  $(INSTALL_MODULESDIR) && \
+	(mkdir -p $(INSTALL_MODULESDIR) && \
 	   $(INSTALL_DATA) modules/*$(.mod) $(INSTALL_MODULESDIR))
-	(./mkdir.sh  $(INSTALL_INCLUDEDIR) && \
+	(mkdir -p $(INSTALL_INCLUDEDIR) && \
 		   (if test -f include/cintrf.h ; then \
 		$(INSTALL_DATA)  include/*.h $(INSTALL_INCLUDEDIR); fi) )
 
