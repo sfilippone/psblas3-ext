@@ -216,7 +216,7 @@ program df_sample
       call part_block(i,m_problem,np,ipv,nv)
       ivg(i) = ipv(1)
     enddo
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,vg=ivg)
     
   else if (ipart == 2) then 
     if (iam == psb_root_) then 
@@ -229,7 +229,7 @@ program df_sample
     call psb_barrier(ictxt)
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,vg=ivg)
 
   else 
     if (iam == psb_root_) write(psb_out_unit,'("Partition type: block subroutine")')
