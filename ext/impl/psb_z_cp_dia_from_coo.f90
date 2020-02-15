@@ -67,6 +67,4 @@ subroutine psb_z_cp_dia_from_coo(a,b,info)
   info = psb_err_alloc_dealloc_
   return
 
-
-
 end subroutine psb_z_cp_dia_from_coo
