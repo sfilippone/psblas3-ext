@@ -37,18 +37,17 @@ subroutine psb_z_hdia_print(iout,a,iv,head,ivr,ivc)
 
   integer(psb_ipk_), intent(in)           :: iout
   class(psb_z_hdia_sparse_mat), intent(in) :: a   
-  integer(psb_ipk_), intent(in), optional :: iv(:)
+  integer(psb_lpk_), intent(in), optional :: iv(:)
   character(len=*), optional              :: head
-  integer(psb_ipk_), intent(in), optional :: ivr(:), ivc(:)
+  integer(psb_lpk_), intent(in), optional :: ivr(:), ivc(:)
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='hdia_print'
-  character(len=*), parameter  :: datatype='complex'
   logical, parameter :: debug=.false.
 
   class(psb_z_coo_sparse_mat),allocatable :: acoo
 
-  character(len=80)  :: frmtv 
+  character(len=80)  :: frmt 
   integer(psb_ipk_)  :: irs,ics,i,j, nmx, ni, nr, nc, nz
   integer(psb_ipk_)  :: nhacks, hacksize,maxnzhack, k, ncd,ib, nzhack, info,&
        & hackfirst, hacknext
@@ -65,8 +64,8 @@ subroutine psb_z_hdia_print(iout,a,iv,head,ivr,ivc)
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nz  = a%get_nzeros()
-  nmx = max(nr,nc,1)
-  ni  = floor(log10(1.0*nmx)) + 1
+  frmt = psb_z_get_print_frmt(nr,nc,nz,iv,ivr,ivc)
+
 
   nhacks   = a%nhacks
   hacksize = a%hacksize
@@ -77,12 +76,6 @@ subroutine psb_z_hdia_print(iout,a,iv,head,ivr,ivc)
   maxnzhack = hacksize*maxnzhack
   allocate(ia(maxnzhack),ja(maxnzhack),val(maxnzhack),stat=info)
   if (info /= 0) return 
-
-  if (datatype=='complex') then 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),es26.18,1x,2(i',ni,',1x))'
-  else 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),2(es26.18,1x),2(i',ni,',1x))'
-  end if
 
   write(iout,*) nr, nc, nz 
   do k=1, nhacks
@@ -101,24 +94,24 @@ subroutine psb_z_hdia_print(iout,a,iv,head,ivr,ivc)
     
     if(present(iv)) then 
       do j=1,nzhack
-        write(iout,frmtv) iv(ia(j)),iv(ja(j)),val(j)
+        write(iout,frmt) iv(ia(j)),iv(ja(j)),val(j)
       enddo
     else      
       if (present(ivr).and..not.present(ivc)) then 
         do j=1,nzhack
-          write(iout,frmtv) ivr(ia(j)),ja(j),val(j)
+          write(iout,frmt) ivr(ia(j)),ja(j),val(j)
         enddo
       else if (present(ivr).and.present(ivc)) then 
         do j=1,nzhack
-          write(iout,frmtv) ivr(ia(j)),ivc(ja(j)),val(j)
+          write(iout,frmt) ivr(ia(j)),ivc(ja(j)),val(j)
         enddo
       else if (.not.present(ivr).and.present(ivc)) then 
         do j=1,nzhack
-          write(iout,frmtv) ia(j),ivc(ja(j)),val(j)
+          write(iout,frmt) ia(j),ivc(ja(j)),val(j)
         enddo
       else if (.not.present(ivr).and..not.present(ivc)) then 
         do j=1,nzhack
-          write(iout,frmtv) ia(j),ja(j),val(j)
+          write(iout,frmt) ia(j),ja(j),val(j)
         enddo
       endif
     end if

@@ -38,18 +38,17 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
 
   integer(psb_ipk_), intent(in)           :: iout
   class(psb_s_dia_sparse_mat), intent(in) :: a   
-  integer(psb_ipk_), intent(in), optional :: iv(:)
+  integer(psb_lpk_), intent(in), optional :: iv(:)
   character(len=*), optional              :: head
-  integer(psb_ipk_), intent(in), optional :: ivr(:), ivc(:)
+  integer(psb_lpk_), intent(in), optional :: ivr(:), ivc(:)
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='s_dia_print'
-  character(len=*), parameter  :: datatype='real'
   logical, parameter :: debug=.false.
 
   class(psb_s_coo_sparse_mat),allocatable :: acoo
 
-  character(len=80)  :: frmtv 
+  character(len=80)  :: frmt 
   integer(psb_ipk_)  :: irs,ics,i,j, nmx, ni, nr, nc, nz, jc, ir1, ir2
 
   write(iout,'(a)') '%%MatrixMarket matrix coordinate real general'
@@ -62,15 +61,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nz  = a%get_nzeros()
-  nmx = max(nr,nc,1)
-  ni  = floor(log10(1.0*nmx)) + 1
-
-
-  if (datatype=='real') then 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),es26.18,1x,2(i',ni,',1x))'
-  else 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),2(es26.18,1x),2(i',ni,',1x))'
-  end if
+  frmt = psb_s_get_print_frmt(nr,nc,nz,iv,ivr,ivc)
   write(iout,*) nr, nc, nz 
 
   nc=size(a%data,2)
@@ -88,7 +79,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
         ir2 = nr
       end if
       do i=ir1, ir2
-        write(iout,frmtv) iv(i),iv(i+jc),a%data(i,j)
+        write(iout,frmt) iv(i),iv(i+jc),a%data(i,j)
       enddo
     enddo
 
@@ -103,7 +94,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
         ir2 = nr
       end if
       do i=ir1, ir2
-        write(iout,frmtv) ivr(i),(i+jc),a%data(i,j)
+        write(iout,frmt) ivr(i),(i+jc),a%data(i,j)
       enddo
     enddo
 
@@ -118,7 +109,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
         ir2 = nr
       end if
       do i=ir1, ir2
-        write(iout,frmtv) ivr(i),ivc(i+jc),a%data(i,j)
+        write(iout,frmt) ivr(i),ivc(i+jc),a%data(i,j)
       enddo
     enddo
 
@@ -133,7 +124,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
         ir2 = nr
       end if
       do i=ir1, ir2
-        write(iout,frmtv) (i),ivc(i+jc),a%data(i,j)
+        write(iout,frmt) (i),ivc(i+jc),a%data(i,j)
       enddo
     enddo
 
@@ -148,7 +139,7 @@ subroutine psb_s_dia_print(iout,a,iv,head,ivr,ivc)
         ir2 = nr
       end if
       do i=ir1, ir2
-        write(iout,frmtv) (i),(i+jc),a%data(i,j)
+        write(iout,frmt) (i),(i+jc),a%data(i,j)
       enddo
     enddo
     

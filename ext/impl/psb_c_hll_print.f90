@@ -38,16 +38,15 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
 
   integer(psb_ipk_), intent(in)           :: iout
   class(psb_c_hll_sparse_mat), intent(in) :: a   
-  integer(psb_ipk_), intent(in), optional :: iv(:)
+  integer(psb_lpk_), intent(in), optional :: iv(:)
   character(len=*), optional              :: head
-  integer(psb_ipk_), intent(in), optional :: ivr(:), ivc(:)
+  integer(psb_lpk_), intent(in), optional :: ivr(:), ivc(:)
 
-  Integer(Psb_ipk_)  :: err_act
+  integer(psb_ipk_)  :: err_act
   character(len=20)  :: name='c_hll_print'
-  character(len=*), parameter  :: datatype='complex'
   logical, parameter :: debug=.false.
 
-  character(len=80)  :: frmtv 
+  character(len=80)  :: frmt
   integer(psb_ipk_)  :: irs,ics,i,j, nmx, ni, nr, nc, nz, k, hksz, hk, mxrwl,ir, ix
   
   
@@ -61,15 +60,10 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
   nr  = a%get_nrows()
   nc  = a%get_ncols()
   nz  = a%get_nzeros()
-  nmx = max(nr,nc,1)
-  ni  = floor(log10(1.0*nmx)) + 1
+  frmt = psb_c_get_print_frmt(nr,nc,nz,iv,ivr,ivc)
+
   hksz = a%get_hksz()
 
-  if (datatype=='real') then 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),es26.18,1x,2(i',ni,',1x))'
-  else 
-    write(frmtv,'(a,i3.3,a,i3.3,a)') '(2(i',ni,',1x),2(es26.18,1x),2(i',ni,',1x))'
-  end if
   write(iout,*) nr, nc, nz 
   if(present(iv)) then 
     do i=1, nr
@@ -79,7 +73,7 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
       k     = a%hkoffs(hk)
       k     = k + (i-(irs*hksz))
       do j=1,a%irn(i)
-        write(iout,frmtv) iv(i),iv(a%ja(k)),a%val(k)
+        write(iout,frmt) iv(i),iv(a%ja(k)),a%val(k)
         k          = k + hksz
       end do
     enddo
@@ -92,7 +86,7 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
         k     = a%hkoffs(hk)
         k     = k + (i-(irs*hksz))
         do j=1,a%irn(i)
-          write(iout,frmtv) ivr(i),(a%ja(k)),a%val(k)
+          write(iout,frmt) ivr(i),(a%ja(k)),a%val(k)
           k          = k + hksz
         end do
       enddo
@@ -104,7 +98,7 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
         k     = a%hkoffs(hk)
         k     = k + (i-(irs*hksz))
         do j=1,a%irn(i)
-          write(iout,frmtv) ivr(i),ivc(a%ja(k)),a%val(k)
+          write(iout,frmt) ivr(i),ivc(a%ja(k)),a%val(k)
           k          = k + hksz
         end do
       enddo
@@ -116,7 +110,7 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
         k     = a%hkoffs(hk)
         k     = k + (i-(irs*hksz))
         do j=1,a%irn(i)
-          write(iout,frmtv) (i),ivc(a%ja(k)),a%val(k)
+          write(iout,frmt) (i),ivc(a%ja(k)),a%val(k)
           k          = k + hksz
         end do
       enddo
@@ -130,7 +124,7 @@ subroutine psb_c_hll_print(iout,a,iv,head,ivr,ivc)
         k     = a%hkoffs(hk)
         k     = k + (i-(irs*hksz))
         do j=1,a%irn(i)
-          write(iout,frmtv) (i),(a%ja(k)),a%val(k)
+          write(iout,frmt) (i),(a%ja(k)),a%val(k)
           k          = k + hksz
         end do
       enddo

@@ -143,12 +143,12 @@ module psb_z_hll_mat_mod
   
   interface
     subroutine psb_z_hll_print(iout,a,iv,head,ivr,ivc)
-      import :: psb_z_hll_sparse_mat, psb_ipk_
+      import :: psb_z_hll_sparse_mat, psb_ipk_, psb_lpk_
       integer(psb_ipk_), intent(in)           :: iout
       class(psb_z_hll_sparse_mat), intent(in) :: a   
-      integer(psb_ipk_), intent(in), optional :: iv(:)
+      integer(psb_lpk_), intent(in), optional :: iv(:)
       character(len=*), optional              :: head
-      integer(psb_ipk_), intent(in), optional :: ivr(:), ivc(:)
+      integer(psb_lpk_), intent(in), optional :: ivr(:), ivc(:)
     end subroutine psb_z_hll_print
   end interface
   
