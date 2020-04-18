@@ -70,7 +70,7 @@ psb_s_hdia_mat_mod.o psb_c_hdia_mat_mod.o psb_d_hdia_mat_mod.o psb_z_hdia_mat_mo
 psb_s_hll_mat_mod.o psb_c_hll_mat_mod.o psb_d_hll_mat_mod.o psb_z_hll_mat_mod.o: psi_ext_util_mod.o
 
 ilib: cmp 
-	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
+	$(MAKE) -C impl LIBNAME=$(LIBNAME)
 
 clean: cclean iclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a
@@ -78,7 +78,7 @@ clean: cclean iclean
 cclean: 
 	/bin/rm -f  $(COBJS) 
 iclean:
-	cd impl && $(MAKE) clean
+	$(MAKE) -C impl clean
 
 verycleanlib: 
 	(cd ../..; make veryclean)

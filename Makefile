@@ -11,11 +11,11 @@ libd:
 	(if test ! -d include ; then mkdir include; fi; $(INSTALL_DATA) Make.inc  include/Make.inc.ext)
 	(if test ! -d modules ; then mkdir modules; fi;)	
 extd:
-	cd ext && $(MAKE) lib LIBNAME=$(PSB_EXTLIBNAME)
+	$(MAKE) -C ext lib LIBNAME=$(PSB_EXTLIBNAME)
 gpud: extd
-	cd gpu && $(MAKE) lib LIBNAME=$(PSB_GPULIBNAME)
+	$(MAKE) -C gpu lib LIBNAME=$(PSB_GPULIBNAME)
 rsbd:
-	cd rsb && $(MAKE) lib LIBNAME=$(PSB_RSBLIBNAME)
+	$(MAKE) -C rsb lib LIBNAME=$(PSB_RSBLIBNAME)
 
 install: all
 	(mkdir -p $(INSTALL_INCLUDEDIR) &&\
@@ -29,9 +29,9 @@ install: all
 		$(INSTALL_DATA)  include/*.h $(INSTALL_INCLUDEDIR); fi) )
 
 clean: 
-	cd ext &&  $(MAKE) clean
-	cd rsb &&  $(MAKE) clean
-	cd gpu &&  $(MAKE) clean
+	$(MAKE) -C ext clean
+	$(MAKE) -C rsb clean
+	$(MAKE) -C gpu clean
 
 cleanlib:
 	(cd lib; /bin/rm -f *.a *$(.mod) *$(.fh))

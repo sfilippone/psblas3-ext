@@ -39,7 +39,7 @@ mcopy: cmp
 	/bin/cp -p *$(.mod) $(MODDIR)
 
 ilib: cmp 
-	cd impl &&  $(MAKE) LIBNAME=$(LIBNAME)
+	$(MAKE) -C impl LIBNAME=$(LIBNAME)
 
 clean: cclean iclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a
