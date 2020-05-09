@@ -69,19 +69,19 @@ program df_sample
   integer(psb_ipk_) :: ictxt, iam, np
 
   ! solver paramters
-  integer(psb_ipk_) :: iter, itmax, ierr, itrace, ircode, ipart,&
+  integer(psb_ipk_) :: iter, itmax, ierr, itrace, ircode,&
        & methd, istopc, irst
   integer(psb_epk_) :: amatsize, precsize, descsize
   real(psb_dpk_)   :: err, eps,cond
 
   character(len=5)   :: afmt, csrfmt='CSR  '
-  character(len=20)  :: name
+  character(len=20)  :: name, part
   character(len=2)   :: filefmt
   integer(psb_ipk_), parameter :: iunit=12
   integer(psb_ipk_) :: iparm(20)
 
   ! other variables
-  integer(psb_ipk_) :: i,info,j,m_problem
+  integer(psb_ipk_) :: i,info,j,m_problem, err_act
   integer(psb_ipk_) :: internal, m,ii,nnzero
   real(psb_dpk_) :: t1, t2, tprec
   real(psb_dpk_) :: r_amax, b_amax, scale,resmx,resmxp
@@ -117,7 +117,7 @@ program df_sample
   !  get parameters
   !
   call get_parms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,&
-       & ipart,afmt,istopc,itmax,itrace,irst,eps)
+       & part,afmt,istopc,itmax,itrace,irst,eps)
 
 
   select case(psb_toupper(afmt))
@@ -208,17 +208,12 @@ program df_sample
   end if
 
   ! switch over different partition types
-  if (ipart == 0) then 
-    call psb_barrier(ictxt)
-    if (iam == psb_root_) write(psb_out_unit,'("Partition type: block vector")')
-    allocate(ivg(m_problem),ipv(np))
-    do i=1,m_problem
-      call part_block(i,m_problem,np,ipv,nv)
-      ivg(i) = ipv(1)
-    enddo
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,vg=ivg)
+  select case(psb_toupper(part)) 
+  case('BLOCK')
+    if (iam == psb_root_) write(psb_out_unit,'("Partition type: block")')
+    call psb_matdist(aux_a, a,  ictxt,desc_a,info,fmt='csr',parts=part_block)
     
-  else if (ipart == 2) then 
+  case('GRAPH')
     if (iam == psb_root_) then 
       write(psb_out_unit,'("Partition type: graph vector")')
       write(psb_out_unit,'(" ")')
@@ -229,21 +224,21 @@ program df_sample
     call psb_barrier(ictxt)
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt=csrfmt,vg=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt='csr',vg=ivg)
 
-  else 
-    if (iam == psb_root_) write(psb_out_unit,'("Partition type: block subroutine")')
-    call psb_matdist(aux_a, a,  ictxt, desc_a,info,fmt=csrfmt,parts=part_block)
-  end if
+  case default  
+    if (iam == psb_root_) write(psb_out_unit,'("Partition type: block")')
+    call psb_matdist(aux_a, a,  ictxt,desc_a,info,fmt='csr',parts=part_block)
+  end select
 
   call a%cscnv(info,mold=acmold)
   call psb_scatter(b_col_glob,b_col,desc_a,info,root=psb_root_)
 
   call psb_geall(x_col,desc_a,info)
-  call x_col%set(dzero)
+  call x_col%zero()
   call psb_geasb(x_col,desc_a,info)
   call psb_geall(r_col,desc_a,info)
-  call r_col%set(dzero)
+  call r_col%zero()
   call psb_geasb(r_col,desc_a,info)
   t2 = psb_wtime() - t1
 
@@ -259,11 +254,11 @@ program df_sample
 
   ! 
 
-  call psb_precinit(prec,ptype,info)
+  call prec%init(ictxt,ptype,info)
 
   ! building the preconditioner
   t1 = psb_wtime()
-  call psb_precbld(a,desc_a,prec,info)
+  call prec%build(a,desc_a,info)
   tprec = psb_wtime()-t1
   if (info /= psb_success_) then
     call psb_errpush(psb_err_from_subroutine_,name,a_err='psb_precbld')
@@ -300,7 +295,7 @@ program df_sample
   call psb_sum(ictxt,descsize)
   call psb_sum(ictxt,precsize)
   if (iam == psb_root_) then 
-    call psb_precdescr(prec)
+    call prec%descr()
     write(psb_out_unit,'("Matrix: ",a)')mtrx_file
     write(psb_out_unit,'("Computed solution on ",i8," processors")')np
     write(psb_out_unit,'("Iterations to convergence: ",i6)')iter
@@ -315,9 +310,9 @@ program df_sample
     write(psb_out_unit,'("Total memory occupation for      A:      ",i12)')amatsize
     write(psb_out_unit,'("Total memory occupation for   PREC:   ",i12)')precsize
     write(psb_out_unit,'("Total memory occupation for DESC_A: ",i12)')descsize
-    write(psb_out_unit,'("Storage type for A                : ",a)')&
+    write(psb_out_unit,'("Storage format for A              : ",a)')&
          &  a%get_fmt()
-    write(psb_out_unit,'("Storage type for DESC_A           : ",a)')&
+    write(psb_out_unit,'("Storage format for DESC_A         : ",a)')&
          &  desc_a%get_fmt()
   end if
 !!$  call psb_precdump(prec,info,prefix=trim(mtrx_file)//'_')
@@ -348,9 +343,8 @@ program df_sample
   call psb_gefree(b_col, desc_a,info)
   call psb_gefree(x_col, desc_a,info)
   call psb_spfree(a, desc_a,info)
-  call psb_precfree(prec,info)
+  call prec%free(info)
   call psb_cdfree(desc_a,info)
-
   call psb_exit(ictxt)
   stop
 

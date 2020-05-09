@@ -58,9 +58,9 @@ program d_file_spmv
   ! communications data structure
   type(psb_desc_type):: desc_a
 
-  integer            :: ictxt, iam, np
+  integer(psb_ipk_) :: ictxt, iam, np
   integer(psb_epk_) :: amatsize, agmatsize, precsize, descsize, annz, nbytes
-  real(psb_dpk_)   :: err, eps, damatsize, dgmatsize
+  real(psb_dpk_)    :: err, eps, damatsize, dgmatsize
 
   character(len=5)   :: acfmt, agfmt
   character(len=20)  :: name
@@ -83,8 +83,8 @@ program d_file_spmv
 #endif
   class(psb_d_base_sparse_mat), pointer :: acmold, agmold
   ! other variables
-  integer            :: i,info,j,nrt, ns, nr, ipart, ig, nrg
-  integer            :: internal, m,ii,nnzero
+  integer(psb_lpk_)  :: i,j,nrt, ns, nr, ig, nrg
+  integer(psb_ipk_)  :: internal, m,ii,nnzero,info, ipart
   real(psb_dpk_) :: t0,t1, t2, tprec, flops
   real(psb_dpk_) :: tt1, tt2, tflops, gt1, gt2,gflops, gtint, bdwdth,&
        & tcnvcsr, tcnvc1, tcnvgpu, tcnvg1
@@ -238,7 +238,7 @@ program d_file_spmv
       call part_block(i,nrt,np,ipv,nv)
       ivg(i) = ipv(1)
     enddo
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,vg=ivg)
   else if (ipart == 2) then 
     if (iam==psb_root_) then 
       write(psb_out_unit,'("Partition type: graph")')
@@ -249,7 +249,7 @@ program d_file_spmv
     call psb_barrier(ictxt)
     call distr_mtpart(psb_root_,ictxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
+    call psb_matdist(aux_a, a, ictxt, desc_a,info,vg=ivg)
   else 
     if (iam==psb_root_) write(psb_out_unit,'("Partition type default: block")')
     call psb_matdist(aux_a, a,  ictxt,desc_a,info,parts=part_block)

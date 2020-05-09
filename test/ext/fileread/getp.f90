@@ -38,30 +38,47 @@ contains
   !
   ! Get iteration parameters from the command line
   !
-  subroutine  get_dparms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,ipart,&
+  subroutine  get_dparms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,part,&
        & afmt,istopc,itmax,itrace,irst,eps)
     use psb_base_mod
     integer(psb_ipk_) :: ictxt
     character(len=2)  :: filefmt
     character(len=40) :: kmethd, mtrx_file, rhs_file, ptype
-    integer(psb_ipk_) :: iret, istopc,itmax,itrace,ipart,irst
+    character(len=20) :: part
+    integer(psb_ipk_) :: iret, istopc,itmax,itrace,irst
     character(len=40) :: charbuf
     real(psb_dpk_) :: eps
     character    :: afmt*5
     integer(psb_ipk_) :: np, iam
-    integer(psb_ipk_) :: inparms(40), ip 
+    integer(psb_ipk_) :: inparms(40), ip, inp_unit
+    character(len=1024)   :: filename 
 
     call psb_info(ictxt,iam,np)
     if (iam == 0) then
+      if (command_argument_count()>0) then
+        call get_command_argument(1,filename)
+        inp_unit = 30
+        open(inp_unit,file=filename,action='read',iostat=info)
+        if (info /= 0) then
+          write(psb_err_unit,*) 'Could not open file ',filename,' for input'
+          call psb_abort(ictxt)
+          stop
+        else
+          write(psb_err_unit,*) 'Opened file ',trim(filename),' for input'
+        end if
+      else
+        inp_unit=psb_inp_unit
+      end if
       ! Read Input Parameters
-      read(psb_inp_unit,*) ip
+      read(inp_unit,*) ip
       if (ip >= 5) then
-        read(psb_inp_unit,*) mtrx_file
-        read(psb_inp_unit,*) rhs_file
-        read(psb_inp_unit,*) filefmt
-        read(psb_inp_unit,*) kmethd
-        read(psb_inp_unit,*) ptype
-        read(psb_inp_unit,*) afmt
+        read(inp_unit,*) mtrx_file
+        read(inp_unit,*) rhs_file
+        read(inp_unit,*) filefmt
+        read(inp_unit,*) kmethd
+        read(inp_unit,*) ptype
+        read(inp_unit,*) afmt
+        read(inp_unit,*) part
 
 
         call psb_bcast(ictxt,mtrx_file)
@@ -70,44 +87,43 @@ contains
         call psb_bcast(ictxt,kmethd)
         call psb_bcast(ictxt,ptype)
         call psb_bcast(ictxt,afmt)
+        call psb_bcast(ictxt,part)
 
-        read(psb_inp_unit,*) ipart
         if (ip >= 7) then
-          read(psb_inp_unit,*) istopc
+          read(inp_unit,*) istopc
         else
           istopc=1        
         endif
         if (ip >= 8) then
-          read(psb_inp_unit,*) itmax
+          read(inp_unit,*) itmax
         else
           itmax=500
         endif
         if (ip >= 9) then
-          read(psb_inp_unit,*) itrace
+          read(inp_unit,*) itrace
         else
           itrace=-1
         endif
         if (ip >= 10) then
-          read(psb_inp_unit,*) irst
+          read(inp_unit,*) irst
         else
           irst  = 1
         endif
         if (ip >= 11) then
-          read(psb_inp_unit,*) eps
+          read(inp_unit,*) eps
         else
           eps=1.d-6
         endif
-        inparms(1) = ipart
-        inparms(2) = istopc
-        inparms(3) = itmax
-        inparms(4) = itrace
-        inparms(5) = irst
-        call psb_bcast(ictxt,inparms(1:5))
+        inparms(1) = istopc
+        inparms(2) = itmax
+        inparms(3) = itrace
+        inparms(4) = irst
+        call psb_bcast(ictxt,inparms(1:4))
         call psb_bcast(ictxt,eps)
 
         write(psb_out_unit,'("Solving matrix       : ",a)')  mtrx_file      
         write(psb_out_unit,'("Number of processors : ",i3)') np
-        write(psb_out_unit,'("Data distribution    : ",i2)') ipart
+        write(psb_out_unit,'("Data distribution    : ",a)') part
         write(psb_out_unit,'("Iterative method     : ",a)')  kmethd
         write(psb_out_unit,'("Preconditioner       : ",a)')  ptype
         write(psb_out_unit,'("Restart parameter    : ",i2)') irst
@@ -118,6 +134,9 @@ contains
         call psb_abort(ictxt)
         stop 1
       end if
+      if (inp_unit /= psb_inp_unit) then
+        close(inp_unit)
+      end if
     else
       ! Receive Parameters
       call psb_bcast(ictxt,mtrx_file)
@@ -126,43 +145,60 @@ contains
       call psb_bcast(ictxt,kmethd)
       call psb_bcast(ictxt,ptype)
       call psb_bcast(ictxt,afmt)
+      call psb_bcast(ictxt,part)
 
-      call psb_bcast(ictxt,inparms(1:5))
-      ipart  =  inparms(1) 
-      istopc =  inparms(2) 
-      itmax  =  inparms(3) 
-      itrace =  inparms(4) 
-      irst   =  inparms(5) 
+      call psb_bcast(ictxt,inparms(1:4))
+      istopc =  inparms(1) 
+      itmax  =  inparms(2) 
+      itrace =  inparms(3) 
+      irst   =  inparms(4) 
       call psb_bcast(ictxt,eps)
 
     end if
 
   end subroutine get_dparms
   
-  subroutine  get_sparms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,ipart,&
+  subroutine  get_sparms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,part,&
        & afmt,istopc,itmax,itrace,irst,eps)
     use psb_base_mod
     integer(psb_ipk_) :: ictxt
     character(len=2)  :: filefmt
     character(len=40) :: kmethd, mtrx_file, rhs_file, ptype
-    integer(psb_ipk_) :: iret, istopc,itmax,itrace,ipart,irst
+    character(len=20) :: part
+    integer(psb_ipk_) :: iret, istopc,itmax,itrace,irst
     character(len=40) :: charbuf
     real(psb_spk_) :: eps
     character    :: afmt*5
     integer(psb_ipk_) :: np, iam
-    integer(psb_ipk_) :: inparms(40), ip 
+    integer(psb_ipk_) :: inparms(40), ip, inp_unit
+    character(len=1024)   :: filename
 
     call psb_info(ictxt,iam,np)
     if (iam == 0) then
+      if (command_argument_count()>0) then
+        call get_command_argument(1,filename)
+        inp_unit = 30
+        open(inp_unit,file=filename,action='read',iostat=info)
+        if (info /= 0) then
+          write(psb_err_unit,*) 'Could not open file ',filename,' for input'
+          call psb_abort(ictxt)
+          stop
+        else
+          write(psb_err_unit,*) 'Opened file ',trim(filename),' for input'
+        end if
+      else
+        inp_unit=inp_unit
+      end if
       ! Read Input Parameters
-      read(psb_inp_unit,*) ip
+      read(inp_unit,*) ip
       if (ip >= 5) then
-        read(psb_inp_unit,*) mtrx_file
-        read(psb_inp_unit,*) rhs_file
-        read(psb_inp_unit,*) filefmt
-        read(psb_inp_unit,*) kmethd
-        read(psb_inp_unit,*) ptype
-        read(psb_inp_unit,*) afmt
+        read(inp_unit,*) mtrx_file
+        read(inp_unit,*) rhs_file
+        read(inp_unit,*) filefmt
+        read(inp_unit,*) kmethd
+        read(inp_unit,*) ptype
+        read(inp_unit,*) afmt
+        read(inp_unit,*) ipart
 
 
         call psb_bcast(ictxt,mtrx_file)
@@ -171,44 +207,43 @@ contains
         call psb_bcast(ictxt,kmethd)
         call psb_bcast(ictxt,ptype)
         call psb_bcast(ictxt,afmt)
+        call psb_bcast(ictxt,part)
 
-        read(psb_inp_unit,*) ipart
         if (ip >= 7) then
-          read(psb_inp_unit,*) istopc
+          read(inp_unit,*) istopc
         else
           istopc=1        
         endif
         if (ip >= 8) then
-          read(psb_inp_unit,*) itmax
+          read(inp_unit,*) itmax
         else
           itmax=500
         endif
         if (ip >= 9) then
-          read(psb_inp_unit,*) itrace
+          read(inp_unit,*) itrace
         else
           itrace=-1
         endif
         if (ip >= 10) then
-          read(psb_inp_unit,*) irst
+          read(inp_unit,*) irst
         else
           irst  = 1
         endif
         if (ip >= 11) then
-          read(psb_inp_unit,*) eps
+          read(inp_unit,*) eps
         else
           eps=1.d-6
         endif
-        inparms(1) = ipart
-        inparms(2) = istopc
-        inparms(3) = itmax
-        inparms(4) = itrace
-        inparms(5) = irst
-        call psb_bcast(ictxt,inparms(1:5))
+        inparms(1) = istopc
+        inparms(2) = itmax
+        inparms(3) = itrace
+        inparms(4) = irst
+        call psb_bcast(ictxt,inparms(1:4))
         call psb_bcast(ictxt,eps)
 
         write(psb_out_unit,'("Solving matrix       : ",a)')  mtrx_file      
         write(psb_out_unit,'("Number of processors : ",i3)') np
-        write(psb_out_unit,'("Data distribution    : ",i2)') ipart
+        write(psb_out_unit,'("Data distribution    : ",a)') part
         write(psb_out_unit,'("Iterative method     : ",a)')  kmethd
         write(psb_out_unit,'("Preconditioner       : ",a)')  ptype
         write(psb_out_unit,'("Restart parameter    : ",i2)') irst
@@ -219,6 +254,9 @@ contains
         call psb_abort(ictxt)
         stop 1
       end if
+      if (inp_unit /= psb_inp_unit) then
+        close(inp_unit)
+      end if
     else
       ! Receive Parameters
       call psb_bcast(ictxt,mtrx_file)
@@ -227,13 +265,13 @@ contains
       call psb_bcast(ictxt,kmethd)
       call psb_bcast(ictxt,ptype)
       call psb_bcast(ictxt,afmt)
+      call psb_bcast(ictxt,part)
 
-      call psb_bcast(ictxt,inparms(1:5))
-      ipart  =  inparms(1) 
-      istopc =  inparms(2) 
-      itmax  =  inparms(3) 
-      itrace =  inparms(4) 
-      irst   =  inparms(5) 
+      call psb_bcast(ictxt,inparms(1:4))
+      istopc =  inparms(1) 
+      itmax  =  inparms(2) 
+      itrace =  inparms(3) 
+      irst   =  inparms(4) 
       call psb_bcast(ictxt,eps)
 
     end if

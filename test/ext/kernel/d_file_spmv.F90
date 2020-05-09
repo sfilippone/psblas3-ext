@@ -53,7 +53,7 @@ program d_file_spmv
   type(psb_desc_type):: desc_a
 
   integer            :: ictxt, iam, np
-  integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
+  integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes, annz2
   real(psb_dpk_)   :: err, eps 
 
   character(len=5)   :: acfmt
@@ -135,7 +135,7 @@ program d_file_spmv
       write(psb_err_unit,*) 'Error while reading input matrix '
       call psb_abort(ictxt)
     end if
-
+    call aux_a%clean_zeros(info)
     !
     ! Always get nnz from original matrix.
     ! Some formats add fill-in and do not keep track
@@ -267,6 +267,16 @@ program d_file_spmv
   call psb_sum(ictxt,amatsize)
   call psb_sum(ictxt,descsize)
 
+  select type (ah => a%a)
+  class is(psb_d_hdia_sparse_mat)
+    annz2 = size(ah%val)
+  class is(psb_d_dia_sparse_mat)
+    annz2 = size(ah%data)
+  class default
+    annz2 = a%get_nzeros()
+  end select
+  call psb_sum(ictxt,annz2)
+
   if (iam == psb_root_) then
     write(psb_out_unit,'("Matrix: ",a)') mtrx_file
     write(psb_out_unit,&
@@ -275,6 +285,8 @@ program d_file_spmv
          &'("Size of matrix                   : ",i20,"           ")') nrt
     write(psb_out_unit,&
          &'("Number of nonzeros               : ",i20,"           ")') annz
+    write(psb_out_unit,&
+         &'("Number of nonzeros  count 2      : ",i20,"           ")') annz2
     write(psb_out_unit,&
          &'("Memory occupation                : ",i20,"           ")') amatsize
     flops  = ntests*(2.d0*annz)
