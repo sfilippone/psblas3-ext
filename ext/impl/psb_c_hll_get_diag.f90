@@ -39,7 +39,7 @@ subroutine psb_c_hll_get_diag(a,d,info)
   complex(psb_spk_), intent(out)             :: d(:)
   integer(psb_ipk_), intent(out)          :: info
 
-  Integer(Psb_ipk_)  :: err_act, mnm, i, j, k, hksz, ld,ir, mxrwl
+  Integer(Psb_ipk_)  :: err_act, mnm, i, j, k, ke, hksz, ld,ir, mxrwl
   character(len=20)  :: name='get_diag'
   logical, parameter :: debug=.false.
 
@@ -65,13 +65,13 @@ subroutine psb_c_hll_get_diag(a,d,info)
       ir    = min(hksz,mnm-i+1) 
       mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
       k     = a%hkoffs(j) + 1
-      call psb_c_hll_get_diag_inner(i,ir,mxrwl,a%irn(i),&
-           & a%ja(k),hksz,a%val(k),hksz,&
-           & a%idiag,d,info) 
+      ke    = a%hkoffs(j+1)
+      call psb_c_hll_get_diag_inner(ir,a%irn(i:i+ir-1),&
+           & a%ja(k:ke),hksz,a%val(k:ke),hksz,&
+           & a%idiag(i:i+ir-1),d(i:i+ir-1),info) 
       if (info /= psb_success_) goto 9999
       j = j + 1 
     end do
-
 
   end if
 
@@ -86,9 +86,9 @@ subroutine psb_c_hll_get_diag(a,d,info)
 
 contains
 
-  subroutine psb_c_hll_get_diag_inner(ir,m,n,irn,ja,ldj,val,ldv,&
+  subroutine psb_c_hll_get_diag_inner(m,irn,ja,ldj,val,ldv,&
        & idiag,d,info) 
-    integer(psb_ipk_), intent(in)    :: ir,m,n,ldj,ldv,ja(ldj,*),irn(*), idiag(*)
+    integer(psb_ipk_), intent(in)    :: m,ldj,ldv,ja(ldj,*),irn(*), idiag(*)
     complex(psb_spk_), intent(in)      :: val(ldv,*)
     complex(psb_spk_), intent(inout)   :: d(*)
     integer(psb_ipk_), intent(out)   :: info
@@ -98,7 +98,7 @@ contains
     info = psb_success_
     
     do i=1,m
-      d(ir+i-1) = val(i,idiag(i))
+      d(i) = val(i,idiag(i))
     end do
 
   end subroutine psb_c_hll_get_diag_inner
