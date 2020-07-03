@@ -4,7 +4,7 @@ This package contains:
 1. Extended matrix formats: ELLPACK, Hacked ELLPACK, DIAgonals, Hacked
    DIAgonals. Note: DIA and HDIA have limited support.      
 2. A GPU plugin: gpu-enabled versions of the above, with the CUDA code
-   from http://spgpu.googlecode.com,  plus interfaces to
+   from https://github.com/davidebarbieri/spgpu,  plus interfaces to
    CSR and HYB formats available in the NVIDIA CuSPARSE lib.
    Note: DIAG and HDIAG have limited support. 
 3. RSB: an interface to http://sourceforge.net/projects/librsb
