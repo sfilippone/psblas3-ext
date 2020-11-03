@@ -67,9 +67,7 @@ module psb_s_diag_mat_mod
     procedure, pass(a) :: free          => s_diag_free
     procedure, pass(a) :: mold          => psb_s_diag_mold
     procedure, pass(a) :: to_gpu        => psb_s_diag_to_gpu
-#ifdef HAVE_FINAL
     final              :: s_diag_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold         => psb_s_diag_mold
@@ -282,7 +280,6 @@ contains
 
   end subroutine s_diag_free
 
-#ifdef HAVE_FINAL
   subroutine  s_diag_finalize(a) 
     use diagdev_mod
     implicit none 
@@ -294,7 +291,6 @@ contains
     
     return
   end subroutine s_diag_finalize
-#endif
 
 #else 
 

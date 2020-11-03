@@ -80,9 +80,7 @@ module psb_s_csrg_mat_mod
     procedure, pass(a) :: sync          => s_csrg_sync
     procedure, pass(a) :: to_gpu        => psb_s_csrg_to_gpu
     procedure, pass(a) :: from_gpu      => psb_s_csrg_from_gpu
-#ifdef HAVE_FINAL
     final              :: s_csrg_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold         => psb_s_csrg_mold
@@ -367,7 +365,6 @@ contains
 
   end subroutine s_csrg_free
 
-#ifdef HAVE_FINAL
   subroutine  s_csrg_finalize(a) 
     use cusparse_mod
     implicit none 
@@ -380,7 +377,6 @@ contains
     return
 
   end subroutine s_csrg_finalize
-#endif
 
 #else 
   interface 

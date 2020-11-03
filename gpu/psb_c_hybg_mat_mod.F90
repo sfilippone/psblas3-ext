@@ -67,9 +67,7 @@ module psb_c_hybg_mat_mod
     procedure, pass(a) :: free          => c_hybg_free
     procedure, pass(a) :: mold          => psb_c_hybg_mold
     procedure, pass(a) :: to_gpu        => psb_c_hybg_to_gpu
-#ifdef HAVE_FINAL
     final              :: c_hybg_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold    => psb_c_hybg_mold
@@ -279,7 +277,6 @@ contains
 
   end subroutine c_hybg_free
 
-#ifdef HAVE_FINAL
   subroutine  c_hybg_finalize(a) 
     use cusparse_mod
     implicit none 
@@ -290,7 +287,6 @@ contains
     
     return
   end subroutine c_hybg_finalize
-#endif
 
 #else 
 

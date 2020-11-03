@@ -85,9 +85,7 @@ module psb_z_elg_mat_mod
     procedure, pass(a) :: from_gpu      => psb_z_elg_from_gpu
     procedure, pass(a) :: to_gpu        => psb_z_elg_to_gpu
     procedure, pass(a) :: asb           => psb_z_elg_asb
-#ifdef HAVE_FINAL
     final              :: z_elg_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold         => psb_z_elg_mold
@@ -450,7 +448,6 @@ contains
     res = (a%devstate == is_sync)
   end function z_elg_is_sync
 
-#ifdef HAVE_FINAL
   subroutine  z_elg_finalize(a) 
     use elldev_mod
     implicit none 
@@ -462,7 +459,6 @@ contains
     return
 
   end subroutine z_elg_finalize
-#endif
 
 #else 
 

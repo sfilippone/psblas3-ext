@@ -68,9 +68,7 @@ module psb_c_dnsg_mat_mod
     procedure, pass(a) :: free          => c_dnsg_free
     procedure, pass(a) :: mold          => psb_c_dnsg_mold
     procedure, pass(a) :: to_gpu        => psb_c_dnsg_to_gpu
-#ifdef HAVE_FINAL
     final              :: c_dnsg_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold         => psb_c_dnsg_mold
@@ -268,7 +266,6 @@ contains
 
   end subroutine c_dnsg_free
 
-#ifdef HAVE_FINAL
   subroutine  c_dnsg_finalize(a) 
     use dnsdev_mod
     implicit none 
@@ -280,7 +277,6 @@ contains
     
     return
   end subroutine c_dnsg_finalize
-#endif
 
 #else 
 

@@ -81,9 +81,7 @@ module psb_s_hlg_mat_mod
     procedure, pass(a) :: sync          => s_hlg_sync
     procedure, pass(a) :: from_gpu      => psb_s_hlg_from_gpu
     procedure, pass(a) :: to_gpu        => psb_s_hlg_to_gpu
-#ifdef HAVE_FINAL
     final              :: s_hlg_finalize
-#endif
 #else 
   contains
     procedure, pass(a) :: mold         => psb_s_hlg_mold
@@ -372,7 +370,6 @@ contains
   end function s_hlg_is_sync
 
 
-#ifdef HAVE_FINAL
   subroutine  s_hlg_finalize(a) 
     use hlldev_mod
     implicit none 
@@ -384,7 +381,6 @@ contains
     
     return
   end subroutine s_hlg_finalize
-#endif
 
 #else 
 

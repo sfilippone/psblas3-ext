@@ -104,9 +104,7 @@ module psb_c_gpu_vect_mod
     procedure, pass(x) :: absval1  => c_gpu_absval1
     procedure, pass(x) :: absval2  => c_gpu_absval2
 
-#ifdef HAVE_FINAL
     final              :: c_gpu_vect_finalize
-#endif
 #endif
   end type psb_c_vect_gpu
 
@@ -1134,7 +1132,6 @@ contains
   end subroutine c_gpu_absval2
 
 
-#ifdef HAVE_FINAL
   subroutine c_gpu_vect_finalize(x)
     use psi_serial_mod
     use psb_realloc_mod
@@ -1145,7 +1142,6 @@ contains
     info = 0
     call x%free(info)
   end subroutine c_gpu_vect_finalize
-#endif
 
   subroutine c_gpu_ins_v(n,irl,val,dupl,x,info)
     use psi_serial_mod
@@ -1279,9 +1275,7 @@ module psb_c_gpu_multivect_mod
 !!$    procedure, pass(x) :: gthzv_x  => c_gpu_multi_gthzv_x
 !!$    procedure, pass(y) :: sctb     => c_gpu_multi_sctb
 !!$    procedure, pass(y) :: sctb_x   => c_gpu_multi_sctb_x
-#ifdef HAVE_FINAL
     final              :: c_gpu_multi_vect_finalize
-#endif
 #endif
   end type psb_c_multivect_gpu
 
@@ -1948,7 +1942,6 @@ contains
     call x%set_sync()
   end subroutine c_gpu_multi_free
 
-#ifdef HAVE_FINAL
   subroutine c_gpu_multi_vect_finalize(x)
     use psi_serial_mod
     use psb_realloc_mod
@@ -1969,7 +1962,6 @@ contains
     if (allocated(x%v)) deallocate(x%v, stat=info)
     call x%set_sync()
   end subroutine c_gpu_multi_vect_finalize
-#endif
 
   subroutine c_gpu_multi_ins(n,irl,val,dupl,x,info)
     use psi_serial_mod
