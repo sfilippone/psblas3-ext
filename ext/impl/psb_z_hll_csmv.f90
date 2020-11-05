@@ -135,8 +135,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
       if (mmhk > 0) then 
         select case(hksz)
         case(4)
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -152,8 +153,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
           if (info /= psb_success_) goto 9999
 
         case(8)
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -169,8 +171,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
           if (info /= psb_success_) goto 9999
 
         case(16)
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -186,8 +189,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
           if (info /= psb_success_) goto 9999
 
         case(24)
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -203,8 +207,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
           if (info /= psb_success_) goto 9999
 
         case(32)
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -220,8 +225,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
           if (info /= psb_success_) goto 9999
 
         case default
-          !$omp parallel do private(i, j,ir,mxrwl)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
@@ -255,8 +261,9 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
     else
 
       j=1
-      !$omp parallel do private(i, j,ir,mxrwl)
+      !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
       do i=1,m,hksz
+        j = ((i-1)/hksz)+1
         ir    = min(hksz,m-i+1) 
         mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
         hkpnt = a%hkoffs(j) + 1
