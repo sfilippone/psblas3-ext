@@ -92,7 +92,8 @@ program ppde
   type(psb_d_csr_sparse_mat) :: acsr
   type(psb_d_csrg_sparse_mat) :: acsrg
   ! blacs parameters
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer            :: iam, np
 
   ! solver parameters
   integer            :: iter, itmax,itrace, istopc, irst,giter
@@ -107,12 +108,12 @@ program ppde
   info=psb_success_
 
   
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
 
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
@@ -128,15 +129,15 @@ program ppde
   !
   !  get parameters
   !
-  call get_parms(ictxt,kmethd,ptype,afmt,idim,istopc,itmax,itrace,irst)
+  call get_parms(ctxt,kmethd,ptype,afmt,idim,istopc,itmax,itrace,irst)
 
   !
   !  allocate and fill in the coefficient matrix, rhs and initial guess 
   !
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
-  call create_matrix(idim,a,b,x,bv,xxv,desc_a,ictxt,afmt,info)  
-  call psb_barrier(ictxt)
+  call create_matrix(idim,a,b,x,bv,xxv,desc_a,ctxt,afmt,info)  
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
     info=psb_err_from_subroutine_
@@ -161,7 +162,7 @@ program ppde
 !!$  call psb_cdbldext(a,desc_a,2,desc_b,info,extype=psb_ovt_asov_)
 !!$  if (info /= 0) then 
 !!$    write(0,*) 'Error from bldext'
-!!$    call psb_abort(ictxt)
+!!$    call psb_abort(ctxt)
 !!$  end if
   !
   !  prepare the preconditioner.
@@ -169,7 +170,7 @@ program ppde
   if(iam == psb_root_) write(psb_out_unit,'("Setting preconditioner to : ",a)')ptype
   call psb_precinit(prec,ptype,info)
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   call psb_precbld(a,desc_a,prec,info,amold=aelg,vmold=xxv)
   if(info /= psb_success_) then
@@ -181,7 +182,7 @@ program ppde
 
   tprec = psb_wtime()-t1
 
-  call psb_amx(ictxt,tprec)
+  call psb_amx(ctxt,tprec)
 
   if (.true.) then 
     write(fname,'(a,i0,a)'),'pde-',idim,'.hb'
@@ -194,9 +195,9 @@ program ppde
   amatsize = psb_sizeof(a)
   descsize = psb_sizeof(desc_a)
   precsize = psb_sizeof(prec)
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
-  call psb_sum(ictxt,precsize)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
+  call psb_sum(ctxt,precsize)
   if (iam == psb_root_) then
     write(psb_out_unit,'(" ")')
     write(psb_out_unit,'("Total memory occupation for A:      ",i12)')amatsize
@@ -214,7 +215,7 @@ program ppde
   ! iterative method parameters 
   !
   if(iam == psb_root_) write(psb_out_unit,'("Calling iterative method ",a)')kmethd
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt1 = psb_wtime()  
   eps   = 1.d-9
   call psb_set_debug_level(0)
@@ -228,18 +229,18 @@ program ppde
     goto 9999
   end if
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt2 = psb_wtime() - gt1
-  call psb_amx(ictxt,t2)
-  call psb_barrier(ictxt)
+  call psb_amx(ctxt,t2)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()  
   call psb_krylov(kmethd,a,prec,b,x,eps,desc_a,info,& 
        & itmax=itmax,iter=iter,err=err,itrace=itrace,istop=istopc,irst=irst)     
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   call psb_set_debug_level(0)
-  call psb_amx(ictxt,t2)
-  call psb_barrier(ictxt)
+  call psb_amx(ctxt,t2)
+  call psb_barrier(ctxt)
 
   if (iam == psb_root_) then
     write(psb_out_unit,'(" ")')
@@ -272,23 +273,23 @@ program ppde
 
 9999 continue
   if(info /= psb_success_) then
-    call psb_error(ictxt)
+    call psb_error(ctxt)
   end if
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,kmethd,ptype,afmt,idim,istopc,itmax,itrace,irst)
-    integer      :: ictxt
+  subroutine  get_parms(ctxt,kmethd,ptype,afmt,idim,istopc,itmax,itrace,irst)
+    type(psb_ctxt_type)  :: ctxt
     character(len=*) :: kmethd, ptype, afmt
     integer      :: idim, istopc,itmax,itrace,irst
     integer      :: np, iam
     integer      :: intbuf(10), ip
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
     if (iam == 0) then
       read(psb_inp_unit,*) ip
@@ -298,9 +299,9 @@ contains
         read(psb_inp_unit,*) afmt
 
         ! broadcast parameters to all processors
-        call psb_bcast(ictxt,kmethd)
-        call psb_bcast(ictxt,afmt)
-        call psb_bcast(ictxt,ptype)
+        call psb_bcast(ctxt,kmethd)
+        call psb_bcast(ctxt,afmt)
+        call psb_bcast(ctxt,ptype)
 
 
         read(psb_inp_unit,*) idim
@@ -331,7 +332,7 @@ contains
         intbuf(3) = itmax
         intbuf(4) = itrace
         intbuf(5) = irst
-        call psb_bcast(ictxt,intbuf(1:5))
+        call psb_bcast(ctxt,intbuf(1:5))
 
         write(psb_out_unit,'("Solving matrix       : ell1")')      
         write(psb_out_unit,'("Grid dimensions      : ",i4,"x",i4,"x",i4)')idim,idim,idim
@@ -343,14 +344,14 @@ contains
       else
         ! wrong number of parameter, print an error message and exit
         call pr_usage(0)      
-        call psb_abort(ictxt)
+        call psb_abort(ctxt)
         stop 1
       endif
     else
-      call psb_bcast(ictxt,kmethd)
-      call psb_bcast(ictxt,afmt)
-      call psb_bcast(ictxt,ptype)
-      call psb_bcast(ictxt,intbuf(1:5))
+      call psb_bcast(ctxt,kmethd)
+      call psb_bcast(ctxt,afmt)
+      call psb_bcast(ctxt,ptype)
+      call psb_bcast(ctxt,intbuf(1:5))
       idim    = intbuf(1)
       istopc  = intbuf(2)
       itmax   = intbuf(3)
@@ -385,7 +386,7 @@ contains
   !  subroutine to allocate and fill in the coefficient matrix and
   !  the rhs. 
   !
-  subroutine create_matrix(idim,a,b,xv,bv,xxv,desc_a,ictxt,afmt,info)
+  subroutine create_matrix(idim,a,b,xv,bv,xxv,desc_a,ctxt,afmt,info)
     !
     !   discretize the partial diferential equation
     ! 
@@ -410,7 +411,8 @@ contains
     real(psb_dpk_), allocatable  :: b(:),xv(:)
     class(psb_d_vect)            :: xxv,bv
     type(psb_desc_type)          :: desc_a
-    integer                      :: ictxt, info
+    type(psb_ctxt_type) :: ctxt
+    integer                      :: info
     character                    :: afmt*5
     type(psb_dspmat_type)       :: a
     type(psb_d_csc_sparse_mat)       :: acsc
@@ -439,7 +441,7 @@ contains
     name = 'create_matrix'
     call psb_erractionsave(err_act)
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
     deltah  = 1.d0/(idim-1)
     deltah2 = deltah*deltah
@@ -459,11 +461,11 @@ contains
     nr = max(0,min(nt,m-(iam*nt)))
 
     nt = nr
-    call psb_sum(ictxt,nt) 
+    call psb_sum(ctxt,nt) 
     if (nt /= m) write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t0 = psb_wtime()
-    call psb_cdall(ictxt,desc_a,info,nl=nr)
+    call psb_cdall(ctxt,desc_a,info,nl=nr)
     if (info == psb_success_) call psb_spall(a,desc_a,info,nnz=nnz)
     ! define  rhs from boundary conditions; also build initial guess 
     if (info == psb_success_) call psb_geall(b,desc_a,info)
@@ -471,7 +473,7 @@ contains
     if (info == psb_success_) call psb_geall(xxv,desc_a,info)
     if (info == psb_success_) call psb_geall(bv,desc_a,info)
     nlr = psb_cd_get_local_rows(desc_a)
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     talc = psb_wtime()-t0
 
     if (info /= psb_success_) then
@@ -503,7 +505,7 @@ contains
     ! loop over rows belonging to current process in a block
     ! distribution.
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     do ii=1, nlr,nb
       ib = min(nb,nlr-ii+1) 
@@ -622,12 +624,12 @@ contains
 
     deallocate(val,irow,icol)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call psb_cdasb(desc_a,info)
     if (info == psb_success_) &
          & call psb_spasb(a,desc_a,info,dupl=psb_dupl_err_,afmt=afmt)
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     if(info /= psb_success_) then
       info=psb_err_from_subroutine_
       ch_err='asb rout.'
@@ -645,13 +647,13 @@ contains
       goto 9999
     end if
     tasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     ttot = psb_wtime() - t0 
 
-    call psb_amx(ictxt,talc)
-    call psb_amx(ictxt,tgen)
-    call psb_amx(ictxt,tasb)
-    call psb_amx(ictxt,ttot)
+    call psb_amx(ctxt,talc)
+    call psb_amx(ctxt,tgen)
+    call psb_amx(ctxt,tasb)
+    call psb_amx(ctxt,ttot)
     if(iam == psb_root_) then
       tmpfmt = a%get_fmt()
       write(psb_out_unit,'("The matrix has been generated and assembled in ",a3," format.")')&
@@ -668,7 +670,7 @@ contains
 9999 continue
     call psb_erractionrestore(err_act)
     if (err_act == psb_act_abort_) then
-      call psb_error(ictxt)
+      call psb_error(ctxt)
       return
     end if
     return

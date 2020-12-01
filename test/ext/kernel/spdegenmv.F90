@@ -71,7 +71,7 @@ contains
 !  subroutine to allocate and fill in the coefficient matrix and
 !  the rhs. 
 !
-  subroutine psb_s_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,&
+  subroutine psb_s_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,afmt,&
        & a1,a2,a3,b1,b2,b3,c,g,info,f,amold,vmold,imold,nrl)
     use psb_base_mod
     !
@@ -95,7 +95,8 @@ contains
     type(psb_sspmat_type) :: a
     type(psb_s_vect_type) :: xv,bv
     type(psb_desc_type)   :: desc_a
-    integer(psb_ipk_)     :: ictxt, info
+    type(psb_ctxt_type) :: ctxt
+    integer(psb_ipk_)     :: info
     character(len=*)      :: afmt
     procedure(s_func_3d), optional :: f
     class(psb_s_base_sparse_mat), optional :: amold
@@ -129,7 +130,7 @@ contains
     name = 'create_matrix'
     call psb_erractionsave(err_act)
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
 
     if (present(f)) then 
@@ -161,24 +162,24 @@ contains
     end if
 
     nt = nr
-    call psb_sum(ictxt,nt) 
+    call psb_sum(ctxt,nt) 
     if (nt /= m) then 
       write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
       info = -1
-      call psb_barrier(ictxt)
-      call psb_abort(ictxt)
+      call psb_barrier(ctxt)
+      call psb_abort(ctxt)
       return    
     end if
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t0 = psb_wtime()
-    call psb_cdall(ictxt,desc_a,info,nl=nr)
+    call psb_cdall(ctxt,desc_a,info,nl=nr)
     if (info == psb_success_) call psb_spall(a,desc_a,info,nnz=nnz)
     ! define  rhs from boundary conditions; also build initial guess 
     if (info == psb_success_) call psb_geall(xv,desc_a,info)
     if (info == psb_success_) call psb_geall(bv,desc_a,info)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     talc = psb_wtime()-t0
 
     if (info /= psb_success_) then
@@ -206,7 +207,7 @@ contains
     ! loop over rows belonging to current process in a block
     ! distribution.
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     do ii=1, nlr,nb
       ib = min(nb,nlr-ii+1) 
@@ -317,11 +318,11 @@ contains
 
     deallocate(val,irow,icol)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call psb_cdasb(desc_a,info,mold=imold)
     tcdasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     if (info == psb_success_) then 
       if (present(amold)) then 
@@ -330,7 +331,7 @@ contains
         call psb_spasb(a,desc_a,info,dupl=psb_dupl_err_,afmt=afmt)
       end if
     end if
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     if(info /= psb_success_) then
       info=psb_err_from_subroutine_
       ch_err='asb rout.'
@@ -346,13 +347,13 @@ contains
       goto 9999
     end if
     tasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     ttot = psb_wtime() - t0 
 
-    call psb_amx(ictxt,talc)
-    call psb_amx(ictxt,tgen)
-    call psb_amx(ictxt,tasb)
-    call psb_amx(ictxt,ttot)
+    call psb_amx(ctxt,talc)
+    call psb_amx(ctxt,tgen)
+    call psb_amx(ctxt,tasb)
+    call psb_amx(ctxt,ttot)
     if(iam == psb_root_) then
       tmpfmt = a%get_fmt()
       write(psb_out_unit,'("The matrix has been generated and assembled in ",a3," format.")')&
@@ -367,7 +368,7 @@ contains
     call psb_erractionrestore(err_act)
     return
 
-9999 call psb_error_handler(ictxt,err_act)
+9999 call psb_error_handler(ctxt,err_act)
 
     return
   end subroutine psb_s_gen_pde3d
@@ -399,7 +400,8 @@ program pdgenmv
 
   real(psb_spk_), allocatable :: xc1(:),xc2(:)
   ! blacs parameters
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer(psb_ipk_)   :: iam, np
 
   ! solver parameters
   integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
@@ -424,12 +426,12 @@ program pdgenmv
   info=psb_success_
 
   
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
 
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
@@ -445,16 +447,16 @@ program pdgenmv
   !
   !  get parameters
   !
-  call get_parms(ictxt,acfmt,idim)
+  call get_parms(ctxt,acfmt,idim)
 
   !
   !  allocate and fill in the coefficient matrix and initial vectors
   !
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
-  call psb_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,'CSR  ',&
+  call psb_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,'CSR  ',&
        & a1,a2,a3,b1,b2,b3,c,g,info)  
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
     info=psb_err_from_subroutine_
@@ -493,11 +495,11 @@ program pdgenmv
   end select
   call a%cscnv(info,mold=acoo)
   
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   call a%cscnv(info,mold=acmold)
   tcnv = psb_wtime()-t1
-  call psb_amx(ictxt,tcnv)
+  call psb_amx(ctxt,tcnv)
 
   if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
     write(0,*) 'From cscnv ',info
@@ -508,21 +510,21 @@ program pdgenmv
   call xv%set(sone)
   nr       = desc_a%get_local_rows() 
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   do i=1,ntests 
     call psb_spmm(sone,a,xv,szero,bv,desc_a,info)
   end do
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
-  call psb_amx(ictxt,t2)
+  call psb_amx(ctxt,t2)
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
-  call psb_sum(ictxt,annz)
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
+  call psb_sum(ctxt,annz)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
 
   if (iam == psb_root_) then
     write(psb_out_unit,&
@@ -580,32 +582,32 @@ program pdgenmv
     goto 9999
   end if
 
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 9999 continue
 
-  call psb_error(ictxt)
+  call psb_error(ctxt)
 
 contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,acfmt,idim)
-    integer      :: ictxt
-    character(len=*) :: acfmt
+  subroutine  get_parms(ctxt,acfmt,idim)
+    type(psb_ctxt_type) :: ctxt
+    character(len=*)    :: acfmt
     integer      :: idim
     integer      :: np, iam
     integer      :: intbuf(10), ip
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
     if (iam == 0) then
       read(psb_inp_unit,*) acfmt
       read(psb_inp_unit,*) idim
     endif
-    call psb_bcast(ictxt,acfmt)
-    call psb_bcast(ictxt,idim)
+    call psb_bcast(ctxt,acfmt)
+    call psb_bcast(ctxt,idim)
 
     if (iam == 0) then
       write(psb_out_unit,'("Testing matrix       : ell1")')      

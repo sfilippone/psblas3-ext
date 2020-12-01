@@ -97,7 +97,8 @@ program mldpde3d
   type(psb_d_ell_sparse_mat) :: aell
   type(psb_d_csr_sparse_mat) :: acsr
   ! blacs parameters
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer            :: iam, np
 
   ! solver parameters
   integer            :: iter, itmax,itrace, istopc, irst,giter, nr
@@ -114,12 +115,12 @@ program mldpde3d
   info=psb_success_
 
 
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
 
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
@@ -135,17 +136,17 @@ program mldpde3d
   !
   !  get parameters
   !
-  call get_parms(ictxt,kmethd,ptype,afmt,renum,idim,istopc,itmax,itrace,irst,parms)
+  call get_parms(ctxt,kmethd,ptype,afmt,renum,idim,istopc,itmax,itrace,irst,parms)
 
   !
   !  allocate and fill in the coefficient matrix, rhs and initial guess 
   !
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
-  call psb_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,&
+  call psb_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,afmt,&
        & a1,a2,a3,b1,b2,b3,c,g,info)  
-!!$  call create_matrix(idim,a,bv,xv,desc_a,ictxt,afmt,info)  
-  call psb_barrier(ictxt)
+!!$  call create_matrix(idim,a,bv,xv,desc_a,ctxt,afmt,info)  
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
     info=psb_err_from_subroutine_
@@ -158,7 +159,7 @@ program mldpde3d
   b=bv%get_vect()
   x=xv%get_vect()
   info = psb_get_errstatus()
-  if (info /= 0) call psb_error(ictxt)
+  if (info /= 0) call psb_error(ctxt)
   if (np == 1) then 
     if (psb_toupper(trim(renum)) /= 'NONE') then 
       write(0,*) 'Going for renum "',trim(renum),'"'
@@ -179,7 +180,7 @@ program mldpde3d
   end if
 !!$  write(0,*) size(perm),':',nr,':',perm(:),b(:)
   info = psb_get_errstatus()
-  if (info /= 0) call psb_error(ictxt)
+  if (info /= 0) call psb_error(ctxt)
   t1 = psb_wtime()
   call bv%bld(b)
   t2 = psb_wtime() - t1
@@ -199,7 +200,7 @@ program mldpde3d
 !!$  call a%print('acsr.mtx')
 !!$  call agpu%print('agpu.mtx')
   info = psb_get_errstatus()
-  if (info /= 0) call psb_error(ictxt)
+  if (info /= 0) call psb_error(ctxt)
   if (iam == psb_root_) write(psb_out_unit,'("   GPU conversion       time : ",es12.5)')t2
   if (iam == psb_root_) write(psb_out_unit,'(" ")')
 !!$  write(fname,'(a,i2.2,a,i2.2,a)') 'amat-',iam,'-',np,'.mtx'
@@ -211,7 +212,7 @@ program mldpde3d
 !!$  call psb_cdbldext(a,desc_a,2,desc_b,info,extype=psb_ovt_asov_)
 !!$  if (info /= 0) then 
 !!$    write(0,*) 'Error from bldext'
-!!$    call psb_abort(ictxt)
+!!$    call psb_abort(ctxt)
 !!$  end if
   !
   !  prepare the preconditioner.
@@ -224,7 +225,7 @@ program mldpde3d
   end if
 
   info = psb_get_errstatus()
-  if (info /= 0) call psb_error(ictxt)
+  if (info /= 0) call psb_error(ctxt)
 
   if (psb_toupper(ptype) == 'DIAG') then 
     call mld_precset(prec,mld_smoother_sweeps_,1,info)
@@ -245,9 +246,9 @@ program mldpde3d
     call mld_precset(prec,mld_inv_thresh_, parms%inv_thresh, info)
   end if
   info = psb_get_errstatus()
-  if (info /= 0) call psb_error(ictxt)
+  if (info /= 0) call psb_error(ctxt)
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   call mld_precbld(a,desc_a,prec,info,amold=aelg,vmold=vgpumold)
   if(info /= psb_success_) then
@@ -259,7 +260,7 @@ program mldpde3d
 
   tprec = psb_wtime()-t1
 
-  call psb_amx(ictxt,tprec)
+  call psb_amx(ctxt,tprec)
 
   if (pdump) then 
     call prec%dump(info,prefix='mlainv-t',head='AINV prec',&
@@ -273,11 +274,11 @@ program mldpde3d
   precsize = mld_sizeof(prec)
   amatnz   = a%get_nzeros()
   precnz   = prec%get_nzeros()
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
-  call psb_sum(ictxt,precsize)
-  call psb_sum(ictxt,amatnz)
-  call psb_sum(ictxt,precnz)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
+  call psb_sum(ctxt,precsize)
+  call psb_sum(ctxt,amatnz)
+  call psb_sum(ctxt,precnz)
   if (iam == psb_root_) then
     write(psb_out_unit,'(" ")')
     write(psb_out_unit,'("Renumbering algorithm  :      ",a)') trim(renum)
@@ -299,7 +300,7 @@ program mldpde3d
   ! iterative method parameters 
   !
   if(iam == psb_root_) write(psb_out_unit,'("Calling iterative method ",a)')kmethd
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt1 = psb_wtime()  
   eps   = 1.d-7
   ! call psb_set_debug_level(psb_debug_comp_)
@@ -314,19 +315,19 @@ program mldpde3d
     goto 9999
   end if
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt2 = psb_wtime() - gt1
-  call psb_amx(ictxt,t2)
-  call psb_barrier(ictxt)
+  call psb_amx(ctxt,t2)
+  call psb_barrier(ctxt)
   ! call psb_set_debug_level(psb_debug_comp_)
   t1 = psb_wtime()  
   call psb_krylov(kmethd,a,prec,bv,xv,eps,desc_a,info,& 
        & itmax=itmax,iter=iter,err=err,itrace=itrace,istop=istopc,irst=irst)     
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   call psb_set_debug_level(0)
-  call psb_amx(ictxt,t2)
-  call psb_barrier(ictxt)
+  call psb_amx(ctxt,t2)
+  call psb_barrier(ctxt)
 
   if (iam == psb_root_) then
     write(psb_out_unit,'(" ")')
@@ -371,24 +372,24 @@ program mldpde3d
 
 9999 continue
   if(info /= psb_success_) then
-    call psb_error(ictxt)
+    call psb_error(ctxt)
   end if
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,kmethd,ptype,afmt,renum,idim,istopc,itmax,itrace,irst,parms)
-    integer      :: ictxt
+  subroutine  get_parms(ctxt,kmethd,ptype,afmt,renum,idim,istopc,itmax,itrace,irst,parms)
+    type(psb_ctxt_type) :: ctxt
     character(len=*) :: kmethd, ptype, afmt,renum
     integer      :: idim, istopc,itmax,itrace,irst
     type(ainvparms) :: parms
     integer      :: np, iam
     integer      :: intbuf(10), ip
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
     if (iam == 0) then
       read(psb_inp_unit,*) kmethd
@@ -415,21 +416,21 @@ contains
       write(psb_out_unit,'("Iterative method     : ",a)') kmethd
       write(psb_out_unit,'(" ")')
     end if
-    call psb_bcast(ictxt,kmethd)
-    call psb_bcast(ictxt,afmt)
-    call psb_bcast(ictxt,renum)
-    call psb_bcast(ictxt,ptype)
-    call psb_bcast(ictxt,idim)
-    call psb_bcast(ictxt,istopc)
-    call psb_bcast(ictxt,itmax)
-    call psb_bcast(ictxt,itrace)
-    call psb_bcast(ictxt,irst)
-    call psb_bcast(ictxt,parms%alg)
-    call psb_bcast(ictxt,parms%fill)
-    call psb_bcast(ictxt,parms%inv_fill)
-    call psb_bcast(ictxt,parms%thresh)
-    call psb_bcast(ictxt,parms%inv_thresh)
-    call psb_bcast(ictxt,parms%orth_alg)
+    call psb_bcast(ctxt,kmethd)
+    call psb_bcast(ctxt,afmt)
+    call psb_bcast(ctxt,renum)
+    call psb_bcast(ctxt,ptype)
+    call psb_bcast(ctxt,idim)
+    call psb_bcast(ctxt,istopc)
+    call psb_bcast(ctxt,itmax)
+    call psb_bcast(ctxt,itrace)
+    call psb_bcast(ctxt,irst)
+    call psb_bcast(ctxt,parms%alg)
+    call psb_bcast(ctxt,parms%fill)
+    call psb_bcast(ctxt,parms%inv_fill)
+    call psb_bcast(ctxt,parms%thresh)
+    call psb_bcast(ctxt,parms%inv_thresh)
+    call psb_bcast(ctxt,parms%orth_alg)
 
     return
 

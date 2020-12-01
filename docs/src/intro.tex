@@ -44,16 +44,17 @@ program my_gpu_test
   real(psb_dpk_), allocatable :: xtmp(:)
   type(psb_d_vect_gpu)       :: vmold
   type(psb_d_elg_sparse_mat) :: aelg
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer             :: iam, np
 
 
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
-  call psb_gpu_init(ictxt, iam)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
+  call psb_gpu_init(ctxt, iam)
 
   
   ! My own home-grown matrix generator
-  call gen_matrix(ictxt,idim,desc_a,a,x,info)
+  call gen_matrix(ctxt,idim,desc_a,a,x,info)
   if (info /= 0) goto 9999
 
   call a%cscnv(agpu,info,mold=aelg)
@@ -75,7 +76,7 @@ program my_gpu_test
   
   
   call psb_gpu_exit()
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 end program my_gpu_test
 \end{lstlisting}

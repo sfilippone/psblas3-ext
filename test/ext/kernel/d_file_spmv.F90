@@ -51,8 +51,8 @@ program d_file_spmv
   real(psb_dpk_), allocatable :: xc1(:),xc2(:)
   ! communications data structure
   type(psb_desc_type):: desc_a
-
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer            :: iam, np
   integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes, annz2
   real(psb_dpk_)   :: err, eps 
 
@@ -80,11 +80,11 @@ program d_file_spmv
   integer, allocatable :: ivg(:), ipv(:)
 
 
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
 
@@ -105,12 +105,12 @@ program d_file_spmv
 !    call read_data(agfmt,psb_inp_unit)
     call read_data(ipart,psb_inp_unit)
   end if
-  call psb_bcast(ictxt,mtrx_file)
-  call psb_bcast(ictxt,filefmt)
-  call psb_bcast(ictxt,acfmt)
-!  call psb_bcast(ictxt,agfmt)
-  call psb_bcast(ictxt,ipart)
-  call psb_barrier(ictxt)
+  call psb_bcast(ctxt,mtrx_file)
+  call psb_bcast(ctxt,filefmt)
+  call psb_bcast(ctxt,acfmt)
+!  call psb_bcast(ctxt,agfmt)
+  call psb_bcast(ctxt,ipart)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()  
   ! read the input matrix to be processed and (possibly) the rhs 
   nrhs = 1
@@ -133,7 +133,7 @@ program d_file_spmv
     end select
     if (info /= 0) then
       write(psb_err_unit,*) 'Error while reading input matrix '
-      call psb_abort(ictxt)
+      call psb_abort(ctxt)
     end if
     call aux_a%clean_zeros(info)
     !
@@ -145,8 +145,8 @@ program d_file_spmv
     !    
     nrt  = aux_a%get_nrows()
     annz = aux_a%get_nzeros()
-    call psb_bcast(ictxt,annz)
-    call psb_bcast(ictxt,nrt)
+    call psb_bcast(ctxt,annz)
+    call psb_bcast(ctxt,nrt)
 
     write(psb_out_unit,'("Generating an rhs...")')
     write(psb_out_unit,'(" ")')
@@ -163,8 +163,8 @@ program d_file_spmv
 
   else
 
-    call psb_bcast(ictxt,annz)
-    call psb_bcast(ictxt,nrt)
+    call psb_bcast(ctxt,annz)
+    call psb_bcast(ctxt,nrt)
 
   end if
 
@@ -190,14 +190,14 @@ program d_file_spmv
 
   ! switch over different partition types
   if (ipart == 0) then 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     if (iam==psb_root_) write(psb_out_unit,'("Partition type: block")')
     allocate(ivg(nrt),ipv(np))
     do ig=1,nrt
       call part_block(ig,nrt,np,ipv,nv)
       ivg(ig) = ipv(1)
     enddo
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
+    call psb_matdist(aux_a, a, ctxt, desc_a,info,v=ivg)
   else if (ipart == 2) then 
     if (iam==psb_root_) then 
       write(psb_out_unit,'("Partition type: graph")')
@@ -205,13 +205,13 @@ program d_file_spmv
       !      write(psb_err_unit,'("Build type: graph")')
       call build_mtpart(aux_a,np)
     endif
-    call psb_barrier(ictxt)
-    call distr_mtpart(psb_root_,ictxt)
+    call psb_barrier(ctxt)
+    call distr_mtpart(psb_root_,ctxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,v=ivg)
+    call psb_matdist(aux_a, a, ctxt, desc_a,info,v=ivg)
   else 
     if (iam==psb_root_) write(psb_out_unit,'("Partition type default: block")')
-    call psb_matdist(aux_a, a,  ictxt,desc_a,info,parts=part_block)
+    call psb_matdist(aux_a, a,  ctxt,desc_a,info,parts=part_block)
   end if
 
   call psb_scatter(b_col_glob,bv,desc_a,info,root=psb_root_)
@@ -228,18 +228,18 @@ program d_file_spmv
   call xv%bld(x_col)
   call psb_geasb(bv,desc_a,info,scratch=.true.)
 
-  call psb_amx(ictxt, t2)
+  call psb_amx(ctxt, t2)
 
   if (iam==psb_root_) then
     write(psb_out_unit,'(" ")')
     write(psb_out_unit,'("Time to read and partition matrix : ",es12.5)')t2
     write(psb_out_unit,'(" ")')
   end if
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1=psb_wtime()
   call a%cscnv(info,mold=acmold)
   t2 = psb_wtime() - t1
-  call psb_amx(ictxt, t2)
+  call psb_amx(ctxt, t2)
 
   if (iam==psb_root_) then
     write(psb_out_unit,'(" ")')
@@ -250,22 +250,22 @@ program d_file_spmv
   
 
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   do i=1,ntests 
     call psb_spmm(done,a,xv,dzero,bv,desc_a,info)
   end do
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
-  call psb_amx(ictxt,t2)
+  call psb_amx(ctxt,t2)
 
 
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
-  call psb_sum(ictxt,annz)
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
+  call psb_sum(ctxt,annz)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
 
   select type (ah => a%a)
   class is(psb_d_hdia_sparse_mat)
@@ -275,7 +275,7 @@ program d_file_spmv
   class default
     annz2 = a%get_nzeros()
   end select
-  call psb_sum(ictxt,annz2)
+  call psb_sum(ctxt,annz2)
 
   if (iam == psb_root_) then
     write(psb_out_unit,'("Matrix: ",a)') mtrx_file
@@ -327,12 +327,12 @@ program d_file_spmv
   call psb_spfree(a, desc_a,info)
   call psb_cdfree(desc_a,info)
 
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 9999 continue
 
-  call psb_error(ictxt)
+  call psb_error(ctxt)
 
 end program d_file_spmv
   

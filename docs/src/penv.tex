@@ -7,7 +7,7 @@
 \addcontentsline{toc}{subsection}{psb\_gpu\_init}
 
 \begin{verbatim}
-call psb_gpu_init(icontxt [, device])
+call psb_gpu_init(ctxt [, device])
 \end{verbatim}
 
 This subroutine initializes the PSBLAS-GPU  environment. 
@@ -35,14 +35,14 @@ available on the current node.
 \addcontentsline{toc}{subsection}{psb\_gpu\_exit}
 
 \begin{verbatim}
-call psb_gpu_exit(icontxt)
+call psb_gpu_exit(ctxt)
 \end{verbatim}
 
 This subroutine exits from the  PSBLAS GPU context.
 \begin{description}
 \item[Type:] Synchronous.
 \item[\bf  On Entry ]
-\item[icontxt] the communication context identifying the virtual
+\item[ctxt] the communication context identifying the virtual
   parallel machine.\\
 Scope: {\bf global}.\\
 Type: {\bf required}.\\

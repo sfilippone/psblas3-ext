@@ -65,8 +65,8 @@ program df_sample
 
   ! communications data structure
   type(psb_desc_type):: desc_a
-
-  integer(psb_ipk_) :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer(psb_ipk_)  :: iam, np
 
   ! solver paramters
   integer(psb_ipk_) :: iter, itmax, ierr, itrace, ircode,&
@@ -91,12 +91,12 @@ program df_sample
   character(len=40)  :: fname, fnout
 
 
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
 
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
 
@@ -116,7 +116,7 @@ program df_sample
   !
   !  get parameters
   !
-  call get_parms(ictxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,&
+  call get_parms(ctxt,mtrx_file,rhs_file,filefmt,kmethd,ptype,&
        & part,afmt,istopc,itmax,itrace,irst,eps)
 
 
@@ -140,7 +140,7 @@ program df_sample
     acmold => acsr
   end select
 
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()  
   ! read the input matrix to be processed and (possibly) the rhs 
   nrhs = 1
@@ -168,11 +168,11 @@ program df_sample
     end select
     if (info /= psb_success_) then
       write(psb_err_unit,*) 'Error while reading input matrix '
-      call psb_abort(ictxt)
+      call psb_abort(ctxt)
     end if
     
     m_problem = aux_a%get_nrows()
-    call psb_bcast(ictxt,m_problem)
+    call psb_bcast(ctxt,m_problem)
     call psb_mat_renum(psb_mat_renum_gps_,aux_a,info,perm) 
 
     ! At this point aux_b may still be unallocated
@@ -203,7 +203,7 @@ program df_sample
 
   else
 
-    call psb_bcast(ictxt,m_problem)
+    call psb_bcast(ctxt,m_problem)
 
   end if
 
@@ -211,7 +211,7 @@ program df_sample
   select case(psb_toupper(part)) 
   case('BLOCK')
     if (iam == psb_root_) write(psb_out_unit,'("Partition type: block")')
-    call psb_matdist(aux_a, a,  ictxt,desc_a,info,fmt='csr',parts=part_block)
+    call psb_matdist(aux_a, a,  ctxt,desc_a,info,fmt='csr',parts=part_block)
     
   case('GRAPH')
     if (iam == psb_root_) then 
@@ -221,14 +221,14 @@ program df_sample
       call build_mtpart(aux_a,np)
 
     endif
-    call psb_barrier(ictxt)
-    call distr_mtpart(psb_root_,ictxt)
+    call psb_barrier(ctxt)
+    call distr_mtpart(psb_root_,ctxt)
     call getv_mtpart(ivg)
-    call psb_matdist(aux_a, a, ictxt, desc_a,info,fmt='csr',vg=ivg)
+    call psb_matdist(aux_a, a, ctxt, desc_a,info,fmt='csr',vg=ivg)
 
   case default  
     if (iam == psb_root_) write(psb_out_unit,'("Partition type: block")')
-    call psb_matdist(aux_a, a,  ictxt,desc_a,info,fmt='csr',parts=part_block)
+    call psb_matdist(aux_a, a,  ctxt,desc_a,info,fmt='csr',parts=part_block)
   end select
 
   call a%cscnv(info,mold=acmold)
@@ -244,7 +244,7 @@ program df_sample
 
 !!$  write(fnout,'(a,i3.3,a)') 'amat-',iam,'.mtx'
 !!$  call a%print(fname=fnout)
-  call psb_amx(ictxt, t2)
+  call psb_amx(ctxt, t2)
 
   if (iam == psb_root_) then
     write(psb_out_unit,'(" ")')
@@ -254,7 +254,7 @@ program df_sample
 
   ! 
 
-  call prec%init(ictxt,ptype,info)
+  call prec%init(ctxt,ptype,info)
 
   ! building the preconditioner
   t1 = psb_wtime()
@@ -266,7 +266,7 @@ program df_sample
   end if
 
 
-  call psb_amx(ictxt, tprec)
+  call psb_amx(ctxt, tprec)
 
   if(iam == psb_root_) then
     write(psb_out_unit,'("Preconditioner time: ",es12.5)')tprec
@@ -274,15 +274,15 @@ program df_sample
   end if
   cond = dzero
   iparm = 0
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   call psb_krylov(kmethd,a,prec,b_col,x_col,eps,desc_a,info,& 
        & itmax=itmax,iter=iter,err=err,itrace=itrace,istop=istopc,&
        & irst=irst,cond=cond)     
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
 
-  call psb_amx(ictxt,t2)
+  call psb_amx(ctxt,t2)
   call psb_geaxpby(done,b_col,dzero,r_col,desc_a,info)
   call psb_spmm(-done,a,x_col,done,r_col,desc_a,info)
   resmx  = psb_genrm2(r_col,desc_a,info)
@@ -291,9 +291,9 @@ program df_sample
   amatsize = a%sizeof()
   descsize = desc_a%sizeof()
   precsize = prec%sizeof()
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
-  call psb_sum(ictxt,precsize)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
+  call psb_sum(ctxt,precsize)
   if (iam == psb_root_) then 
     call prec%descr()
     write(psb_out_unit,'("Matrix: ",a)')mtrx_file
@@ -345,12 +345,12 @@ program df_sample
   call psb_spfree(a, desc_a,info)
   call prec%free(info)
   call psb_cdfree(desc_a,info)
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 9999 continue
   
-  call psb_error(ictxt) 
+  call psb_error(ctxt) 
   
 end program df_sample
   

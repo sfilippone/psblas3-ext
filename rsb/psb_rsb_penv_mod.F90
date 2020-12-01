@@ -70,7 +70,7 @@ contains
     use psb_penv_mod
     use psb_const_mod
     use psb_error_mod
-    ! integer, intent(in) :: ictxt
+    ! type(psb_ctxt_type), intent(in) :: ctxt
     ! integer, intent(in), optional :: dev
 
     integer :: info
@@ -85,7 +85,7 @@ contains
     use psb_penv_mod
     use psb_const_mod
     use psb_error_mod
-    ! integer, intent(in) :: ictxt
+    ! type(psb_ctxt_type), intent(in) :: ctxt
     ! integer, intent(in), optional :: dev
 
     integer :: info

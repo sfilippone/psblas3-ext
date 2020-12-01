@@ -197,12 +197,12 @@ Contains
   ! !!!!!!!!!!!!!!!!!!!!!!
 
 
-  subroutine psb_gpu_init(ictxt,dev)
+  subroutine psb_gpu_init(ctxt,dev)
     use psb_penv_mod
     use psb_const_mod
     use psb_error_mod
-    integer, intent(in) :: ictxt
-    integer, intent(in), optional :: dev
+    type(psb_ctxt_type), intent(in) :: ctxt
+    integer, intent(in), optional   :: dev
 
     integer :: np, npavail, iam, info, count, dev_
     Integer(Psb_ipk_)  :: err_act
@@ -213,7 +213,7 @@ Contains
 #if defined(SERIAL_MPI) 
     iam = 0
 #else
-    call psb_info(ictxt,iam,np)
+    call psb_info(ctxt,iam,np)
 #endif
 
     count = psb_cuda_getDeviceCount()
@@ -237,7 +237,7 @@ Contains
 #endif
     call psb_erractionrestore(err_act)
     return
-9999 call psb_error_handler(ictxt,err_act)
+9999 call psb_error_handler(ctxt,err_act)
 
     return
 

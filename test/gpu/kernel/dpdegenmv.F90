@@ -137,7 +137,7 @@ contains
   !  subroutine to allocate and fill in the coefficient matrix and
   !  the rhs. 
   !
-  subroutine psb_d_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,afmt,info,&
+  subroutine psb_d_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,afmt,info,&
        & f,amold,vmold,imold,partition,nrl,iv)
     use psb_base_mod
     use psb_util_mod
@@ -161,7 +161,8 @@ contains
     type(psb_dspmat_type) :: a
     type(psb_d_vect_type) :: xv,bv
     type(psb_desc_type)   :: desc_a
-    integer(psb_ipk_)     :: ictxt, info
+    type(psb_ctxt_type) :: ctxt
+    integer(psb_ipk_)     :: info
     character(len=*)      :: afmt
     procedure(d_func_3d), optional :: f
     class(psb_d_base_sparse_mat), optional :: amold
@@ -203,7 +204,7 @@ contains
     name = 'create_matrix'
     call psb_erractionsave(err_act)
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
 
     if (present(f)) then 
@@ -249,12 +250,12 @@ contains
       end if
 
       nt = nr
-      call psb_sum(ictxt,nt) 
+      call psb_sum(ctxt,nt) 
       if (nt /= m) then 
         write(psb_err_unit,*) iam, 'Initialization error ',nr,nt,m
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
         return    
       end if
 
@@ -262,7 +263,7 @@ contains
       ! First example  of use of CDALL: specify for each process a number of
       ! contiguous rows
       ! 
-      call psb_cdall(ictxt,desc_a,info,nl=nr)
+      call psb_cdall(ctxt,desc_a,info,nl=nr)
       myidx = desc_a%get_global_indices()
       nlr = size(myidx)
 
@@ -273,15 +274,15 @@ contains
         if (size(iv) /= m) then
           write(psb_err_unit,*) iam, 'Initialization error: wrong IV size',size(iv),m
           info = -1
-          call psb_barrier(ictxt)
-          call psb_abort(ictxt)
+          call psb_barrier(ctxt)
+          call psb_abort(ctxt)
           return    
         end if
       else
         write(psb_err_unit,*) iam, 'Initialization error: IV not present'
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
         return    
       end if
 
@@ -289,7 +290,7 @@ contains
       ! Second example  of use of CDALL: specify for each row the
       ! process that owns it 
       ! 
-      call psb_cdall(ictxt,desc_a,info,vg=iv)
+      call psb_cdall(ctxt,desc_a,info,vg=iv)
       myidx = desc_a%get_global_indices()
       nlr = size(myidx)
 
@@ -331,21 +332,21 @@ contains
         write(psb_err_unit,*) iam,iamx,iamy,iamz, 'Initialization error: NR vs NLR ',&
              & nr,nlr,mynx,myny,mynz
         info = -1
-        call psb_barrier(ictxt)
-        call psb_abort(ictxt)
+        call psb_barrier(ctxt)
+        call psb_abort(ctxt)
       end if
 
       !
       ! Third example  of use of CDALL: specify for each process
       ! the set of global indices it owns.
       ! 
-      call psb_cdall(ictxt,desc_a,info,vl=myidx)
+      call psb_cdall(ctxt,desc_a,info,vl=myidx)
       
     case default
       write(psb_err_unit,*) iam, 'Initialization error: should not get here'
       info = -1
-      call psb_barrier(ictxt)
-      call psb_abort(ictxt)
+      call psb_barrier(ctxt)
+      call psb_abort(ctxt)
       return
     end select
 
@@ -355,7 +356,7 @@ contains
     if (info == psb_success_) call psb_geall(xv,desc_a,info)
     if (info == psb_success_) call psb_geall(bv,desc_a,info)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     talc = psb_wtime()-t0
 
     if (info /= psb_success_) then
@@ -381,7 +382,7 @@ contains
     ! loop over rows belonging to current process in a block
     ! distribution.
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     do ii=1, nlr,nb
       ib = min(nb,nlr-ii+1) 
@@ -482,11 +483,11 @@ contains
 
     deallocate(val,irow,icol)
 
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call psb_cdasb(desc_a,info,mold=imold)
     tcdasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     if (info == psb_success_) then 
       if (present(amold)) then 
@@ -495,7 +496,7 @@ contains
         call psb_spasb(a,desc_a,info,dupl=psb_dupl_err_,afmt=afmt)
       end if
     end if
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     if(info /= psb_success_) then
       info=psb_err_from_subroutine_
       ch_err='asb rout.'
@@ -511,13 +512,13 @@ contains
       goto 9999
     end if
     tasb = psb_wtime()-t1
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     ttot = psb_wtime() - t0 
 
-    call psb_amx(ictxt,talc)
-    call psb_amx(ictxt,tgen)
-    call psb_amx(ictxt,tasb)
-    call psb_amx(ictxt,ttot)
+    call psb_amx(ctxt,talc)
+    call psb_amx(ctxt,tgen)
+    call psb_amx(ctxt,tasb)
+    call psb_amx(ctxt,ttot)
     if(iam == psb_root_) then
       tmpfmt = a%get_fmt()
       write(psb_out_unit,'("The matrix has been generated and assembled in ",a3," format.")')&
@@ -532,7 +533,7 @@ contains
     call psb_erractionrestore(err_act)
     return
 
-9999 call psb_error_handler(ictxt,err_act)
+9999 call psb_error_handler(ctxt,err_act)
 
     return
   end subroutine psb_d_gen_pde3d
@@ -576,7 +577,8 @@ program pdgenmv
 #endif
   real(psb_dpk_), allocatable :: x1(:), x2(:), x0(:)
   ! blacs parameters
-  integer            :: ictxt, iam, np
+  type(psb_ctxt_type) :: ctxt
+  integer            :: iam, np
 
   ! solver parameters
   integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
@@ -610,11 +612,11 @@ program pdgenmv
   info=psb_success_
 
 
-  call psb_init(ictxt)
-  call psb_info(ictxt,iam,np)
+  call psb_init(ctxt)
+  call psb_info(ctxt,iam,np)
 
 #ifdef HAVE_GPU
-  call psb_gpu_init(ictxt)
+  call psb_gpu_init(ctxt)
 #endif
 #ifdef HAVE_RSB
   call psb_rsb_init()
@@ -622,7 +624,7 @@ program pdgenmv
 
   if (iam < 0) then 
     ! This should not happen, but just in case
-    call psb_exit(ictxt)
+    call psb_exit(ctxt)
     stop
   endif
   if(psb_get_errstatus() /= 0) goto 9999
@@ -641,15 +643,15 @@ program pdgenmv
   !
   !  get parameters
   !
-  call get_parms(ictxt,acfmt,agfmt,idim)
+  call get_parms(ctxt,acfmt,agfmt,idim)
 
   !
   !  allocate and fill in the coefficient matrix and initial vectors
   !
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
-  call psb_gen_pde3d(ictxt,idim,a,bv,xv,desc_a,'CSR  ',info,partition=3)  
-  call psb_barrier(ictxt)
+  call psb_gen_pde3d(ctxt,idim,a,bv,xv,desc_a,'CSR  ',info,partition=3)  
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
   if(info /= psb_success_) then
     info=psb_err_from_subroutine_
@@ -735,11 +737,11 @@ program pdgenmv
   call psb_geall(x1,desc_a,info)
   do j=1, ncnv
     call aux_a%cscnv(a,info,mold=acoo)
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call a%cscnv(info,mold=acmold)
     t2 = psb_Wtime() -t1
-    call psb_amx(ictxt,t2)
+    call psb_amx(ctxt,t2)
     tcnvcsr = tcnvcsr + t2
     if (j==1) tcnvc1 = t2
     call psb_geasb(x1,desc_a,info)
@@ -751,12 +753,12 @@ program pdgenmv
     call aux_a%cscnv(agpu,info,mold=acoo)
     call xg%bld(x0,mold=vmold)
     call psb_geasb(bg,desc_a,info,scratch=.true.,mold=vmold)
-    call psb_barrier(ictxt)
+    call psb_barrier(ctxt)
     t1 = psb_wtime()
     call agpu%cscnv(info,mold=agmold)
     call psb_gpu_DeviceSync()
     t2 = psb_Wtime() -t1
-    call psb_amx(ictxt,t2)
+    call psb_amx(ctxt,t2)
     if (j==1) tcnvg1 = t2
     tcnvgpu = tcnvgpu + t2
 #endif
@@ -764,14 +766,14 @@ program pdgenmv
 
 
   call xv%set(x0)
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t1 = psb_wtime()
   do i=1,ntests 
     call psb_spmm(done,a,xv,dzero,bv,desc_a,info)
   end do
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   t2 = psb_wtime() - t1
-  call psb_amx(ictxt,t2)
+  call psb_amx(ctxt,t2)
 
 #ifdef HAVE_GPU
   call xg%set(x0)
@@ -780,7 +782,7 @@ program pdgenmv
   x1 = bv%get_vect()
   x2 = bg%get_vect()
   
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   tt1 = psb_wtime()
   do i=1,ntests 
     call psb_spmm(done,agpu,xv,dzero,bg,desc_a,info)
@@ -792,21 +794,21 @@ program pdgenmv
 
   end do
   call psb_gpu_DeviceSync()
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   tt2 = psb_wtime() - tt1
-  call psb_amx(ictxt,tt2)
+  call psb_amx(ctxt,tt2)
   x1 = bv%get_vect()
   x2 = bg%get_vect()
   nr       = desc_a%get_local_rows() 
   eps = maxval(abs(x1(1:nr)-x2(1:nr)))
-  call psb_amx(ictxt,eps)
+  call psb_amx(ctxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
 
 
   ! FIXME: cache flush needed here
   call xg%set(x0)
   call xg%sync()
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt1 = psb_wtime()
   do i=1,ntests*ngpu
     call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
@@ -820,18 +822,18 @@ program pdgenmv
 
   end do
   call psb_gpu_DeviceSync()
-  call psb_barrier(ictxt)
+  call psb_barrier(ctxt)
   gt2 = psb_wtime() - gt1
-  call psb_amx(ictxt,gt2)
+  call psb_amx(ctxt,gt2)
   call bg%sync()
   x1 = bv%get_vect()
   x2 = bg%get_vect()
   call psb_geaxpby(-done,bg,+done,bv,desc_a,info)
   eps = psb_geamax(bv,desc_a,info)
 
-  call psb_amx(ictxt,t2)
+  call psb_amx(ctxt,t2)
   eps = maxval(abs(x1(1:nr)-x2(1:nr)))
-  call psb_amx(ictxt,eps)
+  call psb_amx(ctxt,eps)
   if (iam==0) write(*,*) 'Max diff on GPU',eps
   if (dump) then 
     write(fname,'(a,i3.3,a,i3.3,a)')'XCPU-out-',iam,'-',np,'.mtx'
@@ -843,10 +845,10 @@ program pdgenmv
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
   descsize = psb_sizeof(desc_a)
-  call psb_sum(ictxt,nr)
-  call psb_sum(ictxt,annz)
-  call psb_sum(ictxt,amatsize)
-  call psb_sum(ictxt,descsize)
+  call psb_sum(ctxt,nr)
+  call psb_sum(ctxt,annz)
+  call psb_sum(ctxt,amatsize)
+  call psb_sum(ctxt,descsize)
   
   if (iam == psb_root_) then
     write(psb_out_unit,&
@@ -945,24 +947,24 @@ program pdgenmv
 #ifdef HAVE_GPU
   call psb_gpu_exit()
 #endif
-  call psb_exit(ictxt)
+  call psb_exit(ctxt)
   stop
 
 9999 continue
-  call psb_error(ictxt)
+  call psb_error(ctxt)
 
 contains
   !
   ! get iteration parameters from standard input
   !
-  subroutine  get_parms(ictxt,acfmt,agfmt,idim)
-    integer      :: ictxt
+  subroutine  get_parms(ctxt,acfmt,agfmt,idim)
+    type(psb_ctxt_type) :: ctxt
     character(len=*) :: agfmt, acfmt
     integer      :: idim
     integer      :: np, iam
     integer      :: intbuf(10), ip
 
-    call psb_info(ictxt, iam, np)
+    call psb_info(ctxt, iam, np)
 
     if (iam == 0) then
       write(*,*) 'CPU side format?'
@@ -972,9 +974,9 @@ contains
       write(*,*) 'Size of discretization cube?'
       read(psb_inp_unit,*) idim
     endif
-    call psb_bcast(ictxt,acfmt)
-    call psb_bcast(ictxt,agfmt)
-    call psb_bcast(ictxt,idim)
+    call psb_bcast(ctxt,acfmt)
+    call psb_bcast(ctxt,agfmt)
+    call psb_bcast(ctxt,idim)
 
     if (iam == 0) then
       write(psb_out_unit,'("Testing matrix       : ell1")')      
