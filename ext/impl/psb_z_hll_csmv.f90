@@ -135,94 +135,112 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
       if (mmhk > 0) then 
         select case(hksz)
         case(4)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_notra_4(i,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   & call psb_z_hll_csmv_notra_4(i,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
 
         case(8)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_notra_8(i,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   &call psb_z_hll_csmv_notra_8(i,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
 
         case(16)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_notra_16(i,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   & call psb_z_hll_csmv_notra_16(i,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
 
         case(24)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_notra_24(i,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   & call psb_z_hll_csmv_notra_24(i,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
 
         case(32)
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_notra_32(i,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   & call psb_z_hll_csmv_notra_32(i,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
 
         case default
+          !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
           do i=1,mmhk,hksz
+            j = ((i-1)/hksz)+1
             ir    = hksz
             mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
             if (mxrwl>0) then 
               hkpnt = a%hkoffs(j) + 1
-              call psb_z_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
+              if (info ==  psb_success_) &
+                   & call psb_z_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
                    & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
                    & a%is_triangle(),a%is_unit(),&
                    & x,beta,y,tra,ctra,info) 
-              if (info /= psb_success_) goto 9999
             end if
             j = j + 1 
           end do
+          if (info /= psb_success_) goto 9999
         end select
       end if
       if (mmhk < m) then
@@ -243,17 +261,20 @@ subroutine psb_z_hll_csmv(alpha,a,x,beta,y,info,trans)
     else
 
       j=1
+      !$omp parallel do private(i, j,ir,mxrwl, hkpnt)
       do i=1,m,hksz
+        j = ((i-1)/hksz)+1
         ir    = min(hksz,m-i+1) 
         mxrwl = (a%hkoffs(j+1) - a%hkoffs(j))/hksz
         hkpnt = a%hkoffs(j) + 1
-        call psb_z_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
+        if (info ==  psb_success_) &
+             & call psb_z_hll_csmv_inner(i,ir,mxrwl,a%irn(i),&
              & alpha,a%ja(hkpnt),hksz,a%val(hkpnt),hksz,&
              & a%is_triangle(),a%is_unit(),&
              & x,beta,y,tra,ctra,info) 
-        if (info /= psb_success_) goto 9999
         j = j + 1 
       end do
+      if (info /= psb_success_) goto 9999
 
     end if
   end if

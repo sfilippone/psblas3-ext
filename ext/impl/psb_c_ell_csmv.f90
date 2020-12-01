@@ -143,6 +143,7 @@ contains
 
         if (alpha == cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -153,6 +154,7 @@ contains
 
         else if (alpha == -cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -163,6 +165,7 @@ contains
 
         else 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -187,6 +190,7 @@ contains
         end do
 
         if (alpha == cone) then 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -197,6 +201,7 @@ contains
 
         else if (alpha == -cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -207,6 +212,7 @@ contains
 
         else 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -230,6 +236,7 @@ contains
 
         if (alpha == cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -240,6 +247,7 @@ contains
 
         else if (alpha == -cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -250,6 +258,7 @@ contains
 
         else 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -273,6 +282,7 @@ contains
 
         if (alpha == cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -283,6 +293,7 @@ contains
 
         else if (alpha == -cone) then 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
@@ -293,6 +304,7 @@ contains
 
         else 
 
+          !$omp parallel do private(i, j, acc)
           do i=m4+1,m,4
             acc  = czero
             do j=1,nc
