@@ -6,9 +6,9 @@
   environment}
 \addcontentsline{toc}{subsection}{psb\_gpu\_init}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 call psb_gpu_init(ctxt [, device])
-\end{verbatim}
+\end{minted}
 
 This subroutine initializes the PSBLAS-GPU  environment. 
 \begin{description}
@@ -19,8 +19,8 @@ Scope: {\bf local}.\\
 Type: {\bf optional}.\\
 Intent: {\bf in}.\\
 Specified as: an integer value. \
-Default: use \verb|mod(iam,ngpu)| where \verb|iam| is the calling
-process index and \verb|ngpu| is the total number of GPU devices
+Default: use \fortinline|mod(iam,ngpu)| where \fortinline|iam| is the calling
+process index and \fortinline|ngpu| is the total number of GPU devices
 available on the current node. 
 \end{description}
 
@@ -34,9 +34,9 @@ available on the current node.
   environment}
 \addcontentsline{toc}{subsection}{psb\_gpu\_exit}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 call psb_gpu_exit(ctxt)
-\end{verbatim}
+\end{minted}
 
 This subroutine exits from the  PSBLAS GPU context.
 \begin{description}
@@ -56,9 +56,9 @@ Specified as: an integer variable.
 \subsection*{psb\_gpu\_DeviceSync ---  Synchronize GPU device}
 \addcontentsline{toc}{subsection}{psb\_gpu\_DeviceSync}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 call psb_gpu_DeviceSync()
-\end{verbatim}
+\end{minted}
 
 This subroutine ensures that all previosly invoked kernels, i.e. all
 invocation of GPU-side code, have completed.
@@ -67,45 +67,45 @@ invocation of GPU-side code, have completed.
 \subsection*{psb\_gpu\_getDeviceCount }
 \addcontentsline{toc}{subsection}{psb\_gpu\_getDeviceCount}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 ngpus =  psb_gpu_getDeviceCount()
-\end{verbatim}
+\end{minted}
 
 Get number of devices available on current computing node. 
 
 \subsection*{psb\_gpu\_getDevice }
 \addcontentsline{toc}{subsection}{psb\_gpu\_getDevice}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 ngpus =  psb_gpu_getDevice()
-\end{verbatim}
+\end{minted}
 
 Get  device in use by current process. 
 
 \subsection*{psb\_gpu\_setDevice }
 \addcontentsline{toc}{subsection}{psb\_gpu\_setDevice}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 info = psb_gpu_setDevice(dev)
-\end{verbatim}
+\end{minted}
 
 Set  device to be used  by current process. 
 
 \subsection*{psb\_gpu\_DeviceHasUVA }
 \addcontentsline{toc}{subsection}{psb\_gpu\_DeviceHasUVA}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 hasUva = psb_gpu_DeviceHasUVA()
-\end{verbatim}
+\end{minted}
 
 Returns true if device currently in use supports UVA (Unified Virtual Addressing).
 
 \subsection*{psb\_gpu\_WarpSize }
 \addcontentsline{toc}{subsection}{psb\_gpu\_WarpSize}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 nw = psb_gpu_WarpSize()
-\end{verbatim}
+\end{minted}
 
 Returns the warp size.
 
@@ -113,18 +113,18 @@ Returns the warp size.
 \subsection*{psb\_gpu\_MultiProcessors }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MultiProcessors}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 nmp = psb_gpu_MultiProcessors()
-\end{verbatim}
+\end{minted}
 
 Returns the number of multiprocessors in the GPU device.
 
 \subsection*{psb\_gpu\_MaxThreadsPerMP }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MaxThreadsPerMP}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 nt = psb_gpu_MaxThreadsPerMP()
-\end{verbatim}
+\end{minted}
 
 Returns the maximum number of threads per multiprocessor. 
 
@@ -132,9 +132,9 @@ Returns the maximum number of threads per multiprocessor.
 \subsection*{psb\_gpu\_MaxRegistersPerBlock }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MaxRegisterPerBlock}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 nr = psb_gpu_MaxRegistersPerBlock()
-\end{verbatim}
+\end{minted}
 
 Returns the maximum number of register per thread block. 
 
@@ -142,27 +142,27 @@ Returns the maximum number of register per thread block.
 \subsection*{psb\_gpu\_MemoryClockRate }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MemoryClockRate}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 cl = psb_gpu_MemoryClockRate()
-\end{verbatim}
+\end{minted}
 
 Returns the memory clock rate in KHz, as an integer. 
 
 \subsection*{psb\_gpu\_MemoryBusWidth }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MemoryBusWidth}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 nb = psb_gpu_MemoryBusWidth()
-\end{verbatim}
+\end{minted}
 
 Returns the memory bus width in bits.
 
 \subsection*{psb\_gpu\_MemoryPeakBandwidth }
 \addcontentsline{toc}{subsection}{psb\_gpu\_MemoryPeakBandwidth}
 
-\begin{verbatim}
+\begin{minted}[breaklines=true]{fortran}
 bw = psb_gpu_MemoryPeakBandwidth()
-\end{verbatim}
+\end{minted}
 
 Returns the memory peak bandwidth in MB/s (real double precision).
 

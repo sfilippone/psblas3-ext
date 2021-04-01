@@ -111,8 +111,7 @@ computing days; in modern CPUs it is not quite as popular, but it
 is  the basis for many GPU formats. 
 
 The relevant data type is \verb|psb_T_ell_sparse_mat|:
-{\small
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
   type, extends(psb_d_base_sparse_mat) :: psb_d_ell_sparse_mat
     !
     ! ITPACK/ELL format, extended.
@@ -124,8 +123,7 @@ The relevant data type is \verb|psb_T_ell_sparse_mat|:
   contains
     ....
   end type psb_d_ell_sparse_mat
-\end{lstlisting}
-}
+\end{minted}
 
 
 \subsubsection*{Hacked ELLPACK}
@@ -181,8 +179,7 @@ therefore the additional memory is limited to the hack in which the
 row appears.
 
 The relevant data type is \verb|psb_T_hll_sparse_mat|:
-{\small
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
   type, extends(psb_d_base_sparse_mat) :: psb_d_hll_sparse_mat
     !
     ! HLL format. (Hacked ELL) 
@@ -194,8 +191,7 @@ The relevant data type is \verb|psb_T_hll_sparse_mat|:
   contains
    ....
   end type
-\end{lstlisting}
-}
+\end{minted}
 
 \subsubsection*{Diagonal storage}
 
@@ -223,9 +219,7 @@ addressing is required.
 
 
 \begin{algorithm}
-\lstset{language=Fortran}
-\small
-  \begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
     do j=1,ndiag
       if (offset(j) > 0) then 
         ir1 = 1; ir2 = m - offset(j);
@@ -236,14 +230,13 @@ addressing is required.
         y(i) = y(i) + alpha*as(i,j)*x(i+offset(j))
       end do
     end do
-  \end{lstlisting}
+\end{minted}
   \caption{\label{alg:dia} Matrix-Vector product in DIA format}
 \end{algorithm}
 
 
 The relevant data type is \verb|psb_T_dia_sparse_mat|:
-{\small
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
   type, extends(psb_d_base_sparse_mat) :: psb_d_dia_sparse_mat
     !
     ! DIA format, extended.
@@ -254,8 +247,7 @@ The relevant data type is \verb|psb_T_dia_sparse_mat|:
     real(psb_dpk_), allocatable :: data(:,:)
 
   end type
-\end{lstlisting}
-}
+\end{minted}
 
 
 
@@ -304,8 +296,7 @@ the number of diagonals of the $k$-th \textit{hack} is given by
 \end{figure} 
 
 The relevant data type is \verb|psb_T_hdia_sparse_mat|:
-{\small
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
   type pm
      real(psb_dpk_), allocatable  :: data(:,:)
   end type pm
@@ -328,8 +319,7 @@ The relevant data type is \verb|psb_T_hdia_sparse_mat|:
   contains
    ....
   end type
-\end{lstlisting}
-}
+\end{minted}
 
 
 
@@ -365,13 +355,12 @@ routine in the library is built according to the following principles:
 In this way, data items are put on the {GPU} memory ``on demand'' and
 remain there as long as ``normal'' computations are carried out. 
 As an example, the following call to a matrix-vector product
-\lstset{language=Fortran}
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
     call psb_spmm(alpha,a,x,beta,y,desc_a,info)
-\end{lstlisting}
+\end{minted}
 will transparently and automatically be performed on the {GPU} whenever
-all three data inputs \verb|a|, \verb|x|  and
-\verb|y| are {GPU}-enabled. If a program makes many such calls
+all three data inputs \fortinline|a|, \fortinline|x|  and
+\fortinline|y| are {GPU}-enabled. If a program makes many such calls
 sequentially, then 
 \begin{itemize}
 \item The first kernel invocation will find the data in main memory,
@@ -383,27 +372,27 @@ sequentially, then
   speed.
 \end{itemize}
 For all invocations after the first the only data that will have to be
-transferred to/from the main memory will be the scalars \verb|alpha|
-and \verb|beta|, and the return code \verb|info|.  
+transferred to/from the main memory will be the scalars \fortinline|alpha|
+and \fortinline|beta|, and the return code \fortinline|info|.  
 
 \begin{description}
-\item[Vectors:] The data type \verb|psb_T_vect_gpu| provides a
-  GPU-enabled extension of the inner type \verb|psb_T_base_vect_type|,
+\item[Vectors:] The data type \fortinline|psb_T_vect_gpu| provides a
+  GPU-enabled extension of the inner type \fortinline|psb_T_base_vect_type|,
   and must be used together with the other inner matrix type to make
   full use of the GPU computational capabilities;
-\item[CSR:] The data type \verb|psb_T_csrg_sparse_mat| provides an
+\item[CSR:] The data type \fortinline|psb_T_csrg_sparse_mat| provides an
   interface to the GPU version of CSR available in the NVIDIA CuSPARSE
   library;
-\item[HYB:] The data type \verb|psb_T_hybg_sparse_mat| provides an
+\item[HYB:] The data type \fortinline|psb_T_hybg_sparse_mat| provides an
   interface to the HYB GPU storage  available in the NVIDIA CuSPARSE
   library. The internal structure is opaque, hence the host side is
   just CSR;
-\item[ELL:] The data type \verb|psb_T_elg_sparse_mat| provides an
+\item[ELL:] The data type \fortinline|psb_T_elg_sparse_mat| provides an
   interface to the  ELLPACK implementation from SPGPU;
 
-\item[HLL:] The data type \verb|psb_T_hlg_sparse_mat| provides an
+\item[HLL:] The data type \fortinline|psb_T_hlg_sparse_mat| provides an
   interface to the  Hacked ELLPACK implementation from SPGPU;
-\item[HDIA:] The data type \verb|psb_T_hdiag_sparse_mat| provides an
+\item[HDIA:] The data type \fortinline|psb_T_hdiag_sparse_mat| provides an
   interface to the  Hacked DIAgonals implementation from SPGPU;
 \end{description}
 

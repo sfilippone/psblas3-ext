@@ -113,7 +113,7 @@ DATE     = $(shell date +%Y-%m-%d)
 #
 LATEX    = latex
 LTX2HTML = latex2html -local_icons
-PDFLATEX = pdflatex
+PDFLATEX = pdflatex -shell-escape
 ACRO     = evince
 XPDF     = xpdf
 WC       = wc
@@ -208,10 +208,10 @@ ps: $(PS)
 
 clean:
 	rm -f $(PDF) $(PS)
-	cd tmp ; rm -f *
+	cd tmp ; rm -rf *
 
 clean-tmp:
-	cd tmp ; rm -f *
+	cd tmp ; rm -rf *
 
 #----------------------------------------------------------------------------
 

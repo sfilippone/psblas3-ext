@@ -4,12 +4,12 @@ The PSBLAS-EXT  library contains a set of extensions to the base
 library. The extensions provide additional storage formats beyond the
  ones already contained in the base library, as well as interfaces to
  two external libraries:
-\begin{itemize}
-\item SPGPU \url{https://code.google.com/p/spgpu/}, for computations on
+\begin{description}
+\item[SPGPU] \url{https://code.google.com/p/spgpu/}, for computations on
   NVIDIA GPUs;
-\item LIBRSB \url{http://sourceforge.net/projects/librsb/}, for
+\item[LIBRSB] \url{http://sourceforge.net/projects/librsb/}, for
   computations on multicore parallel machines. 
-\end{itemize}
+\end{description}
 The infrastructure laid out in the base library to allow for these
 extensions is detailed in the references~\cite{CaFiRo:2014,Sparse03};
 the GPU-specific data formats are described in~\cite{OurTechRep}. 
@@ -31,8 +31,7 @@ following steps:
 Suppose you want to use the GPU-enabled ELLPACK data structure; you
 would use a piece of code like this (and don't forget, you need
 GPU-side vectors along with the matrices):
-\lstset{language=Fortran}
-\begin{lstlisting}
+\begin{minted}[breaklines=true,bgcolor=bg,fontsize=\small]{fortran}
 program my_gpu_test
   use psb_base_mod
   use psb_util_mod 
@@ -79,9 +78,9 @@ program my_gpu_test
   call psb_exit(ctxt)
   stop
 end program my_gpu_test
-\end{lstlisting}
+\end{minted}
 A full example of this strategy can be seen in the
-\verb|test/ext/kernel| and \verb|test/gpu/kernel| subdirectories,
+\texttt{test/ext/kernel} and \texttt{test/\-gpu/\-kernel} subdirectories,
 where we provide  sample programs 
 to test the speed of the sparse matrix-vector product with the various
 data structures included in the library. 
