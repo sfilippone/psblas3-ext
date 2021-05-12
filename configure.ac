@@ -331,6 +331,7 @@ AC_MSG_NOTICE([Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK 
 PAC_CHECK_SPGPU
 if test "x$psb_cv_have_spgpu" == "xyes" ; then 
    GPUTARGET=gpud;
+   EXTRALDLIBS="-lstdc++";
 fi
 PAC_ARG_WITH_CUDACC
 if test "x$pac_cv_cudacc" == "x"; then
@@ -361,6 +362,7 @@ AC_SUBST(SPGPU_DIR)
 AC_SUBST(SPGPU_DEFINES)
 AC_SUBST(SPGPU_INCLUDES)
 AC_SUBST(SPGPU_INCDIR)
+AC_SUBST(EXTRALDLIBS)
 AC_SUBST(LGPU)
 AC_SUBST(CUDA_DIR)
 AC_SUBST(CUDA_DEFINES)

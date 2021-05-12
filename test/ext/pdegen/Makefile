@@ -9,9 +9,9 @@ MODDIR=$(TOPDIR)/modules
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 PSBMODDIR=$(PSBLASDIR)/modules
-PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base 
+PSBLAS_LIB= -L$(LIBDIR) -L$(PSBLIBDIR) -lpsb_ext -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base  
 
-LDLIBS=$(PSBEXTLDLIBS)
+LDLIBS=$(PSBEXTLDLIBS) 
 #
 # Compilers and such
 #
