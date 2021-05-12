@@ -295,7 +295,7 @@ program df_sample
   call psb_sum(ctxt,descsize)
   call psb_sum(ctxt,precsize)
   if (iam == psb_root_) then 
-    call prec%descr()
+    call prec%descr(info)
     write(psb_out_unit,'("Matrix: ",a)')mtrx_file
     write(psb_out_unit,'("Computed solution on ",i8," processors")')np
     write(psb_out_unit,'("Iterations to convergence: ",i6)')iter
