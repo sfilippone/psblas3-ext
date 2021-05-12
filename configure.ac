@@ -68,6 +68,9 @@ AC_MSG_NOTICE([
 dnl NOTE : no spaces before the comma, and no brackets before the second argument!
 PAC_ARG_WITH_PSBLAS
 PSBLAS_DIR="$pac_cv_psblas_dir";
+PSBLAS_INCDIR="$pac_cv_psblas_incdir";
+PSBLAS_MODDIR="$pac_cv_psblas_moddir";
+PSBLAS_LIBDIR="$pac_cv_psblas_libdir";
 AC_MSG_CHECKING([for PSBLAS install dir])
 case $PSBLAS_DIR in 
      /*) ;; 
@@ -78,9 +81,20 @@ if test ! -d "$PSBLAS_DIR" ; then
    AC_MSG_ERROR([Could not find PSBLAS build dir $PSBLAS_DIR!])	
 fi
 AC_MSG_RESULT([$PSBLAS_DIR])
-pac_cv_status_file="$PSBLAS_DIR/include/Make.inc.psblas"
-if test ! -f "$pac_cv_status_file" ; then 
-   AC_MSG_ERROR([Could not find an installation  in $PSBLAS_DIR.])		
+if test "X$PSBLAS_INCDIR" != "X" ; then 
+  pac_cv_status_file="$PSBLAS_INCDIR/Make.inc.psblas"
+  if test ! -f "$pac_cv_status_file" ; then 
+    AC_MSG_NOTICE([Could not find the status file in $PSBLAS_INCDIR.])
+    pac_cv_status_file="NONE";
+  fi
+else
+  pac_cv_status_file="NONE";
+fi
+
+if test "x$pac_cv_status_file" != "xNONE"; then
+   PSBLAS_INSTALL_MAKEINC='include $(PSBLAS_INCDIR)/Make.inc.psblas';
+else
+   PSBLAS_INSTALL_MAKEINC="";
 fi
 
 PAC_ARG_WITH_LIBRSB
@@ -360,6 +374,13 @@ AC_SUBST(LIBRSB_DIR)
 AC_SUBST(LIBRSB_DEFINES)
 AC_SUBST(LRSB)
 AC_SUBST(PSBLAS_DIR)
+AC_SUBST(PSBLAS_INCDIR)
+AC_SUBST(PSBLAS_MODDIR)
+AC_SUBST(PSBLAS_LIBDIR)
+AC_SUBST(PSBLAS_INCLUDES)
+AC_SUBST(PSBLAS_INSTALL_MAKEINC)
+AC_SUBST(PSBLAS_LIBS)
+
 AC_SUBST(INSTALL)
 AC_SUBST(INSTALL_DATA)
 AC_SUBST(INSTALL_DIR)

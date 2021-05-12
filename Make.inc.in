@@ -2,7 +2,12 @@
 # It should be ready to use, included by Makefile.
 # If it gives problems, consider editing it.
 PSBLASDIR=@PSBLAS_DIR@
-include $(PSBLASDIR)/include/Make.inc.psblas
+PSBLAS_INCDIR=@PSBLAS_INCDIR@
+PSBLAS_MODDIR=@PSBLAS_MODDIR@
+PSBLAS_LIBDIR=@PSBLAS_LIBDIR@
+@PSBLAS_INSTALL_MAKEINC@
+PSBLAS_INCLUDES=@PSBLAS_INCLUDES@
+PSBLAS_LIBS=@PSBLAS_LIBS@	
 
 
 PSB_EXTLIBNAME=libpsb_ext.a

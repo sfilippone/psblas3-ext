@@ -272,6 +272,7 @@ AC_MSG_RESULT(no)
 )
 ]
 )
+
 dnl @synopsis PAC_ARG_WITH_PSBLAS
 dnl
 dnl Test for --with-psblas="pathname".
@@ -282,7 +283,7 @@ dnl note: Renamed after PAC_ARG_WITH_LIBS as in the Trilinos package.
 dnl
 dnl Example use:
 dnl
-dnl PAC_ARG_WITH_PSBLAS
+dnl PAC_ARG_WIT_PSBLAS
 dnl 
 dnl tests for --with-psblas and pre-pends to PSBLAS_PATH
 dnl
@@ -291,12 +292,30 @@ dnl
 AC_DEFUN([PAC_ARG_WITH_PSBLAS],
 [
 AC_ARG_WITH(psblas,
-AC_HELP_STRING([--with-psblas], [The directory for PSBLAS, for example,
- --with-psblas=/opt/packages/psblas-3.0]),
+AC_HELP_STRING([--with-psblas=DIR], [The install directory for PSBLAS, for example,
+ --with-psblas=/opt/packages/psblas-3.5]),
 [pac_cv_psblas_dir=$withval],
 [pac_cv_psblas_dir=''])
-]
-)
+AC_ARG_WITH(psblas-incdir, AC_HELP_STRING([--with-psblas-incdir=DIR], [Specify the directory for PSBLAS C includes.]),
+        [pac_cv_psblas_incdir=$withval],
+        [pac_cv_psblas_incdir=''])
+AC_ARG_WITH(psblas-moddir, AC_HELP_STRING([--with-psblas-moddir=DIR], [Specify the directory for PSBLAS Fortran modules.]),
+        [pac_cv_psblas_moddir=$withval],
+        [pac_cv_psblas_moddir=''])
+AC_ARG_WITH(psblas-libdir, AC_HELP_STRING([--with-psblas-libdir=DIR], [Specify the directory for PSBLAS library.]),
+        [pac_cv_psblas_libdir=$withval],
+        [pac_cv_psblas_libdir=''])
+if test x"$pac_cv_psblas_incdir" == "x" ; then
+   pac_cv_psblas_incdir="$pac_cv_psblas_dir/include";
+fi
+if test x"$pac_cv_psblas_moddir" == "x" ; then
+   pac_cv_psblas_moddir="$pac_cv_psblas_dir/modules";
+fi
+if test x"$pac_cv_psblas_libdir" == "x" ; then
+   pac_cv_psblas_libdir="$pac_cv_psblas_dir/lib";
+fi
+
+])
 
 dnl @synopsis PAC_ARG_WITH_LIBRSB
 dnl
