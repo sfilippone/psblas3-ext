@@ -328,12 +328,16 @@ if test "x$pac_cv_psblas_lpk" == "xunknown"; then
 fi
 AC_MSG_NOTICE([Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk])
 
-PAC_CHECK_SPGPU
-if test "x$psb_cv_have_spgpu" == "xyes" ; then 
+PAC_CHECK_CUDA()
+PAC_CHECK_CUDA_VERSION()
+CUDA_VERSION="$pac_cv_cuda_version";
+CUDA_SHORT_VERSION=$(expr $pac_cv_cuda_version / 1000);
+PAC_CHECK_SPGPU()
+if test "x$pac_cv_have_spgpu" == "xyes" ; then 
    GPUTARGET=gpud;
    EXTRALDLIBS="-lstdc++";
 fi
-PAC_ARG_WITH_CUDACC
+PAC_ARG_WITH_CUDACC()
 if test "x$pac_cv_cudacc" == "x"; then
    pac_cv_cudacc="30,35,37,50,60";
 fi
@@ -409,6 +413,8 @@ AC_OUTPUT()
 dnl Please note that brackets around variable identifiers are absolutely needed for compatibility..
 AC_MSG_NOTICE([
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
+	CUDA_VERSION  : ${CUDA_VERSION}
+	CUDA_SHORT_VERSION  : ${CUDA_SHORT_VERSION}
 	CUDA_LIBS  : ${CUDA_LIBS}
         CUDEFINES  : ${CUDEFINES}
 
