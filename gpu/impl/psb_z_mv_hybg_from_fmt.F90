@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_z_mv_hybg_from_fmt(a,b,info) 
   
@@ -58,3 +59,4 @@ subroutine psb_z_mv_hybg_from_fmt(a,b,info)
 #endif
   end select
 end subroutine psb_z_mv_hybg_from_fmt
+#endif

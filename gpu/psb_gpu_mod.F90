@@ -66,13 +66,14 @@ module psb_gpu_mod
   
   use psb_s_csrg_mat_mod
   use psb_d_csrg_mat_mod
-  use psb_s_hybg_mat_mod
-  use psb_d_hybg_mat_mod
   use psb_c_csrg_mat_mod
   use psb_z_csrg_mat_mod
+#if CUDA_VERSION <= 10 
+  use psb_s_hybg_mat_mod
+  use psb_d_hybg_mat_mod
   use psb_c_hybg_mat_mod
   use psb_z_hybg_mat_mod
-
+#endif
   use psb_d_diag_mat_mod
   use psb_d_hdiag_mat_mod
 

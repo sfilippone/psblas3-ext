@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_c_hybg_csmv(alpha,a,x,beta,y,info,trans) 
   
@@ -134,3 +135,4 @@ subroutine psb_c_hybg_csmv(alpha,a,x,beta,y,info,trans)
   return
 
 end subroutine psb_c_hybg_csmv
+#endif

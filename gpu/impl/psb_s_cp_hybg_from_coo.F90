@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_s_cp_hybg_from_coo(a,b,info) 
   
@@ -60,3 +61,4 @@ subroutine psb_s_cp_hybg_from_coo(a,b,info)
   return
 
 end subroutine psb_s_cp_hybg_from_coo
+#endif

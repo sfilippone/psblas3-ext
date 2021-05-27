@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_z_hybg_scal(d,a,info,side) 
   
@@ -72,3 +73,4 @@ subroutine psb_z_hybg_scal(d,a,info,side)
   return
 
 end subroutine psb_z_hybg_scal
+#endif
