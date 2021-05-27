@@ -31,7 +31,12 @@
 typedef struct T_CSRGDeviceMat
 {			
   cusparseMatDescr_t descr;
+#if CUDA_VERSION <= 10
   cusparseSolveAnalysisInfo_t triang;
+#else
+  cusparseSpSVDescr_t*    triang;
+  void                *csrsv2buffer;
+#endif
   int                 m, n, nz;
   TYPE               *val;
   int                *irp;
@@ -44,6 +49,7 @@ typedef struct T_Cmat
   T_CSRGDeviceMat *mat;
 } T_Cmat;
 
+#if CUDA_VERSION <= 10
 typedef struct T_HYBGDeviceMat
 {			
   cusparseMatDescr_t descr;
@@ -61,6 +67,7 @@ typedef struct T_Hmat
 {
   T_HYBGDeviceMat *mat;
 } T_Hmat;
+#endif
 
 int T_spmvCSRGDevice(T_Cmat *Mat, TYPE alpha, void *deviceX, 
 		     TYPE beta, void *deviceY);
@@ -82,6 +89,7 @@ int T_CSRGHost2Device(T_Cmat *Mat, int m, int n, int nz,
 int T_CSRGDevice2Host(T_Cmat *Mat, int m, int n, int nz,
 		      int *irp, int *ja, TYPE *val);
 
+#if CUDA_VERSION <= 10
 int T_HYBGDeviceFree(T_Hmat *Matrix);
 int T_spmvHYBGDevice(T_Hmat *Matrix, TYPE alpha, void *deviceX,
 		     TYPE beta, void *deviceY);
@@ -95,7 +103,7 @@ int T_spsvHYBGDevice(T_Hmat *Matrix, TYPE alpha, void *deviceX,
 		     TYPE beta, void *deviceY);
 int T_HYBGHost2Device(T_Hmat *Matrix, int m, int n, int nz,
 			  int *irp, int *ja, TYPE *val);
-
+#endif
   
 int T_spmvCSRGDevice(T_Cmat *Matrix, TYPE alpha, void *deviceX,
 		     TYPE beta, void *deviceY)
@@ -158,8 +166,13 @@ int T_CSRGDeviceAlloc(T_Cmat *Matrix,int nr, int nc, int nz)
     return(rc);
   if ((rc= cusparseCreateMatDescr(&(cMat->descr))) !=0) 
     return(rc);
-  if ((rc= cusparseCreateSolveAnalysisInfo(&(cMat->triang))) !=0)
+#if CUDA_VERSION <= 10  
+  if ((rc= cusparseSpSV_createDescr(&(cMat->triang))) !=0)
     return(rc);
+#else
+  if ((rc= cusparseCreateCsrsv2Info(&(cMat->triang))) !=0)
+    return(rc);
+#endif  
   Matrix->mat = cMat;
   return(CUSPARSE_STATUS_SUCCESS);
 }
@@ -222,9 +235,10 @@ int T_CSRGDeviceCsrsmAnalysis(T_Cmat *Matrix)
 {
   T_CSRGDeviceMat *cMat= Matrix->mat;  
   cusparseSolveAnalysisInfo_t info;
-  int rc;
+  int rc, buffersize;
   cusparseHandle_t *my_handle=getHandle();
 
+#if CUDA_VERSION <= 10
   rc= (int)  cusparseTcsrsv_analysis(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
 				     cMat->m,cMat->nz,cMat->descr,
 				     cMat->val, cMat->irp, cMat->ja,
@@ -232,6 +246,29 @@ int T_CSRGDeviceCsrsmAnalysis(T_Cmat *Matrix)
   if (rc !=0) {
     fprintf(stderr,"From csrsv_analysis: %d\n",rc);
   }
+#else
+  rc= (int)  cusparseSpSV_bufferSize(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
+				     cMat->m,cMat->nz,cMat->descr,
+				     cMat->val, cMat->irp, cMat->ja,
+				     cMat->triang,buffersize);
+  if (rc !=0) {
+    fprintf(stderr,"From csrsv2_buffersize: %d\n",rc);
+    return(rc);
+  }
+  cMat->SpSVbuffer = (void*) malloc(buffersize);
+  if (cMat->SpSVbuffer == NULL) {
+    fprintf(stderr,"From SpSV_buffersize: failed malloc\n");
+    return(-1);
+  }
+  rc= (int)  cusparseTcsrsv2_analysis(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
+				      cMat->m,cMat->nz,cMat->descr,
+				      cMat->val, cMat->irp, cMat->ja,
+				      cMat->triang,cMat->SpSVbuffer);
+  if (rc !=0) {
+    fprintf(stderr,"From csrsv2_analysis: %d\n",rc);
+  }
+#endif
+  return(rc);
 }
 
 
@@ -277,6 +314,7 @@ int T_CSRGDevice2Host(T_Cmat *Matrix, int m, int n, int nz,
   return(CUSPARSE_STATUS_SUCCESS);
 }
 
+#if CUDA_VERSION <= 10
 int T_HYBGDeviceFree(T_Hmat *Matrix)
 {
   T_HYBGDeviceMat *hMat= Matrix->mat;
@@ -472,6 +510,5 @@ int T_HYBGHost2Device(T_Hmat *Matrix, int m, int n, int nz,
   }
   return(rc);
 }
-
-
+#endif
 
