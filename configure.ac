@@ -346,6 +346,11 @@ for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
 do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
+if test "x$pac_cv_cuda_version" != "xunknown"; then
+   CUDEFINES="$CUDEFINES -DCUDA_VERSION_${CUDA_SHORT_VERSION}"
+   FDEFINES="$FDEFINES -DCUDA_VERSION_${CUDA_SHORT_VERSION}"
+   CDEFINES="$CDEFINES -DCUDA_VERSION_${CUDA_SHORT_VERSION}"    
+fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then
   AC_MSG_NOTICE([For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU])
