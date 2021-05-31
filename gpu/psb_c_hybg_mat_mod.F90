@@ -29,6 +29,7 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
   
+#if CUDA_VERSION <= 10 
 
 module psb_c_hybg_mat_mod
 
@@ -302,3 +303,4 @@ contains
 #endif
 
 end module psb_c_hybg_mat_mod
+#endif

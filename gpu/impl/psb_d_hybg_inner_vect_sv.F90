@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_d_hybg_inner_vect_sv(alpha,a,x,beta,y,info,trans) 
   
@@ -134,3 +135,4 @@ subroutine psb_d_hybg_inner_vect_sv(alpha,a,x,beta,y,info,trans)
   return
 
 end subroutine psb_d_hybg_inner_vect_sv
+#endif

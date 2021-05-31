@@ -28,6 +28,7 @@
 !    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
+#if CUDA_VERSION <= 10 
   
 subroutine psb_z_hybg_to_gpu(a,info,nzrm) 
 
@@ -150,3 +151,4 @@ subroutine psb_z_hybg_to_gpu(a,info,nzrm)
 #endif
 
 end subroutine psb_z_hybg_to_gpu
+#endif

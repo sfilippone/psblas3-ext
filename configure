@@ -3843,10 +3843,10 @@ fi
 	  # LIBS="$GPU_LIBS $CUDA_LIBS -lm $LIBS";
 	  # AC_MSG_CHECKING([for spgpuCreate in $GPU_LIBS])
 	  # AC_TRY_LINK_FUNC(spgpuCreate,
-	  # 		   [psb_cv_have_spgpu=yes;pac_gpu_lib_ok=yes; ],
-	  # 		   [psb_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""])
+	  # 		   [pac_cv_have_spgpu=yes;pac_gpu_lib_ok=yes; ],
+	  # 		   [pac_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""])
 	  # AC_MSG_RESULT($pac_gpu_lib_ok)
-	  # if test "x$psb_cv_have_spgpu" == "xyes" ; then
+	  # if test "x$pac_cv_have_spgpu" == "xyes" ; then
 	  # AC_MSG_NOTICE([Have found SPGPU])
 	  RSBLIBNAME="librsb.a";
 	  LIBRSB_DIR="$pac_cv_librsb_dir";
@@ -3854,11 +3854,11 @@ fi
 	  LIBRSB_INCDIR="$LIBRSB_DIR";
 	  LIBRSB_INCLUDES="-I$LIBRSB_INCDIR";
 	  LIBRSB_LIBS="-lrsb -L$LIBRSB_DIR";
-	  # CUDA_DIR="$psb_cv_cuda_dir";
+	  # CUDA_DIR="$pac_cv_cuda_dir";
 	  LIBRSB_DEFINES="-DHAVE_RSB";
 	  LRSB=-lpsb_rsb
-	  # CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
-	  # CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+	  # CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
+	  # CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
 	  FDEFINES="$LIBRSB_DEFINES $psblas_cv_define_prepend $FDEFINES";
 	  CDEFINES="$LIBRSB_DEFINES $CDEFINES";#CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES";
 	  fi
@@ -7221,14 +7221,12 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&5
 $as_echo "$as_me: Am configuring with integer sizes IPK $pac_cv_psblas_ipk and LPK $pac_cv_psblas_lpk" >&6;}
 
-SAVE_LIBS="$LIBS"
-	  SAVE_CPPFLAGS="$CPPFLAGS"
 
 # Check whether --with-cuda was given.
 if test "${with_cuda+set}" = set; then :
-  withval=$with_cuda; psb_cv_cuda_dir=$withval
+  withval=$with_cuda; pac_cv_cuda_dir=$withval
 else
-  psb_cv_cuda_dir=''
+  pac_cv_cuda_dir=''
 fi
 
 
@@ -7240,16 +7238,16 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 SAVE_LIBS="$LIBS"
 SAVE_CPPFLAGS="$CPPFLAGS"
-if test "x$psb_cv_cuda_dir" != "x"; then
-   CUDA_DIR="$psb_cv_cuda_dir"
-   LIBS="-L$psb_cv_cuda_dir/lib $LIBS"
-   CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
+if test "x$pac_cv_cuda_dir" != "x"; then
+   CUDA_DIR="$pac_cv_cuda_dir"
+   LIBS="-L$pac_cv_cuda_dir/lib $LIBS"
+   CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
    CUDA_DEFINES="-DHAVE_CUDA"
    CPPFLAGS="$CUDA_INCLUDES $CPPFLAGS"
-   CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+   CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking cuda dir $psb_cv_cuda_dir" >&5
-$as_echo_n "checking cuda dir $psb_cv_cuda_dir... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking cuda dir $pac_cv_cuda_dir" >&5
+$as_echo_n "checking cuda dir $pac_cv_cuda_dir... " >&6; }
 ac_fn_c_check_header_mongrel "$LINENO" "cuda_runtime.h" "ac_cv_header_cuda_runtime_h" "$ac_includes_default"
 if test "x$ac_cv_header_cuda_runtime_h" = xyes; then :
   pac_cuda_header_ok=yes
@@ -7291,17 +7289,223 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pac_cuda_lib_ok" >&5
 $as_echo "$pac_cuda_lib_ok" >&6; }
+
 fi
 LIBS="$SAVE_LIBS"
 CPPFLAGS="$SAVE_CPPFLAGS"
 
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+SAVE_LIBS="$LIBS"
+SAVE_CPPFLAGS="$CPPFLAGS"
+if test "x$pac_cv_have_cuda" == "x"; then
+
+# Check whether --with-cuda was given.
+if test "${with_cuda+set}" = set; then :
+  withval=$with_cuda; pac_cv_cuda_dir=$withval
+else
+  pac_cv_cuda_dir=''
+fi
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+SAVE_LIBS="$LIBS"
+SAVE_CPPFLAGS="$CPPFLAGS"
+if test "x$pac_cv_cuda_dir" != "x"; then
+   CUDA_DIR="$pac_cv_cuda_dir"
+   LIBS="-L$pac_cv_cuda_dir/lib $LIBS"
+   CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
+   CUDA_DEFINES="-DHAVE_CUDA"
+   CPPFLAGS="$CUDA_INCLUDES $CPPFLAGS"
+   CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking cuda dir $pac_cv_cuda_dir" >&5
+$as_echo_n "checking cuda dir $pac_cv_cuda_dir... " >&6; }
+ac_fn_c_check_header_mongrel "$LINENO" "cuda_runtime.h" "ac_cv_header_cuda_runtime_h" "$ac_includes_default"
+if test "x$ac_cv_header_cuda_runtime_h" = xyes; then :
+  pac_cuda_header_ok=yes
+else
+  pac_cuda_header_ok=no; CUDA_INCLUDES=""
+fi
+
+
+
+if test "x$pac_cuda_header_ok" == "xyes" ; then
+ CUDA_LIBS="-lcusparse -lcublas -lcudart $CUDA_LIBDIR"
+ LIBS="$CUDA_LIBS -lm $LIBS";
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cudaMemcpy in $CUDA_LIBS" >&5
+$as_echo_n "checking for cudaMemcpy in $CUDA_LIBS... " >&6; }
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cudaMemcpy ();
+int
+main ()
+{
+return cudaMemcpy ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  pac_cv_have_cuda=yes;pac_cuda_lib_ok=yes;
+else
+  pac_cv_have_cuda=no;pac_cuda_lib_ok=no; CUDA_LIBS=""
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pac_cuda_lib_ok" >&5
+$as_echo "$pac_cuda_lib_ok" >&6; }
+
+fi
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+
+fi
+if test "x$pac_cv_have_cuda" == "xyes"; then
+   CUDA_DIR="$pac_cv_cuda_dir"
+   LIBS="-L$pac_cv_cuda_dir/lib $LIBS"
+   CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
+   CUDA_DEFINES="-DHAVE_CUDA"
+   CPPFLAGS="$CUDA_INCLUDES $CPPFLAGS"
+   CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
+  CUDA_LIBS="-lcusparse -lcublas -lcudart $CUDA_LIBDIR"
+  LIBS="$CUDA_LIBS -lm $LIBS";
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CUDA version" >&5
+$as_echo_n "checking for CUDA version... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <cuda.h>
+
+int main(int argc, char *argv)
+{
+  printf("%d",CUDA_VERSION);
+  return(0);
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  pac_cv_cuda_version=`./conftest${ac_exeext} | sed 's/^ *//'`;
+else
+  pac_cv_cuda_version="unknown";
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pac_cv_cuda_version" >&5
+$as_echo "$pac_cv_cuda_version" >&6; }
+ fi
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+
+CUDA_VERSION="$pac_cv_cuda_version";
+CUDA_SHORT_VERSION=$(expr $pac_cv_cuda_version / 1000);
+SAVE_LIBS="$LIBS"
+	  SAVE_CPPFLAGS="$CPPFLAGS"
+	  if test "x$pac_cv_have_cuda" == "x"; then
+
+# Check whether --with-cuda was given.
+if test "${with_cuda+set}" = set; then :
+  withval=$with_cuda; pac_cv_cuda_dir=$withval
+else
+  pac_cv_cuda_dir=''
+fi
+
+
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+SAVE_LIBS="$LIBS"
+SAVE_CPPFLAGS="$CPPFLAGS"
+if test "x$pac_cv_cuda_dir" != "x"; then
+   CUDA_DIR="$pac_cv_cuda_dir"
+   LIBS="-L$pac_cv_cuda_dir/lib $LIBS"
+   CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
+   CUDA_DEFINES="-DHAVE_CUDA"
+   CPPFLAGS="$CUDA_INCLUDES $CPPFLAGS"
+   CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking cuda dir $pac_cv_cuda_dir" >&5
+$as_echo_n "checking cuda dir $pac_cv_cuda_dir... " >&6; }
+ac_fn_c_check_header_mongrel "$LINENO" "cuda_runtime.h" "ac_cv_header_cuda_runtime_h" "$ac_includes_default"
+if test "x$ac_cv_header_cuda_runtime_h" = xyes; then :
+  pac_cuda_header_ok=yes
+else
+  pac_cuda_header_ok=no; CUDA_INCLUDES=""
+fi
+
+
+
+if test "x$pac_cuda_header_ok" == "xyes" ; then
+ CUDA_LIBS="-lcusparse -lcublas -lcudart $CUDA_LIBDIR"
+ LIBS="$CUDA_LIBS -lm $LIBS";
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cudaMemcpy in $CUDA_LIBS" >&5
+$as_echo_n "checking for cudaMemcpy in $CUDA_LIBS... " >&6; }
+ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cudaMemcpy ();
+int
+main ()
+{
+return cudaMemcpy ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  pac_cv_have_cuda=yes;pac_cuda_lib_ok=yes;
+else
+  pac_cv_have_cuda=no;pac_cuda_lib_ok=no; CUDA_LIBS=""
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pac_cuda_lib_ok" >&5
+$as_echo "$pac_cuda_lib_ok" >&6; }
+
+fi
+LIBS="$SAVE_LIBS"
+CPPFLAGS="$SAVE_CPPFLAGS"
+
+          fi
 	  if test "x$pac_cv_have_cuda" == "xyes"; then
 
 # Check whether --with-spgpu was given.
 if test "${with_spgpu+set}" = set; then :
-  withval=$with_spgpu; psb_cv_spgpudir=$withval
+  withval=$with_spgpu; pac_cv_spgpudir=$withval
 else
-  psb_cv_spgpudir=''
+  pac_cv_spgpudir=''
 fi
 
 
@@ -7311,14 +7515,14 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-	  if test "x$psb_cv_spgpudir" != "x"; then
-	  LIBS="-L$psb_cv_spgpudir/lib $LIBS"
-	  GPU_INCLUDES="-I$psb_cv_spgpudir/include"
+	  if test "x$pac_cv_spgpudir" != "x"; then
+	  LIBS="-L$pac_cv_spgpudir/lib $LIBS"
+	  GPU_INCLUDES="-I$pac_cv_spgpudir/include"
 	  CPPFLAGS="$GPU_INCLUDES $CUDA_INCLUDES $CPPFLAGS"
-	  GPU_LIBDIR="-L$psb_cv_spgpudir/lib"
+	  GPU_LIBDIR="-L$pac_cv_spgpudir/lib"
 	  fi
-	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking spgpu dir $psb_cv_spgpudir" >&5
-$as_echo_n "checking spgpu dir $psb_cv_spgpudir... " >&6; }
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking spgpu dir $pac_cv_spgpudir" >&5
+$as_echo_n "checking spgpu dir $pac_cv_spgpudir... " >&6; }
 	  ac_fn_c_check_header_mongrel "$LINENO" "core.h" "ac_cv_header_core_h" "$ac_includes_default"
 if test "x$ac_cv_header_core_h" = xyes; then :
   pac_gpu_header_ok=yes
@@ -7352,28 +7556,28 @@ return spgpuCreate ();
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  psb_cv_have_spgpu=yes;pac_gpu_lib_ok=yes;
+  pac_cv_have_spgpu=yes;pac_gpu_lib_ok=yes;
 else
-  psb_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""
+  pac_cv_have_spgpu=no;pac_gpu_lib_ok=no; GPU_LIBS=""
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pac_gpu_lib_ok" >&5
 $as_echo "$pac_gpu_lib_ok" >&6; }
-	  if test "x$psb_cv_have_spgpu" == "xyes" ; then
+	  if test "x$pac_cv_have_spgpu" == "xyes" ; then
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: Have found SPGPU" >&5
 $as_echo "$as_me: Have found SPGPU" >&6;}
 	  SPGPULIBNAME="libpsbgpu.a";
-	  SPGPU_DIR="$psb_cv_spgpudir";
+	  SPGPU_DIR="$pac_cv_spgpudir";
 	  SPGPU_DEFINES="-DHAVE_SPGPU";
 	  SPGPU_INCDIR="$SPGPU_DIR/include";
 	  SPGPU_INCLUDES="-I$SPGPU_INCDIR";
 	  SPGPU_LIBS="-lspgpu -L$SPGPU_DIR/lib";
 	  LGPU=-lpsb_gpu
-	  CUDA_DIR="$psb_cv_cuda_dir";
+	  CUDA_DIR="$pac_cv_cuda_dir";
 	  CUDA_DEFINES="-DHAVE_CUDA";
-	  CUDA_INCLUDES="-I$psb_cv_cuda_dir/include"
-	  CUDA_LIBDIR="-L$psb_cv_cuda_dir/lib64 -L$psb_cv_cuda_dir/lib"
+	  CUDA_INCLUDES="-I$pac_cv_cuda_dir/include"
+	  CUDA_LIBDIR="-L$pac_cv_cuda_dir/lib64 -L$pac_cv_cuda_dir/lib"
 	  FDEFINES="$psblas_cv_define_prepend-DHAVE_GPU $psblas_cv_define_prepend-DHAVE_SPGPU $psblas_cv_define_prepend-DHAVE_CUDA $FDEFINES";
 	  CDEFINES="-DHAVE_SPGPU -DHAVE_CUDA $CDEFINES" ;
 	  fi
@@ -7382,7 +7586,7 @@ fi
 LIBS="$SAVE_LIBS"
 CPPFLAGS="$SAVE_CPPFLAGS"
 
-if test "x$psb_cv_have_spgpu" == "xyes" ; then
+if test "x$pac_cv_have_spgpu" == "xyes" ; then
    GPUTARGET=gpud;
    EXTRALDLIBS="-lstdc++";
 fi
@@ -7396,7 +7600,6 @@ else
 fi
 
 
-
 if test "x$pac_cv_cudacc" == "x"; then
    pac_cv_cudacc="30,35,37,50,60";
 fi
@@ -7405,6 +7608,11 @@ for cc in `echo $pac_cv_cudacc|sed 's/,/ /gi'`
 do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
+if test "x$pac_cv_cuda_version" != "xunknown"; then
+   CUDEFINES="$CUDEFINES -DCUDA_VERSION=${CUDA_SHORT_VERSION}"
+   FDEFINES="$FDEFINES -DCUDA_VERSION=${CUDA_SHORT_VERSION}"
+   CDEFINES="$CDEFINES -DCUDA_VERSION=${CUDA_SHORT_VERSION}"
+fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU" >&5
@@ -8776,6 +8984,8 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}:
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
+	CUDA_VERSION  : ${CUDA_VERSION}
+	CUDA_SHORT_VERSION  : ${CUDA_SHORT_VERSION}
 	CUDA_LIBS  : ${CUDA_LIBS}
         CUDEFINES  : ${CUDEFINES}
 
@@ -8784,6 +8994,8 @@ fi
 " >&5
 $as_echo "$as_me:
 	${PACKAGE_NAME} ${psblas_ext_cv_version} has been configured as follows:
+	CUDA_VERSION  : ${CUDA_VERSION}
+	CUDA_SHORT_VERSION  : ${CUDA_SHORT_VERSION}
 	CUDA_LIBS  : ${CUDA_LIBS}
         CUDEFINES  : ${CUDEFINES}
 
