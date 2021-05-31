@@ -33,9 +33,6 @@ typedef struct T_CSRGDeviceMat
   cusparseMatDescr_t descr;
 #if CUDA_VERSION <= 10
   cusparseSolveAnalysisInfo_t triang;
-#else
-  cusparseSpSVDescr_t*    triang;
-  void                *csrsv2buffer;
 #endif
   int                 m, n, nz;
   TYPE               *val;
@@ -167,10 +164,7 @@ int T_CSRGDeviceAlloc(T_Cmat *Matrix,int nr, int nc, int nz)
   if ((rc= cusparseCreateMatDescr(&(cMat->descr))) !=0) 
     return(rc);
 #if CUDA_VERSION <= 10  
-  if ((rc= cusparseSpSV_createDescr(&(cMat->triang))) !=0)
-    return(rc);
-#else
-  if ((rc= cusparseCreateCsrsv2Info(&(cMat->triang))) !=0)
+  if ((rc= cusparseCreateSolveAnalysisInfo(&(cMat->triang))) !=0)
     return(rc);
 #endif  
   Matrix->mat = cMat;
@@ -200,7 +194,7 @@ int T_CSRGDeviceFree(T_Cmat *Matrix)
     freeRemoteBuffer(cMat->ja);
     freeRemoteBuffer(cMat->val);
     cusparseDestroyMatDescr(cMat->descr);
-    cusparseDestroySolveAnalysisInfo(cMat->triang);  
+    cusparseDestroySolveAnalysisInfo(cMat->triang);
     free(cMat);
     Matrix->mat = NULL;
   }
@@ -245,27 +239,6 @@ int T_CSRGDeviceCsrsmAnalysis(T_Cmat *Matrix)
 				     cMat->triang);
   if (rc !=0) {
     fprintf(stderr,"From csrsv_analysis: %d\n",rc);
-  }
-#else
-  rc= (int)  cusparseSpSV_bufferSize(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
-				     cMat->m,cMat->nz,cMat->descr,
-				     cMat->val, cMat->irp, cMat->ja,
-				     cMat->triang,buffersize);
-  if (rc !=0) {
-    fprintf(stderr,"From csrsv2_buffersize: %d\n",rc);
-    return(rc);
-  }
-  cMat->SpSVbuffer = (void*) malloc(buffersize);
-  if (cMat->SpSVbuffer == NULL) {
-    fprintf(stderr,"From SpSV_buffersize: failed malloc\n");
-    return(-1);
-  }
-  rc= (int)  cusparseTcsrsv2_analysis(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
-				      cMat->m,cMat->nz,cMat->descr,
-				      cMat->val, cMat->irp, cMat->ja,
-				      cMat->triang,cMat->SpSVbuffer);
-  if (rc !=0) {
-    fprintf(stderr,"From csrsv2_analysis: %d\n",rc);
   }
 #endif
   return(rc);
