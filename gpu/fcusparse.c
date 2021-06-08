@@ -76,23 +76,26 @@ cusparseHandle_t *getHandle()
 
 
 /*    Single precision real   */ 
-#define TYPE 			       float                             
+#define TYPE 			       float
+#define CUSPARSE_BASE_TYPE             CUDA_R_32F
 #define T_CSRGDeviceMat		       s_CSRGDeviceMat
 #define T_Cmat			       s_Cmat
-#define T_HYBGDeviceMat		       s_HYBGDeviceMat
-#define T_Hmat			       s_Hmat
 #define T_spmvCSRGDevice	       s_spmvCSRGDevice
 #define T_spsvCSRGDevice	       s_spsvCSRGDevice
 #define T_CSRGDeviceAlloc	       s_CSRGDeviceAlloc
-#define T_CSRGDeviceGetParms	       s_CSRGDeviceGetParms
 #define T_CSRGDeviceFree	       s_CSRGDeviceFree
+#define T_CSRGHost2Device	       s_CSRGHost2Device
+#define T_CSRGDevice2Host	       s_CSRGDevice2Host
+
+#if CUDA_SHORT_VERSION <= 10  
+#define T_CSRGDeviceGetParms	       s_CSRGDeviceGetParms
 #define T_CSRGDeviceSetMatType	       s_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatFillMode     s_CSRGDeviceSetMatFillMode
 #define T_CSRGDeviceSetMatDiagType     s_CSRGDeviceSetMatDiagType
 #define T_CSRGDeviceSetMatIndexBase    s_CSRGDeviceSetMatIndexBase
 #define T_CSRGDeviceCsrsmAnalysis      s_CSRGDeviceCsrsmAnalysis
-#define T_CSRGHost2Device	       s_CSRGHost2Device
-#define T_CSRGDevice2Host	       s_CSRGDevice2Host
+#define T_HYBGDeviceMat		       s_HYBGDeviceMat
+#define T_Hmat			       s_Hmat
 #define T_HYBGDeviceFree	       s_HYBGDeviceFree
 #define T_spmvHYBGDevice	       s_spmvHYBGDevice
 #define T_HYBGDeviceAlloc	       s_HYBGDeviceAlloc
@@ -110,6 +113,7 @@ cusparseHandle_t *getHandle()
 #define cusparseThybsv_solve	       cusparseShybsv_solve
 #define cusparseThybsv_analysis	       cusparseShybsv_analysis
 #define cusparseTcsr2hyb               cusparseScsr2hyb               
+#endif
 
 #include "fcusparse_fct.h"
 
@@ -117,22 +121,25 @@ cusparseHandle_t *getHandle()
 
 /*    Double precision real   */ 
 #define TYPE 			       double
+#define CUSPARSE_BASE_TYPE             CUDA_R_64F
 #define T_CSRGDeviceMat		       d_CSRGDeviceMat
 #define T_Cmat			       d_Cmat
-#define T_HYBGDeviceMat		       d_HYBGDeviceMat
-#define T_Hmat			       d_Hmat
 #define T_spmvCSRGDevice	       d_spmvCSRGDevice
 #define T_spsvCSRGDevice	       d_spsvCSRGDevice
-#define T_CSRGDeviceGetParms	       d_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       d_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       d_CSRGDeviceFree
+#define T_CSRGHost2Device	       d_CSRGHost2Device
+#define T_CSRGDevice2Host	       d_CSRGDevice2Host
+
+#if CUDA_SHORT_VERSION <= 10  
+#define T_CSRGDeviceGetParms	       d_CSRGDeviceGetParms
 #define T_CSRGDeviceSetMatType	       d_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatFillMode     d_CSRGDeviceSetMatFillMode
 #define T_CSRGDeviceSetMatDiagType     d_CSRGDeviceSetMatDiagType
 #define T_CSRGDeviceSetMatIndexBase    d_CSRGDeviceSetMatIndexBase
 #define T_CSRGDeviceCsrsmAnalysis      d_CSRGDeviceCsrsmAnalysis
-#define T_CSRGHost2Device	       d_CSRGHost2Device
-#define T_CSRGDevice2Host	       d_CSRGDevice2Host
+#define T_HYBGDeviceMat		       d_HYBGDeviceMat
+#define T_Hmat			       d_Hmat
 #define T_HYBGDeviceFree	       d_HYBGDeviceFree
 #define T_spmvHYBGDevice	       d_spmvHYBGDevice
 #define T_HYBGDeviceAlloc	       d_HYBGDeviceAlloc
@@ -150,28 +157,32 @@ cusparseHandle_t *getHandle()
 #define cusparseThybsv_solve	       cusparseDhybsv_solve
 #define cusparseThybsv_analysis	       cusparseDhybsv_analysis
 #define cusparseTcsr2hyb               cusparseDcsr2hyb               
+#endif
 
 #include "fcusparse_fct.h"
 
 
 /*    Single precision complex   */ 
 #define TYPE 			       float complex                     
+#define CUSPARSE_BASE_TYPE             CUDA_C_32F
 #define T_CSRGDeviceMat		       c_CSRGDeviceMat
 #define T_Cmat			       c_Cmat
-#define T_HYBGDeviceMat		       c_HYBGDeviceMat
-#define T_Hmat			       c_Hmat
 #define T_spmvCSRGDevice	       c_spmvCSRGDevice
 #define T_spsvCSRGDevice	       c_spsvCSRGDevice
-#define T_CSRGDeviceGetParms	       c_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       c_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       c_CSRGDeviceFree
+#define T_CSRGHost2Device	       c_CSRGHost2Device
+#define T_CSRGDevice2Host	       c_CSRGDevice2Host
+
+#if CUDA_SHORT_VERSION <= 10  
+#define T_CSRGDeviceGetParms	       c_CSRGDeviceGetParms
 #define T_CSRGDeviceSetMatType	       c_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatFillMode     c_CSRGDeviceSetMatFillMode
 #define T_CSRGDeviceSetMatDiagType     c_CSRGDeviceSetMatDiagType
 #define T_CSRGDeviceSetMatIndexBase    c_CSRGDeviceSetMatIndexBase
 #define T_CSRGDeviceCsrsmAnalysis      c_CSRGDeviceCsrsmAnalysis
-#define T_CSRGHost2Device	       c_CSRGHost2Device
-#define T_CSRGDevice2Host	       c_CSRGDevice2Host
+#define T_HYBGDeviceMat		       c_HYBGDeviceMat
+#define T_Hmat			       c_Hmat
 #define T_HYBGDeviceFree	       c_HYBGDeviceFree
 #define T_spmvHYBGDevice	       c_spmvHYBGDevice
 #define T_HYBGDeviceAlloc	       c_HYBGDeviceAlloc
@@ -189,28 +200,32 @@ cusparseHandle_t *getHandle()
 #define cusparseThybsv_solve	       cusparseChybsv_solve
 #define cusparseThybsv_analysis	       cusparseChybsv_analysis
 #define cusparseTcsr2hyb               cusparseCcsr2hyb               
+#endif
 
 #include "fcusparse_fct.h"
 
 
 /*    Double precision complex   */ 
 #define TYPE 			       double complex                    
+#define CUSPARSE_BASE_TYPE             CUDA_C_64F
 #define T_CSRGDeviceMat		       z_CSRGDeviceMat
 #define T_Cmat			       z_Cmat
-#define T_HYBGDeviceMat		       z_HYBGDeviceMat
-#define T_Hmat			       z_Hmat
 #define T_spmvCSRGDevice	       z_spmvCSRGDevice
 #define T_spsvCSRGDevice	       z_spsvCSRGDevice
-#define T_CSRGDeviceGetParms	       z_CSRGDeviceGetParms
 #define T_CSRGDeviceAlloc	       z_CSRGDeviceAlloc
 #define T_CSRGDeviceFree	       z_CSRGDeviceFree
+#define T_CSRGHost2Device	       z_CSRGHost2Device
+#define T_CSRGDevice2Host	       z_CSRGDevice2Host
+
+#if CUDA_SHORT_VERSION <= 10  
+#define T_CSRGDeviceGetParms	       z_CSRGDeviceGetParms
 #define T_CSRGDeviceSetMatType	       z_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatFillMode     z_CSRGDeviceSetMatFillMode
 #define T_CSRGDeviceSetMatDiagType     z_CSRGDeviceSetMatDiagType
 #define T_CSRGDeviceSetMatIndexBase    z_CSRGDeviceSetMatIndexBase
 #define T_CSRGDeviceCsrsmAnalysis      z_CSRGDeviceCsrsmAnalysis
-#define T_CSRGHost2Device	       z_CSRGHost2Device
-#define T_CSRGDevice2Host	       z_CSRGDevice2Host
+#define T_HYBGDeviceMat		       z_HYBGDeviceMat
+#define T_Hmat			       z_Hmat
 #define T_HYBGDeviceFree	       z_HYBGDeviceFree
 #define T_spmvHYBGDevice	       z_spmvHYBGDevice
 #define T_HYBGDeviceAlloc	       z_HYBGDeviceAlloc
@@ -228,6 +243,7 @@ cusparseHandle_t *getHandle()
 #define cusparseThybsv_solve	       cusparseZhybsv_solve
 #define cusparseThybsv_analysis	       cusparseZhybsv_analysis
 #define cusparseTcsr2hyb               cusparseZcsr2hyb               
+#endif
 
 #include "fcusparse_fct.h"
 

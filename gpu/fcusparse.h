@@ -35,7 +35,11 @@
 
 #ifdef HAVE_SPGPU
 #include <cuda_runtime.h>
+#if CUDA_SHORT_VERSION <= 10
 #include <cusparse_v2.h>
+#else
+#include <cusparse.h>
+#endif
 #include "cintrf.h"
 
 int FcusparseCreate();
