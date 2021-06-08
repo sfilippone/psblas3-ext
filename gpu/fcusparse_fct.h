@@ -30,7 +30,7 @@
  
 typedef struct T_CSRGDeviceMat
 {			
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
   cusparseMatDescr_t descr;
   cusparseSolveAnalysisInfo_t triang;
 #else
@@ -51,7 +51,7 @@ typedef struct T_Cmat
   T_CSRGDeviceMat *mat;
 } T_Cmat;
 
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
 typedef struct T_HYBGDeviceMat
 {			
   cusparseMatDescr_t descr;
@@ -84,7 +84,7 @@ int T_CSRGHost2Device(T_Cmat *Mat, int m, int n, int nz,
 int T_CSRGDevice2Host(T_Cmat *Mat, int m, int n, int nz,
 		      int *irp, int *ja, TYPE *val);
 
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
 int T_CSRGDeviceGetParms(T_Cmat *Mat,int *nr, int *nc, int *nz);
 int T_CSRGDeviceSetMatType(T_Cmat *Mat, int type);
 int T_CSRGDeviceSetMatFillMode(T_Cmat *Mat, int type);
@@ -96,7 +96,7 @@ int T_CSRGDeviceCsrsmAnalysis(T_Cmat *Mat);
 
 
 
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
 
 
 int T_HYBGDeviceFree(T_Hmat *Matrix);
@@ -123,7 +123,7 @@ int T_spmvCSRGDevice(T_Cmat *Matrix, TYPE alpha, void *deviceX,
   void *vX, *vY;
   int r,n;
   cusparseHandle_t *my_handle=getHandle();
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -170,7 +170,7 @@ int T_spsvCSRGDevice(T_Cmat *Matrix, TYPE alpha, void *deviceX,
   void *vX, *vY;  
   int r,n;
   cusparseHandle_t *my_handle=getHandle();
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
   /*getAddrMultiVecDevice(deviceX, &vX);
     getAddrMultiVecDevice(deviceY, &vY); */
   vX=x->v_;
@@ -242,7 +242,7 @@ int T_CSRGDeviceAlloc(T_Cmat *Matrix,int nr, int nc, int nz)
     return(rc);
   if ((rc= allocRemoteBuffer(((void **) &(cMat->val)), ((nz1)*sizeof(TYPE)))) != 0)
     return(rc);
-#if CUDA_SHORT_VERSION < 11  
+#if CUDA_SHORT_VERSION <= 10  
   if ((rc= cusparseCreateMatDescr(&(cMat->descr))) !=0) 
     return(rc);
   if ((rc= cusparseCreateSolveAnalysisInfo(&(cMat->triang))) !=0)
@@ -277,7 +277,7 @@ int T_CSRGDeviceFree(T_Cmat *Matrix)
     freeRemoteBuffer(cMat->irp);
     freeRemoteBuffer(cMat->ja);
     freeRemoteBuffer(cMat->val);
-#if CUDA_SHORT_VERSION < 11  
+#if CUDA_SHORT_VERSION <= 10  
     cusparseDestroyMatDescr(cMat->descr);
     cusparseDestroySolveAnalysisInfo(cMat->triang);
 #else
@@ -300,7 +300,7 @@ int T_CSRGDeviceFree(T_Cmat *Matrix)
   return(CUSPARSE_STATUS_SUCCESS);
 }
 
-#if CUDA_SHORT_VERSION < 11  
+#if CUDA_SHORT_VERSION <= 10  
 
 int T_CSRGDeviceGetParms(T_Cmat *Matrix,int *nr, int *nc, int *nz)
 {
@@ -401,7 +401,7 @@ int T_CSRGDevice2Host(T_Cmat *Matrix, int m, int n, int nz,
   return(CUSPARSE_STATUS_SUCCESS);
 }
 
-#if CUDA_SHORT_VERSION < 11
+#if CUDA_SHORT_VERSION <= 10
 int T_HYBGDeviceFree(T_Hmat *Matrix)
 {
   T_HYBGDeviceMat *hMat= Matrix->mat;

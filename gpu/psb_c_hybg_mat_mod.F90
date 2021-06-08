@@ -29,7 +29,7 @@
 !    POSSIBILITY OF SUCH DAMAGE.
 !   
   
-#if CUDA_VERSION <= 10 
+#if CUDA_SHORT_VERSION <= 10 
 
 module psb_c_hybg_mat_mod
 
