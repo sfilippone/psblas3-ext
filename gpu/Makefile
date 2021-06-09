@@ -45,7 +45,8 @@ FOBJS=cusparse_mod.o base_cusparse_mod.o \
 	dnsdev_mod.o
 
 COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o  ivectordev.o dnsdev.o\
-	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o fcusparse.o 
+	svectordev.o dvectordev.o cvectordev.o zvectordev.o cuda_util.o \
+	fcusparse.o scusparse.o dcusparse.o ccusparse.o zcusparse.o 
 
 OBJS=$(COBJS) $(FOBJS)
 
@@ -90,7 +91,8 @@ vectordev.o: cuda_util.o   vectordev.h
 elldev.o: elldev.c
 dnsdev.o: dnsdev.c
 fcusparse.h elldev.c: elldev.h vectordev.h
-fcusparse.o: fcusparse.h fcusparse_fct.h
+fcusparse.o scusparse.o dcusparse.o ccusparse.o zcusparse.o : fcusparse.h
+fcusparse.o scusparse.o dcusparse.o ccusparse.o zcusparse.o : fcusparse_fct.h
 svectordev.o:  svectordev.h vectordev.h
 dvectordev.o:  dvectordev.h vectordev.h
 cvectordev.o:  cvectordev.h vectordev.h
