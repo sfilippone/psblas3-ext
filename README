@@ -1,4 +1,7 @@
-This is the extenstions plugin for PSBLAS, version 1.0.
+This is the extenstions plugin for PSBLAS, version 1.3.1.
+
+Version 1.3.1 supports versions of CUDA up to 10, or from 11.3.
+In version 11, support for HYB has been dropped.
 
 This package contains: 
 1. Extended matrix formats: ELLPACK, Hacked ELLPACK, DIAgonals, Hacked

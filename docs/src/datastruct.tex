@@ -386,7 +386,8 @@ and \fortinline|beta|, and the return code \fortinline|info|.
 \item[HYB:] The data type \fortinline|psb_T_hybg_sparse_mat| provides an
   interface to the HYB GPU storage  available in the NVIDIA CuSPARSE
   library. The internal structure is opaque, hence the host side is
-  just CSR;
+  just CSR; the HYB data format is only available up to CUDA version
+  10. 
 \item[ELL:] The data type \fortinline|psb_T_elg_sparse_mat| provides an
   interface to the  ELLPACK implementation from SPGPU;
 
