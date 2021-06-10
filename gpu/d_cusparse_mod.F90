@@ -37,7 +37,7 @@ module d_cusparse_mod
     type(c_ptr) :: Mat = c_null_ptr
   end type d_Cmat
   
-#if CUDA_VERSION <= 10 
+#if CUDA_SHORT_VERSION <= 10 
   type, bind(c) :: d_Hmat
     type(c_ptr) :: Mat = c_null_ptr
   end type d_Hmat
@@ -184,7 +184,7 @@ module d_cusparse_mod
     end function d_CSRGDevice2Host
   end interface
   
-#if CUDA_VERSION <= 10
+#if CUDA_SHORT_VERSION <= 10
   interface HYBGDeviceAlloc
     function d_HYBGDeviceAlloc(Mat,nr,nc,nz) &
          & bind(c,name="d_HYBGDeviceAlloc") result(res)
