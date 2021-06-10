@@ -583,7 +583,7 @@ program pdgenmv
   ! solver parameters
   integer(psb_epk_) :: amatsize, precsize, descsize, annz, nbytes
   real(psb_dpk_)   :: err, eps
-  integer, parameter :: ntests=200, ngpu=50, ncnv=20 
+  integer, parameter :: ntests=200, ngpu=50, ncnv=20
   type(psb_d_coo_sparse_mat), target   :: acoo
   type(psb_d_csr_sparse_mat), target   :: acsr
   type(psb_d_ell_sparse_mat), target   :: aell
@@ -596,7 +596,7 @@ program pdgenmv
 #ifdef HAVE_GPU
   type(psb_d_elg_sparse_mat), target   :: aelg
   type(psb_d_csrg_sparse_mat), target  :: acsrg
-#if CUDA_VERSION <= 10
+#if CUDA_SHORT_VERSION <= 10
   type(psb_d_hybg_sparse_mat), target  :: ahybg
 #endif
   type(psb_d_hlg_sparse_mat), target   :: ahlg
@@ -709,7 +709,7 @@ program pdgenmv
     agmold => acsrg
   case('DNSG')
     agmold => adnsg
-#if CUDA_VERSION <= 10
+#if CUDA_SHORT_VERSION <= 10
   case('HYBG')
     agmold => ahybg
 #endif
@@ -808,7 +808,6 @@ program pdgenmv
   call psb_amx(ctxt,eps)
   if (iam==0) write(*,*) 'Max diff on xGPU',eps
 
-
   ! FIXME: cache flush needed here
   call xg%set(x0)
   call xg%sync()
@@ -816,7 +815,7 @@ program pdgenmv
   gt1 = psb_wtime()
   do i=1,ntests*ngpu
     call psb_spmm(done,agpu,xg,dzero,bg,desc_a,info)
-    ! For timing purposes we need to make sure all threads
+     ! For timing purposes we need to make sure all threads
     ! in the device are done. 
     if ((info /= 0).or.(psb_get_errstatus()/=0)) then 
       write(0,*) 'From 2 spmm',info,i,ntests
@@ -845,6 +844,7 @@ program pdgenmv
     write(fname,'(a,i3.3,a,i3.3,a)')'XGPU-out-',iam,'-',np,'.mtx'
     call mm_array_write(x2(1:nr),'Local part GPU',info,filename=fname)
   end if
+
 #endif
   annz     = a%get_nzeros()
   amatsize = a%sizeof()
