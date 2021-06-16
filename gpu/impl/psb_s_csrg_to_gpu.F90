@@ -142,6 +142,96 @@ subroutine psb_s_csrg_to_gpu(a,info,nzrm)
     info = CSRGDeviceCsrsmAnalysis(a%deviceMat)
   end if
 
+#elif CUDA_VERSION <  11030
+  if (a%is_unit()) then 
+    !
+    ! CUSPARSE has the habit of storing the diagonal and then ignoring,
+    ! whereas we do not store it. Hence this adapter code. 
+    !    
+    nzdi = nz + m
+    if (info == 0) info = CSRGDeviceAlloc(a%deviceMat,m,n,nzdi)
+!!$    write(0,*) 'Done deviceAlloc'
+    if (info == 0) info = CSRGDeviceSetMatIndexBase(a%deviceMat,cusparse_index_base_zero)
+!!$    write(0,*) 'Done SetIndexBase'
+    if (info == 0) then 
+      if (a%is_unit()) then 
+        info = CSRGDeviceSetMatDiagType(a%deviceMat,cusparse_diag_type_unit)
+      else 
+        info = CSRGDeviceSetMatDiagType(a%deviceMat,cusparse_diag_type_non_unit)
+      end if
+    end if
+    !!! We are explicitly adding the diagonal 
+    !! info = CSRGDeviceSetMatDiagType(a%deviceMat,cusparse_diag_type_non_unit)
+    if ((info == 0) .and. a%is_triangle()) then 
+      info = CSRGDeviceSetMatType(a%deviceMat,cusparse_matrix_type_triangular)
+      if ((info == 0).and.a%is_upper()) then 
+        info = CSRGDeviceSetMatFillMode(a%deviceMat,cusparse_fill_mode_upper)
+      else
+        info = CSRGDeviceSetMatFillMode(a%deviceMat,cusparse_fill_mode_lower)
+      end if
+    end if
+    if (info == 0) allocate(irpdi(m+1),jadi(nzdi),valdi(nzdi),stat=info)
+    if (info == 0) then 
+      irpdi(1) = 0
+      if (a%is_triangle().and.a%is_upper()) then 
+        do i=1,m
+          j        = irpdi(i) 
+          jadi(j)  = i
+          valdi(j) = sone
+          nrz      = a%irp(i+1)-a%irp(i)
+          jadi(j+1:j+nrz)  = a%ja(a%irp(i):a%irp(i+1)-1)-1
+          valdi(j+1:j+nrz) = a%val(a%irp(i):a%irp(i+1)-1)
+          irpdi(i+1) = j + nrz + 1
+          !          write(0,*) 'Row ',i,' : ',irpdi(i:i+1),':',jadi(j:j+nrz),valdi(j:j+nrz)
+        end do
+      else
+        do i=1,m
+          j        = irpdi(i) 
+          nrz      = a%irp(i+1)-a%irp(i)
+          jadi(j+0:j+nrz-1)  = a%ja(a%irp(i):a%irp(i+1)-1)-1
+          valdi(j+0:j+nrz-1) = a%val(a%irp(i):a%irp(i+1)-1)
+          jadi(j+nrz)  = i
+          valdi(j+nrz) = sone
+          irpdi(i+1)   = j + nrz + 1
+          !          write(0,*) 'Row ',i,' : ',irpdi(i:i+1),':',jadi(j:j+nrz),valdi(j:j+nrz)
+        end do        
+      end if
+    end if
+    if (info == 0) info = CSRGHost2Device(a%deviceMat,m,n,nzdi,irpdi,jadi,valdi)
+
+  else
+
+    if (info == 0) info = CSRGDeviceAlloc(a%deviceMat,m,n,nz)
+!!$    write(0,*) 'Done deviceAlloc', info
+    if (info == 0) info = CSRGDeviceSetMatIndexBase(a%deviceMat,&
+         & cusparse_index_base_zero)
+!!$    write(0,*) 'Done setIndexBase', info
+    if (info == 0) then 
+      if (a%is_unit()) then 
+        info = CSRGDeviceSetMatDiagType(a%deviceMat,cusparse_diag_type_unit)
+      else 
+        info = CSRGDeviceSetMatDiagType(a%deviceMat,cusparse_diag_type_non_unit)
+      end if
+    end if
+    if ((info == 0) .and. a%is_triangle()) then 
+      info = CSRGDeviceSetMatType(a%deviceMat,cusparse_matrix_type_triangular)
+      if ((info == 0).and.a%is_upper()) then 
+        info = CSRGDeviceSetMatFillMode(a%deviceMat,cusparse_fill_mode_upper)
+      else
+        info = CSRGDeviceSetMatFillMode(a%deviceMat,cusparse_fill_mode_lower)
+      end if
+    end if
+    nzdi=a%irp(m+1)-1
+    if (info == 0) allocate(irpdi(m+1),jadi(nzdi),stat=info)
+    if (info == 0) then
+      irpdi(:) = a%irp(:) -1
+      jadi(:) = a%ja(:) -1
+    end if
+    if (info == 0) info = CSRGHost2Device(a%deviceMat,m,n,nz,irpdi,jadi,a%val)
+!!$    write(0,*) 'Done Host2Device', info
+  endif
+
+
 #else
 
   if (a%is_unit()) then 

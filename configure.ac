@@ -335,8 +335,6 @@ if test "x$pac_cv_have_cuda" == "xyes"; then
 PAC_CHECK_CUDA_VERSION()
 CUDA_VERSION="$pac_cv_cuda_version";
 CUDA_SHORT_VERSION=$(expr $pac_cv_cuda_version / 1000);
-if ((  (( $pac_cv_cuda_version < 11000 )) || (( $pac_cv_cuda_version >= 11030 )) ))
-then 
 PAC_CHECK_SPGPU()
 if test "x$pac_cv_have_spgpu" == "xyes" ; then 
    GPUTARGET=gpud;
@@ -354,24 +352,11 @@ do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
 if test "x$pac_cv_cuda_version" != "xunknown"; then
-   CUDEFINES="$CUDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"
-   FDEFINES="$FDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"
-   CDEFINES="$CDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"    
+   CUDEFINES="$CUDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
+   FDEFINES="$FDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
+   CDEFINES="$CDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"    
 fi
-else
-  AC_MSG_NOTICE([ CUDA version $pac_cv_cuda_version unsupported, disabling CUDA/SPGPU ])
-  pac_cv_have_cuda="no";
-  pac_cv_cuda_version="unknown";
-  GPUTARGET="";
-  CUDEFINES="";
-  CUDA_INCLUDES="";
-  CUDA_LIBS="";
-  CUDA_DEFINES="";
-  CUDA_LIBDIR="";
-  CUDA_DIR="";
-  CUDA_VERSION="";
-  CUDA_SHORT_VERSION="";
-fi
+
 fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then

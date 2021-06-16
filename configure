@@ -7427,8 +7427,6 @@ CPPFLAGS="$SAVE_CPPFLAGS"
 
 CUDA_VERSION="$pac_cv_cuda_version";
 CUDA_SHORT_VERSION=$(expr $pac_cv_cuda_version / 1000);
-if ((  (( $pac_cv_cuda_version < 11000 )) || (( $pac_cv_cuda_version >= 11030 )) ))
-then
 SAVE_LIBS="$LIBS"
 	  SAVE_CPPFLAGS="$CPPFLAGS"
 	  if test "x$pac_cv_have_cuda" == "x"; then
@@ -7619,25 +7617,11 @@ do
   CUDEFINES="$CUDEFINES -gencode arch=compute_$cc,code=sm_$cc";
 done
 if test "x$pac_cv_cuda_version" != "xunknown"; then
-   CUDEFINES="$CUDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"
-   FDEFINES="$FDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"
-   CDEFINES="$CDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION}"
+   CUDEFINES="$CUDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
+   FDEFINES="$FDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
+   CDEFINES="$CDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
 fi
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}:  CUDA version $pac_cv_cuda_version unsupported, disabling CUDA/SPGPU " >&5
-$as_echo "$as_me:  CUDA version $pac_cv_cuda_version unsupported, disabling CUDA/SPGPU " >&6;}
-  pac_cv_have_cuda="no";
-  pac_cv_cuda_version="unknown";
-  GPUTARGET="";
-  CUDEFINES="";
-  CUDA_INCLUDES="";
-  CUDA_LIBS="";
-  CUDA_DEFINES="";
-  CUDA_LIBDIR="";
-  CUDA_DIR="";
-  CUDA_VERSION="";
-  CUDA_SHORT_VERSION="";
-fi
+
 fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then

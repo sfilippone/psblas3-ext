@@ -35,7 +35,6 @@
 
 #ifdef HAVE_SPGPU
 #include <cuda_runtime.h>
-#include <cusparse_v2.h>
 #include "cintrf.h"
 #include "fcusparse.h"
 

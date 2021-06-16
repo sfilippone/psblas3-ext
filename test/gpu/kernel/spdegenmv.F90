@@ -590,7 +590,9 @@ program pdgenmv
 #ifdef HAVE_GPU
   type(psb_s_elg_sparse_mat), target   :: aelg
   type(psb_s_csrg_sparse_mat), target  :: acsrg
+#if CUDA_SHORT_VERSION <= 10
   type(psb_s_hybg_sparse_mat), target  :: ahybg
+#endif
   type(psb_s_hlg_sparse_mat), target   :: ahlg
   type(psb_s_dnsg_sparse_mat), target   :: adnsg
   type(psb_s_hdiag_sparse_mat), target   :: ahdiag
@@ -698,8 +700,10 @@ program pdgenmv
     agmold => acsrg
   case('DNSG')
     agmold => adnsg
+#if CUDA_SHORT_VERSION <= 10
   case('HYBG')
     agmold => ahybg
+#endif
   case default
     write(*,*) 'Unknown format defaulting to HLG'
     agmold => ahlg
