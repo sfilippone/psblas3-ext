@@ -58,6 +58,9 @@
 #define T_CSRGDeviceSetMatType	       z_CSRGDeviceSetMatType
 #define T_CSRGDeviceSetMatIndexBase    z_CSRGDeviceSetMatIndexBase
 #define T_CSRGDeviceCsrsmAnalysis      z_CSRGDeviceCsrsmAnalysis
+#define cusparseTcsrmv		       cusparseZcsrmv
+#define cusparseTcsrsv_solve	       cusparseZcsrsv_solve
+#define cusparseTcsrsv_analysis	       cusparseZcsrsv_analysis
 #define T_HYBGDeviceMat		       z_HYBGDeviceMat
 #define T_Hmat			       z_Hmat
 #define T_HYBGDeviceFree	       z_HYBGDeviceFree
@@ -70,13 +73,19 @@
 #define T_HYBGDeviceHybsmAnalysis      z_HYBGDeviceHybsmAnalysis
 #define T_spsvHYBGDevice	       z_spsvHYBGDevice
 #define T_HYBGHost2Device	       z_HYBGHost2Device
-#define cusparseTcsrmv		       cusparseZcsrmv
-#define cusparseTcsrsv_solve	       cusparseZcsrsv_solve
-#define cusparseTcsrsv_analysis	       cusparseZcsrsv_analysis
 #define cusparseThybmv		       cusparseZhybmv
 #define cusparseThybsv_solve	       cusparseZhybsv_solve
 #define cusparseThybsv_analysis	       cusparseZhybsv_analysis
 #define cusparseTcsr2hyb               cusparseZcsr2hyb               
+
+#elif CUDA_VERSION <  11030
+
+#define T_CSRGDeviceSetMatType	       z_CSRGDeviceSetMatType
+#define T_CSRGDeviceSetMatIndexBase    z_CSRGDeviceSetMatIndexBase
+#define T_CSRGDeviceCsrsv2Analysis     z_CSRGDeviceCsrsv2Analysis
+#define cusparseTcsrsv2_bufferSize     cusparseZcsrsv2_bufferSize
+#define cusparseTcsrsv2_analysis       cusparseZcsrsv2_analysis
+#define cusparseTcsrsv2_solve	       cusparseZcsrsv2_solve
 #endif
 
 #include "fcusparse_fct.h"
