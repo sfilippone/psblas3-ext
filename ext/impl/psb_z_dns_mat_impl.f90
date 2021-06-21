@@ -395,7 +395,7 @@ end subroutine psb_z_dns_allocate_mnnz
 !!           
 !
 subroutine psb_z_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
-     & jmin,jmax,iren,append,nzin,rscale,cscale)
+     & jmin,jmax,iren,append,nzin,rscale,cscale,chksz)
   use psb_base_mod
   use psb_z_dns_mat_mod, psb_protect_name => psb_z_dns_csgetrow
   implicit none
@@ -409,9 +409,9 @@ subroutine psb_z_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   logical, intent(in), optional        :: append
   integer(psb_ipk_), intent(in), optional        :: iren(:)
   integer(psb_ipk_), intent(in), optional        :: jmin,jmax, nzin
-  logical, intent(in), optional        :: rscale,cscale
+  logical, intent(in), optional        :: rscale,cscale,chksz
   !
-  logical :: append_, rscale_, cscale_ 
+  logical :: append_, rscale_, cscale_, chksz_ 
   integer(psb_ipk_) :: nzin_, jmin_, jmax_, err_act, i,j,k
   character(len=20)  :: name='csget'
   logical, parameter :: debug=.false.
@@ -456,6 +456,12 @@ subroutine psb_z_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   else
     cscale_ = .false.
   endif
+  if (present(chksz)) then 
+    chksz_ = chksz
+  else
+    chksz_ = .true.
+  endif
+
   if ((rscale_.or.cscale_).and.(present(iren))) then 
     info = psb_err_many_optional_arg_
     call psb_errpush(info,name,a_err='iren (rscale.or.cscale)')
@@ -470,10 +476,12 @@ subroutine psb_z_dns_csgetrow(imin,imax,a,nz,ia,ja,val,info,&
   end if
   nz = count(a%val(imin:imax,jmin_:jmax_) /= zzero)
 
-  call psb_realloc(nz,ia,info)
-  if (info == psb_success_) call psb_realloc(nz,ja,info)
-  if (info == psb_success_) call psb_realloc(nz,val,info)
-  if (info /= psb_success_) goto 9999 
+  if (chksz_) then 
+    call psb_ensure_size(nzin_+nz,ia,info)
+    if (info == psb_success_) call psb_ensure_size(nzin_+nz,ja,info)
+    if (info == psb_success_) call psb_ensure_size(nzin_+nz,val,info)
+    if (info /= psb_success_) goto 9999
+  end if
 
   k = 0
   do i=imin,imax

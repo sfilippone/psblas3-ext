@@ -34,7 +34,7 @@ subroutine psb_c_dia_rowsum(d,a)
   use psb_c_dia_mat_mod, psb_protect_name => psb_c_dia_rowsum
   implicit none 
   class(psb_c_dia_sparse_mat), intent(in) :: a
-  real(psb_spk_), intent(out)              :: d(:)
+  complex(psb_spk_), intent(out)              :: d(:)
 
   integer(psb_ipk_) :: i,j,k,m,n, nnz, ir, jc, nc, ir1,ir2, nr
   logical           :: tra
