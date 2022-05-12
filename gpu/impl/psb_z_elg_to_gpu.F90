@@ -86,7 +86,7 @@ subroutine psb_z_elg_to_gpu(a,info,nzrm)
     end if
   end if
   if (info == 0)  info = &
-       & writeEllDevice(a%deviceMat,a%val,a%ja,size(a%ja,1),a%irn)
+       & writeEllDevice(a%deviceMat,a%val,a%ja,size(a%ja,1),a%irn,a%idiag)
   call a%set_sync()
 #endif
 

@@ -71,88 +71,88 @@ module elldev_mod
 
   interface writeEllDevice
 
-    function writeEllDeviceFloat(deviceMat,val,ja,ldj,irn) &
+    function writeEllDeviceFloat(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='writeEllDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       integer(c_int), value :: ldj
       real(c_float)       :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)      :: ja(ldj,*),irn(*),idiag(*)
     end function writeEllDeviceFloat
 
-    function writeEllDeviceDouble(deviceMat,val,ja,ldj,irn) &
+    function writeEllDeviceDouble(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='writeEllDeviceDouble')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       integer(c_int), value :: ldj
       real(c_double)      :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)      :: ja(ldj,*),irn(*),idiag(*)
     end function writeEllDeviceDouble
 
-    function writeEllDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
+    function writeEllDeviceFloatComplex(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='writeEllDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       integer(c_int), value    :: ldj
       complex(c_float_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int)           :: ja(ldj,*),irn(*),idiag(*)
     end function writeEllDeviceFloatComplex
 
-    function writeEllDeviceDoubleComplex(deviceMat,val,ja,ldj,irn) &
+    function writeEllDeviceDoubleComplex(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='writeEllDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)            :: res
       type(c_ptr), value        :: deviceMat
       integer(c_int), value     :: ldj
       complex(c_double_complex) :: val(ldj,*)
-      integer(c_int)            :: ja(ldj,*),irn(*)
+      integer(c_int)            :: ja(ldj,*),irn(*),idiag(*)
     end function writeEllDeviceDoubleComplex
 
   end interface
 
   interface readEllDevice 
 
-    function readEllDeviceFloat(deviceMat,val,ja,ldj,irn) &
+    function readEllDeviceFloat(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='readEllDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       integer(c_int), value :: ldj
       real(c_float)       :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)      :: ja(ldj,*),irn(*),idiag(*)
     end function readEllDeviceFloat
 
-    function readEllDeviceDouble(deviceMat,val,ja,ldj,irn) &
+    function readEllDeviceDouble(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='readEllDeviceDouble')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       integer(c_int), value :: ldj
       real(c_double)      :: val(ldj,*)
-      integer(c_int)      :: ja(ldj,*),irn(*)
+      integer(c_int)      :: ja(ldj,*),irn(*),idiag(*)
     end function readEllDeviceDouble
 
-    function readEllDeviceFloatComplex(deviceMat,val,ja,ldj,irn) &
+    function readEllDeviceFloatComplex(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='readEllDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       integer(c_int), value    :: ldj
       complex(c_float_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int)           :: ja(ldj,*),irn(*),idiag(*)
     end function readEllDeviceFloatComplex
 
-    function readEllDeviceDoubleComplex(deviceMat,val,ja,ldj,irn) &
+    function readEllDeviceDoubleComplex(deviceMat,val,ja,ldj,irn,idiag) &
          & result(res) bind(c,name='readEllDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       integer(c_int), value    :: ldj
       complex(c_double_complex) :: val(ldj,*)
-      integer(c_int)           :: ja(ldj,*),irn(*)
+      integer(c_int)           :: ja(ldj,*),irn(*),idiag(*)
     end function readEllDeviceDoubleComplex
 
   end interface

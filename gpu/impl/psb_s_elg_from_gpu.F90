@@ -67,7 +67,7 @@ subroutine psb_s_elg_from_gpu(a,info)
     if (info == 0) call psb_realloc(pitch,a%irn,info)
   end if
   if (info == 0)  info = &
-       & readEllDevice(a%deviceMat,a%val,a%ja,pitch,a%irn)
+       & readEllDevice(a%deviceMat,a%val,a%ja,pitch,a%irn,a%idiag)
   call a%set_sync()
 #endif
 

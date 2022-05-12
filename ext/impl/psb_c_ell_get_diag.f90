@@ -58,8 +58,11 @@ subroutine psb_c_ell_get_diag(a,d,info)
     d(1:mnm) = cone
   else
     do i=1, mnm
-      if (1<=a%idiag(i).and.(a%idiag(i)<=size(a%ja,2))) &
-           &  d(i) = a%val(i,a%idiag(i))
+      if (1<=a%idiag(i).and.(a%idiag(i)<=size(a%ja,2))) then
+        d(i) = a%val(i,a%idiag(i))
+      else
+        d(i) = czero
+      end if
     end do
   end if
   do i=mnm+1,size(d) 

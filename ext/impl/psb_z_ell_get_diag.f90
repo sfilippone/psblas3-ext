@@ -58,8 +58,11 @@ subroutine psb_z_ell_get_diag(a,d,info)
     d(1:mnm) = zone
   else
     do i=1, mnm
-      if (1<=a%idiag(i).and.(a%idiag(i)<=size(a%ja,2))) &
-           &  d(i) = a%val(i,a%idiag(i))
+      if (1<=a%idiag(i).and.(a%idiag(i)<=size(a%ja,2))) then
+        d(i) = a%val(i,a%idiag(i))
+      else
+        d(i) = zzero
+      end if
     end do
   end if
   do i=mnm+1,size(d) 

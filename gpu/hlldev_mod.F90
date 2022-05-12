@@ -82,80 +82,80 @@ module hlldev_mod
 
   interface writeHllDevice 
 
-    function writeHllDeviceFloat(deviceMat,val,ja,hkoffs,irn) &
+    function writeHllDeviceFloat(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='writeHllDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       real(c_float)       :: val(*)
-      integer(c_int)      :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)      :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function writeHllDeviceFloat
 
-    function writeHllDeviceDouble(deviceMat,val,ja,hkoffs,irn) &
+    function writeHllDeviceDouble(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='writeHllDeviceDouble')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       real(c_double)      :: val(*)
-      integer(c_int)      :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)      :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function writeHllDeviceDouble
 
-    function writeHllDeviceFloatComplex(deviceMat,val,ja,hkoffs,irn) &
+    function writeHllDeviceFloatComplex(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='writeHllDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       complex(c_float_complex) :: val(*)
-      integer(c_int)           :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)           :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function writeHllDeviceFloatComplex
 
-    function writeHllDeviceDoubleComplex(deviceMat,val,ja,hkoffs,irn) &
+    function writeHllDeviceDoubleComplex(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='writeHllDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       complex(c_double_complex) :: val(*)
-      integer(c_int)           :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)           :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function writeHllDeviceDoubleComplex
 
   end interface
 
   interface readHllDevice 
 
-    function readHllDeviceFloat(deviceMat,val,ja,hkoffs,irn) &
+    function readHllDeviceFloat(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='readHllDeviceFloat')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       real(c_float)       :: val(*)
-      integer(c_int)      :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)      :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function readHllDeviceFloat
 
-    function readHllDeviceDouble(deviceMat,val,ja,hkoffs,irn) &
+    function readHllDeviceDouble(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='readHllDeviceDouble')
       use iso_c_binding
       integer(c_int)      :: res
       type(c_ptr), value  :: deviceMat
       real(c_double)      :: val(*)
-      integer(c_int)      :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)      :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function readHllDeviceDouble
 
-    function readHllDeviceFloatComplex(deviceMat,val,ja,hkoffs,irn) &
+    function readHllDeviceFloatComplex(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='readHllDeviceFloatComplex')
       use iso_c_binding
       integer(c_int)           :: res
       type(c_ptr), value       :: deviceMat
       complex(c_float_complex) :: val(*)
-      integer(c_int)           :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)           :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function readHllDeviceFloatComplex
 
-    function readHllDeviceDoubleComplex(deviceMat,val,ja,hkoffs,irn) &
+    function readHllDeviceDoubleComplex(deviceMat,val,ja,hkoffs,irn,idiag) &
          & result(res) bind(c,name='readHllDeviceDoubleComplex')
       use iso_c_binding
       integer(c_int)            :: res
       type(c_ptr), value        :: deviceMat
       complex(c_double_complex) :: val(*)
-      integer(c_int)            :: ja(*),irn(*),hkoffs(*)
+      integer(c_int)            :: ja(*),irn(*),hkoffs(*),idiag(*)
     end function readHllDeviceDoubleComplex
 
   end interface
@@ -178,7 +178,7 @@ module hlldev_mod
       integer(c_int), value  :: nr,nc,nza,hacksz,noffs,isz
       type(c_ptr), value     :: deviceMat
       real(c_float)          :: val(*)
-      integer(c_int)	     :: irn(*),idisp(*),ja(*), hoffs(*)
+      integer(c_int)	     :: irn(*), idisp(*), ja(*), hoffs(*)
     end function psiCopyCooToHlgFloat
     function psiCopyCooToHlgDouble(nr, nc, nza, hacksz, noffs, isz, irn, &
          &  hoffs, idisp, ja, val, deviceMat) &
@@ -188,7 +188,7 @@ module hlldev_mod
       integer(c_int), value   :: nr,nc,nza,hacksz,noffs,isz
       type(c_ptr), value      :: deviceMat
       real(c_double)          :: val(*)
-      integer(c_int)	      :: irn(*),idisp(*),ja(*), hoffs(*)
+      integer(c_int)	      :: irn(*), idisp(*), ja(*), hoffs(*)
     end function psiCopyCooToHlgDouble
     function psiCopyCooToHlgFloatComplex(nr, nc, nza, hacksz, noffs, isz, irn, &
          &  hoffs, idisp, ja, val, deviceMat) &
@@ -198,7 +198,7 @@ module hlldev_mod
       integer(c_int), value    :: nr,nc,nza,hacksz,noffs,isz
       type(c_ptr), value       :: deviceMat
       complex(c_float_complex) :: val(*)
-      integer(c_int)	       :: irn(*),idisp(*),ja(*), hoffs(*)
+      integer(c_int)	       :: irn(*), idisp(*), ja(*), hoffs(*)
     end function psiCopyCooToHlgFloatComplex
     function psiCopyCooToHlgDoubleComplex(nr, nc, nza, hacksz, noffs, isz, irn, &
          &  hoffs, idisp, ja, val, deviceMat) &
@@ -208,7 +208,7 @@ module hlldev_mod
       integer(c_int), value     :: nr,nc,nza,hacksz,noffs,isz
       type(c_ptr), value        :: deviceMat
       complex(c_double_complex) :: val(*)
-      integer(c_int)	        :: irn(*),idisp(*),ja(*), hoffs(*)
+      integer(c_int)	        :: irn(*), idisp(*), ja(*), hoffs(*)
     end function psiCopyCooToHlgDoubleComplex
   end interface
 

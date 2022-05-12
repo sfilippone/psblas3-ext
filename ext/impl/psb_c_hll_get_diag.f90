@@ -56,7 +56,7 @@ subroutine psb_c_hll_get_diag(a,d,info)
   end if
 
   if (a%is_triangle().and.a%is_unit()) then 
-    d(1:mnm) = done 
+    d(1:mnm) = cone
   else
 
     hksz = a%get_hksz()
@@ -76,7 +76,7 @@ subroutine psb_c_hll_get_diag(a,d,info)
   end if
 
   do i=mnm+1,size(d) 
-    d(i) = dzero
+    d(i) = czero
   end do
   call psb_erractionrestore(err_act)
   return
@@ -98,7 +98,11 @@ contains
     info = psb_success_
     
     do i=1,m
-      d(i) = val(i,idiag(i))
+      if (idiag(i) /= 0) then 
+        d(i) = val(i,idiag(i))
+      else
+        d(i) = czero
+      end if
     end do
 
   end subroutine psb_c_hll_get_diag_inner

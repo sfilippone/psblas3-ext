@@ -69,7 +69,7 @@ subroutine psb_s_hlg_from_gpu(a,info)
   if (info == 0) call psb_realloc((hackOffsLength+1),a%hkoffs,info)
   
   if (info == 0) info = &
-       & readHllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn)
+       & readHllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn,a%idiag)
   call a%set_sync()
 #endif
 

@@ -26,8 +26,11 @@ psi_cuda_s_CopyCooToElg.o psi_cuda_s_CopyCooToHlg.o \
 psi_cuda_z_CopyCooToElg.o psi_cuda_z_CopyCooToHlg.o 
 
 
+
 lib: $(CUDAOBJS)
 	ar cur ../$(LIBNAME) $(CUDAOBJS)
+
+$(CUDAOBJS): psi_cuda_common.cuh psi_cuda_CopyCooToElg.cuh psi_cuda_CopyCooToHlg.cuh
 
 clean:
 	/bin/rm -f $(CUDAOBJS)

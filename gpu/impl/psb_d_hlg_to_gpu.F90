@@ -61,7 +61,7 @@ subroutine psb_d_hlg_to_gpu(a,info,nzrm)
   endif
   info       = FallochllDevice(a%deviceMat,a%hksz,n,nza,allocsize,spgpu_type_double,1)
   if (info == 0)  info = &
-       & writehllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn)
+       & writehllDevice(a%deviceMat,a%val,a%ja,a%hkoffs,a%irn,a%idiag)
 !  if (info /= 0) goto 9999
 #endif
 

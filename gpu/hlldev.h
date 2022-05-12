@@ -45,8 +45,9 @@ typedef struct hlldevice
   // row pointers (same size of cM)
   int *rP;
   
-  // row size
+  // row size and diagonal position
   int *rS;
+  int *diag;
 
   int *hackOffs;
 
@@ -102,18 +103,18 @@ int FallocHllDevice(void** deviceMat,unsigned int hksize, unsigned int rows,  un
 		    unsigned int allocsize, unsigned int elementType, unsigned int firstIndex);
 int allocHllDevice(void ** remoteMatrix, HllDeviceParams* params);
 void freeHllDevice(void* remoteMatrix);
-int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn);
-int writeHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn);
+int writeHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn, int *idiag);
+int writeHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn, int *idiag);
 int writeHllDeviceFloatComplex(void* deviceMat, float complex* val, 
-			       int* ja, int *hkoffs, int* irn);
+			       int* ja, int *hkoffs, int* irn, int *idiag);
 int writeHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
-				int* ja, int *hkoffs, int* irn);
-int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn);
-int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn);
+				int* ja, int *hkoffs, int* irn, int *idiag);
+int readHllDeviceFloat(void* deviceMat, float* val, int* ja, int *hkoffs, int* irn, int *idiag);
+int readHllDeviceDouble(void* deviceMat, double* val, int* ja, int *hkoffs, int* irn, int *idiag);
 int readHllDeviceFloatComplex(void* deviceMat, float complex* val,
-			      int* ja, int *hkoffs, int* irn);
+			      int* ja, int *hkoffs, int* irn, int *idiag);
 int readHllDeviceDoubleComplex(void* deviceMat, double complex* val, 
-			       int* ja, int *hkoffs, int* irn);
+			       int* ja, int *hkoffs, int* irn, int *idiag);
 
 
 int psiCopyCooToHlgFloat(int nr, int nc, int nza, int hacksz, int noffs, int isz,
@@ -132,21 +133,25 @@ int psiCopyCooToHlgDoubleComplex(int nr, int nc, int nza, int hacksz,
 				 double complex *val, void *deviceMat);
 
 int psi_cuda_s_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
-			    int hacksz, int noffs, int isz,
-			    int *irn, int *hoffs,  int *idisp, int *ja, 
-			    float *val, int *rP, float *cM);
+			    int baseIdx, int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp,
+			    int *ja, float *val,
+			    int *idiag, int *rP, float *cM);
 int psi_cuda_d_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
-			    int hacksz, int noffs, int isz,
-			    int *irn, int *hoffs,  int *idisp, int *ja, 
-			    double *val, int *rP, double *cM);
+			    int baseIdx, int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp,
+			    int *ja, double *val,
+			    int *idiag, int *rP, double *cM);
 int psi_cuda_c_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
-			    int hacksz, int noffs, int isz,
-			    int *irn, int *hoffs,  int *idisp, int *ja, 
-			    float complex *val, int *rP, float complex *cM);
+			    int baseIdx, int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp,
+			    int *ja, float complex *val,
+			    int *idiag, int *rP, float complex *cM);
 int psi_cuda_z_CopyCooToHlg(spgpuHandle_t handle,int nr, int nc, int nza, 
-			    int hacksz, int noffs, int isz,
-			    int *irn, int *hoffs,  int *idisp, int *ja, 
-			    double complex *val, int *rP, double complex *cM);
+			    int baseIdx, int hacksz, int noffs, int isz,
+			    int *irn, int *hoffs,  int *idisp,
+			    int *ja, double complex *val,
+			    int *idiag, int *rP, double complex *cM);
 
 
 #else

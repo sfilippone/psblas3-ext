@@ -46,7 +46,7 @@ struct EllDevice
 
   // row pointers (same size of cM)
   int *rP;
-  
+  int *diag;
   // row size
   int *rS;
 
@@ -104,15 +104,15 @@ int FallocEllDevice(void** deviceMat, unsigned int rows, unsigned int maxRowSize
 int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params);
 void freeEllDevice(void* remoteMatrix);
 
-int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
-int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn);
-int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
-int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn, int *idiag);
+int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn, int *idiag);
+int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn, int *idiag);
+int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn, int *idiag);
 
-int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn);
-int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn);
-int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn);
-int readEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn);
+int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn, int *idiag);
+int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn, int *idiag);
+int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn, int *idiag);
+int readEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn, int *idiag);
 
 int spmvEllDeviceFloat(void *deviceMat, float alpha, void* deviceX, 
 		       float beta, void* deviceY);
@@ -138,21 +138,25 @@ int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, i
 			  int *idisp, int *ja, double complex *val, void *deviceMat);
 
 
-void psi_cuda_s_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
-		   int *rS,int *devIdisp, int *devJa, float *devVal,
-		   int *rP, float *cM);
+void psi_cuda_s_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int baseIdx,
+			     int hacksz, int ldv, int nzm,
+			     int *rS,int *devIdisp, int *devJa, float *devVal,
+			     int *idiag, int *rP, float *cM);
 
-void psi_cuda_d_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
-		   int *rS,int *devIdisp, int *devJa, double *devVal,
-		   int *rP, double *cM);
+void psi_cuda_d_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int baseIdx,
+			     int hacksz, int ldv, int nzm,
+			     int *rS,int *devIdisp, int *devJa, double *devVal,
+			     int *idiag, int *rP, double *cM);
 
-void psi_cuda_c_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
-		   int *rS,int *devIdisp, int *devJa, float complex *devVal,
-		   int *rP, float complex *cM);
+void psi_cuda_c_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int baseIdx,
+			     int hacksz, int ldv, int nzm,
+			     int *rS,int *devIdisp, int *devJa, float complex *devVal,
+			     int *idiag, int *rP, float complex *cM);
 
-void psi_cuda_z_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int ldv, int nzm,
-		   int *rS,int *devIdisp, int *devJa, double complex *devVal,
-		   int *rP, double complex *cM);
+void psi_cuda_z_CopyCooToElg(spgpuHandle_t handle, int nr, int nc, int nza, int baseIdx,
+			     int hacksz, int ldv, int nzm,
+			     int *rS,int *devIdisp, int *devJa, double complex *devVal,
+			     int *idiag, int *rP, double complex *cM);
 
 
 int dev_csputEllDeviceFloat(void* deviceMat, int nnz,
