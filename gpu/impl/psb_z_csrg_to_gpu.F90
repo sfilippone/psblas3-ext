@@ -170,7 +170,7 @@ subroutine psb_z_csrg_to_gpu(a,info,nzrm)
         info = CSRGDeviceSetMatFillMode(a%deviceMat,cusparse_fill_mode_lower)
       end if
     end if
-    if (info == 0) allocate(irpdi(m+1),jadi(nzdi),valdi(nzdi),stat=info)
+    if (info == 0) allocate(irpdi(m+1),jadi(0:nzdi),valdi(0:nzdi),stat=info)
     if (info == 0) then 
       irpdi(1) = 0
       if (a%is_triangle().and.a%is_upper()) then 
@@ -222,10 +222,10 @@ subroutine psb_z_csrg_to_gpu(a,info,nzrm)
       end if
     end if
     nzdi=a%irp(m+1)-1
-    if (info == 0) allocate(irpdi(m+1),jadi(nzdi),stat=info)
+    if (info == 0) allocate(irpdi(m+1),jadi(max(nzdi,1)),stat=info)
     if (info == 0) then
-      irpdi(:) = a%irp(:) -1
-      jadi(:) = a%ja(:) -1
+      irpdi(1:m+1) = a%irp(1:m+1) -1
+      jadi(1:nzdi) = a%ja(1:nzdi) -1
     end if
     if (info == 0) info = CSRGHost2Device(a%deviceMat,m,n,nz,irpdi,jadi,a%val)
 !!$    write(0,*) 'Done Host2Device', info

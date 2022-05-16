@@ -318,29 +318,34 @@ int T_CSRGDeviceAlloc(T_Cmat *Matrix,int nr, int nc, int nz)
 #elif CUDA_VERSION <  11030
   if ((rc= cusparseCreateMatDescr(&(cMat->descr))) !=0) 
     return(rc);
-  cusparseSetMatType(cMat->descr,CUSPARSE_MATRIX_TYPE_GENERAL);
-  cusparseSetMatDiagType(cMat->descr,CUSPARSE_DIAG_TYPE_NON_UNIT);
-  cusparseSetMatIndexBase(cMat->descr,CUSPARSE_INDEX_BASE_ZERO);
+  CHECK_CUSPARSE(cusparseSetMatType(cMat->descr,CUSPARSE_MATRIX_TYPE_GENERAL));
+  CHECK_CUSPARSE(cusparseSetMatDiagType(cMat->descr,CUSPARSE_DIAG_TYPE_NON_UNIT));
+  CHECK_CUSPARSE(cusparseSetMatIndexBase(cMat->descr,CUSPARSE_INDEX_BASE_ONE));
   CHECK_CUSPARSE(cusparseCreateCsrsv2Info(&(cMat->triang)));
-  cusparseTcsrsv2_bufferSize(*my_handle,
-			     CUSPARSE_OPERATION_NON_TRANSPOSE,
-			     cMat->m,cMat->nz,
-			     cMat->descr,
-			     cMat->val, cMat->irp, cMat->ja,
-			     cMat->triang, &bfsz);
+  if (cMat->nz > 0) {
+    CHECK_CUSPARSE(cusparseTcsrsv2_bufferSize(*my_handle,
+					      CUSPARSE_OPERATION_NON_TRANSPOSE,
+					      cMat->m,cMat->nz, cMat->descr,
+					      cMat->val, cMat->irp, cMat->ja,
+					      cMat->triang, &bfsz));
+  } else {
+    bfsz = 0;
+  }
+    
   /* if (cMat->svbuffer != NULL) { */
   /*   fprintf(stderr,"Calling cudaFree\n"); */
   /*   CHECK_CUDA(cudaFree(cMat->svbuffer)); */
   /*   cMat->svbuffer = NULL; */
   /* } */
-  CHECK_CUDA(cudaMalloc((void **) &(cMat->svbuffer), bfsz));
+  if (bfsz > 0) {
+    CHECK_CUDA(cudaMalloc((void **) &(cMat->svbuffer), bfsz));
+  } else {
+    cMat->svbuffer=NULL;
+  }
   cMat->svbsize=bfsz;
-  CHECK_CUSPARSE(cusparseTcsrsv2_analysis(*my_handle,
-			   CUSPARSE_OPERATION_NON_TRANSPOSE,
-			   cMat->m,cMat->nz,  cMat->descr,
-			   cMat->val, cMat->irp, cMat->ja,
-			   cMat->triang, CUSPARSE_SOLVE_POLICY_USE_LEVEL,
-					  cMat->svbuffer));
+  
+  cMat->mvbuffer=NULL;
+  cMat->mvbsize = 0;
   
 
 #else
@@ -516,6 +521,7 @@ int T_CSRGHost2Device(T_Cmat *Matrix, int m, int n, int nz,
 {
   int rc;
   T_CSRGDeviceMat *cMat= Matrix->mat;
+  cusparseHandle_t *my_handle=getHandle();
   
   if ((rc=writeRemoteBuffer((void *) irp, (void *) cMat->irp, 
 			    (m+1)*sizeof(int)))
@@ -530,6 +536,17 @@ int T_CSRGHost2Device(T_Cmat *Matrix, int m, int n, int nz,
 			    (nz)*sizeof(TYPE)))
       != SPGPU_SUCCESS) 
     return(rc);
+#if (CUDA_SHORT_VERSION > 10  ) && (CUDA_VERSION <  11030)
+  if (cusparseGetMatType(cMat->descr)== CUSPARSE_MATRIX_TYPE_TRIANGULAR) {
+    // Why do we need to set TYPE_GENERAL??? cuSPARSE can be misterious sometimes. 
+    cusparseSetMatType(cMat->descr,CUSPARSE_MATRIX_TYPE_GENERAL);
+    CHECK_CUSPARSE(cusparseTcsrsv2_analysis(*my_handle,CUSPARSE_OPERATION_NON_TRANSPOSE,
+					  cMat->m,cMat->nz,  cMat->descr,
+					  cMat->val, cMat->irp, cMat->ja,
+					  cMat->triang, CUSPARSE_SOLVE_POLICY_USE_LEVEL,
+					  cMat->svbuffer));
+  }
+#endif
   return(CUSPARSE_STATUS_SUCCESS);
 }
 
