@@ -1,12 +1,12 @@
 include Make.inc
 
-all: libd $(TARGETS)
+all: dirs $(TARGETS)
 	@echo "====================================="
 	@echo "PSBLAS-GPU library Compilation Successful."
 
-extd: libd
+extd: dirs
 
-libd:
+dirs:
 	(if test ! -d lib ; then mkdir lib; fi)
 	(if test ! -d include ; then mkdir include; fi; $(INSTALL_DATA) Make.inc  include/Make.inc.ext)
 	(if test ! -d modules ; then mkdir modules; fi;)	

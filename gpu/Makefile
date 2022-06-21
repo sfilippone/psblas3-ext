@@ -50,15 +50,15 @@ COBJS= elldev.o hlldev.o diagdev.o hdiagdev.o vectordev.o  ivectordev.o dnsdev.o
 
 OBJS=$(COBJS) $(FOBJS)
 
-lib: cmp ilib cudalib copy 
+lib: objs
 
-cmp: $(OBJS) 
-	ar cur $(LIBNAME) $(OBJS)
-
-copy: cmp ilib
-	/bin/cp -p $(LIBNAME) $(LIBDIR)
+objs: $(OBJS) iobjs cudaobjs
 	/bin/cp -p *$(.mod) $(MODDIR)
 	/bin/cp -p *.h $(INCDIR)
+
+lib: ilib cudalib
+	ar cur $(LIBNAME) $(OBJS)
+	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
 dnsdev_mod.o hlldev_mod.o elldev_mod.o psb_base_vectordev_mod.o: core_mod.o
 psb_d_gpu_vect_mod.o psb_s_gpu_vect_mod.o psb_z_gpu_vect_mod.o psb_c_gpu_vect_mod.o: psb_i_gpu_vect_mod.o
@@ -114,10 +114,16 @@ psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 	psb_s_dnsg_mat_mod.o psb_d_dnsg_mat_mod.o \
 	psb_c_dnsg_mat_mod.o psb_z_dnsg_mat_mod.o 
 
-ilib: cmp 
-	$(MAKE) -C impl LIBNAME=$(LIBNAME)
-cudalib: cmp 
-	$(MAKE) -C CUDA LIBNAME=$(LIBNAME)
+iobjs: objs
+	$(MAKE) -C impl objs
+cudaobjs: objs
+	$(MAKE) -C CUDA objs
+
+ilib: objs
+	$(MAKE) -C impl lib LIBNAME=$(LIBNAME)
+cudalib: objs
+	$(MAKE) -C CUDA lib LIBNAME=$(LIBNAME)
+
 clean: cclean iclean cudaclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a
 
