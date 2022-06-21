@@ -59,6 +59,7 @@ subroutine psb_c_hlg_inner_vect_sv(alpha,a,x,beta,y,info,trans)
   
   call x%sync()
   call y%sync()
+  if (a%is_dev()) call a%sync()
   call a%psb_c_hll_sparse_mat%inner_spsm(alpha,x,beta,y,info,trans)
   call y%set_host()
 

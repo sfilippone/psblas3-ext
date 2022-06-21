@@ -56,7 +56,7 @@ subroutine psb_d_hll_get_diag(a,d,info)
   end if
 
   if (a%is_triangle().and.a%is_unit()) then 
-    d(1:mnm) = done 
+    d(1:mnm) = done
   else
 
     hksz = a%get_hksz()
@@ -98,7 +98,11 @@ contains
     info = psb_success_
     
     do i=1,m
-      d(i) = val(i,idiag(i))
+      if (idiag(i) /= 0) then 
+        d(i) = val(i,idiag(i))
+      else
+        d(i) = dzero
+      end if
     end do
 
   end subroutine psb_d_hll_get_diag_inner

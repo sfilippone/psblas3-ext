@@ -77,6 +77,7 @@ subroutine psb_d_hlg_vect_mv(alpha,a,x,beta,y,info,trans)
     if (beta /= dzero) then 
       if (.not.y%is_host()) call y%sync()
     end if
+    if (a%is_dev()) call a%sync()    
     call a%psb_d_hll_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
     call y%set_host()
   else
@@ -100,12 +101,14 @@ subroutine psb_d_hlg_vect_mv(alpha,a,x,beta,y,info,trans)
       class default
         rx = xx%get_vect()
         ry = y%get_vect()
+        if (a%is_dev()) call a%sync()
         call a%spmm(alpha,rx,beta,ry,info)
         call y%bld(ry)
       end select
     class default
       rx = x%get_vect()
       ry = y%get_vect()
+      if (a%is_dev()) call a%sync()
       call a%spmm(alpha,rx,beta,ry,info)
       call y%bld(ry)
     end select

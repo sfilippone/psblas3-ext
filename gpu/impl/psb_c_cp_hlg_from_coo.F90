@@ -85,7 +85,7 @@ subroutine psb_c_cp_hlg_from_coo(a,b,info)
     endif
     info = FallochllDevice(a%deviceMat,hksz,nr,nza,isz,spgpu_type_double,1)
     if (info == 0) info = psi_CopyCooToHlg(nr,nc,nza, hksz,noffs,isz,&
-         &  a%irn,a%hkoffs,idisp,b%ja, b%val, a%deviceMat)
+         &  a%irn,a%hkoffs,idisp,a%idiag,b%ja, b%val, a%deviceMat)
     call a%set_dev()
   else
     ! This is to guarantee tmp%is_by_rows()
@@ -108,7 +108,7 @@ subroutine psb_c_cp_hlg_from_coo(a,b,info)
     endif
     info = FallochllDevice(a%deviceMat,hksz,nr,nza,isz,spgpu_type_double,1)
     if (info == 0) info = psi_CopyCooToHlg(nr,nc,nza, hksz,noffs,isz,&
-         &  a%irn,a%hkoffs,idisp,tmp%ja, tmp%val, a%deviceMat)
+         &  a%irn,a%hkoffs,idisp,a%idiag,tmp%ja, tmp%val, a%deviceMat)
 
     call tmp%free()
     call a%set_dev()
