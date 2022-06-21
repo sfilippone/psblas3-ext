@@ -15,9 +15,10 @@
 extern "C" {
 #endif
 
-void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int noffs, int isz, 
-				    int *rS, int *hackOffs, int *devIdisp, int *devJa, VALUE_TYPE *devVal, 
-				    int *rP, VALUE_TYPE *cM); 
+void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nza, int baseIdx, int hacksz,
+				    int noffs, int isz, int *rS, int *hackOffs, int *devIdisp,
+				    int *devJa, VALUE_TYPE *devVal, 
+				    int *idiag, int *rP, VALUE_TYPE *cM); 
   
   
 
@@ -27,10 +28,10 @@ void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nz
 
 
 __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, int nr, int nza,
-					  int hacksz, int noffs, int isz,
-					  int *rS, int *hackOffs, int *devIdisp, 
-					  int *devJa, VALUE_TYPE *devVal, 
-					  int *rP, VALUE_TYPE *cM)
+							    int baseIdx, int hacksz, int noffs, int isz,
+							    int *rS, int *hackOffs, int *devIdisp, 
+							    int *devJa, VALUE_TYPE *devVal, 
+							    int *idiag, int *rP, VALUE_TYPE *cM)
 {
   int ir, k, ipnt, rsz,jc;
   int ki = threadIdx.x + blockIdx.x * (THREAD_BLOCK);
@@ -44,12 +45,14 @@ __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, in
     int hackLaneId = i % hacksz;
     int hackOffset = hackOffs[hackId] + hackLaneId;
     int nzm = (hackOffs[hackId+1]-hackOffs[hackId])/hacksz;
+    int idval=0;
     rsz  = rS[i];
     ipnt = devIdisp[i];
     ir   = hackOffset;
     for (k=0; k<rsz; k++) {
-      rP[ir] = devJa[ipnt];
       cM[ir] = devVal[ipnt];
+      if (devJa[ipnt] == i+baseIdx) idval = ipnt-devIdisp[i]+baseIdx;
+      rP[ir] = devJa[ipnt];
       ir += hacksz;
       ipnt++;
     }
@@ -61,6 +64,7 @@ __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, in
       cM[ir] = CONCAT(zero_,VALUE_TYPE)();
       ir += hacksz;
     }
+    idiag[i]=idval;    
   }
     
 }    
@@ -69,24 +73,26 @@ __global__ void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)(int ii, int nrws, in
 
 
 
-void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_)(spgpuHandle_t handle, int nrws, int i, int nr, int nza,
-			   int hacksz, int noffs, int isz,
+void CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_)(spgpuHandle_t handle, int nrws, int i,
+                           int nr, int nza, int baseIdx, int hacksz, int noffs, int isz,
 			   int *rS, int *hackOffs, int *devIdisp, int *devJa,
-			   VALUE_TYPE *devVal,  int *rP, VALUE_TYPE *cM)
+			   VALUE_TYPE *devVal,  int *idiag, int *rP, VALUE_TYPE *cM)
 {
   dim3 block (THREAD_BLOCK, 1);
   dim3 grid ((nrws + THREAD_BLOCK - 1) / THREAD_BLOCK);
   
   CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_krn)
-    <<< grid, block, 0, handle->currentStream >>>(i,nrws,nr, nza, hacksz, noffs, isz,
-						  rS,hackOffs,devIdisp,devJa,devVal,rP,cM);
+    <<< grid, block, 0, handle->currentStream >>>(i,nrws,nr, nza, baseIdx, hacksz, noffs, isz,
+						  rS,hackOffs,devIdisp,devJa,devVal,idiag,rP,cM);
 
 }
 
 
-void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nza, int hacksz, int noffs, int isz, 
-				    int *rS, int *hackOffs, int *devIdisp, int *devJa, VALUE_TYPE *devVal,
-				    int *rP, VALUE_TYPE *cM)
+void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nza,
+				    int baseIdx, int hacksz, int noffs, int isz, 
+				    int *rS, int *hackOffs, int *devIdisp,
+				    int *devJa, VALUE_TYPE *devVal,
+				    int *idiag, int *rP, VALUE_TYPE *cM)
 { int i, nrws;
   //int maxNForACall = THREAD_BLOCK*handle->maxGridSizeX;
   int maxNForACall = max(handle->maxGridSizeX, THREAD_BLOCK*handle->maxGridSizeX);
@@ -95,8 +101,8 @@ void GEN_PSI_FUNC_NAME(TYPE_SYMBOL)(spgpuHandle_t handle, int nr, int nc, int nz
   for (i=0; i<nr; i+=nrws) {
     nrws = MIN(maxNForACall, nr - i);
     //fprintf(stderr,"cpy_coo_2_hlg:  i : %d nrws: %d \n", i,nrws);
-    CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_)(handle,nrws,i, nr, nza, hacksz, noffs, isz,
-			  rS, hackOffs, devIdisp, devJa, devVal,  rP, cM);
+    CONCAT(GEN_PSI_FUNC_NAME(TYPE_SYMBOL),_)(handle,nrws,i, nr, nza, baseIdx, hacksz, noffs, isz,
+					     rS, hackOffs, devIdisp, devJa, devVal, idiag, rP, cM);
   }
 
 }

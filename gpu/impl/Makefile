@@ -288,7 +288,9 @@ psb_d_dnsg_mat_impl.o \
 psb_c_dnsg_mat_impl.o \
 psb_z_dnsg_mat_impl.o 
 
-lib: $(OBJS)
+
+objs: $(OBJS)
+lib:  objs
 	ar cur ../$(LIBNAME) $(OBJS)
 
 clean:

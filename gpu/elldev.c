@@ -78,6 +78,7 @@ int allocEllDevice(void ** remoteMatrix, EllDeviceParams* params)
   tmp->allocsize = (int)tmp->maxRowSize * tmp->pitch;
   //tmp->allocsize = (int)params->maxRowSize * tmp->cMPitch;
   allocRemoteBuffer((void **)&(tmp->rS), tmp->rows*sizeof(int));
+  allocRemoteBuffer((void **)&(tmp->diag), tmp->rows*sizeof(int));
   allocRemoteBuffer((void **)&(tmp->rP), tmp->allocsize*sizeof(int));
   tmp->columns = params->columns;
   tmp->baseIndex = params->firstIndex;
@@ -335,14 +336,15 @@ int spmvEllDeviceDoubleComplex(void *deviceMat, double complex alpha, void* devi
 #endif
 }
 
-int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
+int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   // Ex updateFromHost function
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
-  i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
-  i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
   //i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","writeEllDeviceFloat",i);
@@ -353,7 +355,7 @@ int writeEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
 #endif
 }
 
-int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn)
+int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
@@ -361,6 +363,7 @@ int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* ir
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  if (i==0) i = writeRemoteBuffer((void*) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
 
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);*/
   if (i != 0) {
@@ -372,7 +375,7 @@ int writeEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* ir
 #endif
 }
 
-int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn)
+int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
@@ -380,6 +383,7 @@ int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = writeRemoteBuffer((void*) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
 
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
@@ -391,7 +395,7 @@ int writeEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int
 #endif
 }
 
-int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn)
+int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
@@ -399,6 +403,7 @@ int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, i
   i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = writeRemoteBuffer((void*) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = writeRemoteBuffer((void*) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
 
   /*i = writeEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
@@ -410,13 +415,14 @@ int writeEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, i
 #endif
 }
 
-int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
+int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = readRemoteBuffer((void *) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
   /*i = readEllDevice(deviceMat, (void *) val, ja, irn);
   if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceFloat",i);
@@ -427,13 +433,14 @@ int readEllDeviceFloat(void* deviceMat, float* val, int* ja, int ldj, int* irn)
 #endif
 }
 
-int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn)
+int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = readRemoteBuffer((void *) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -443,13 +450,14 @@ int readEllDeviceDouble(void* deviceMat, double* val, int* ja, int ldj, int* irn
 #endif
 }
 
-int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn)
+int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuFloatComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = readRemoteBuffer((void *) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -459,13 +467,14 @@ int readEllDeviceFloatComplex(void* deviceMat, float complex* val, int* ja, int 
 #endif
 }
 
-int readEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn)
+int readEllDeviceDoubleComplex(void* deviceMat, double complex* val, int* ja, int ldj, int* irn, int *idiag)
 { int i;
 #ifdef HAVE_SPGPU
   struct EllDevice *devMat = (struct EllDevice *) deviceMat;
   i = readRemoteBuffer((void *) val, (void *)devMat->cM, devMat->allocsize*sizeof(cuDoubleComplex));
   i = readRemoteBuffer((void *) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
   i = readRemoteBuffer((void *) irn, (void *)devMat->rS, devMat->rows*sizeof(int));
+  i = readRemoteBuffer((void *) idiag, (void *)devMat->diag, devMat->rows*sizeof(int));
   /*if (i != 0) {
     fprintf(stderr,"From routine : %s : %d \n","readEllDeviceDouble",i);
   }*/
@@ -521,9 +530,9 @@ int psiCopyCooToElgFloat(int nr, int nc, int nza, int hacksz, int ldv, int nzm, 
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_s_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_s_CopyCooToElg(handle,nr,nc,nza,devMat->baseIndex,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
-				    (int *) devMat->rP, (float *)devMat->cM);
+				    (int *) devMat->diag, (int *) devMat->rP, (float *)devMat->cM);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -564,9 +573,9 @@ int psiCopyCooToElgDouble(int nr, int nc, int nza, int hacksz, int ldv, int nzm,
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_d_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_d_CopyCooToElg(handle,nr,nc,nza,devMat->baseIndex,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
-				    (int *) devMat->rP, (double *)devMat->cM);
+				    (int *) devMat->diag, (int *) devMat->rP, (double *)devMat->cM);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -606,9 +615,9 @@ int psiCopyCooToElgFloatComplex(int nr, int nc, int nza, int hacksz, int ldv, in
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_c_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_c_CopyCooToElg(handle,nr,nc,nza,devMat->baseIndex,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
-				    (int *) devMat->rP, (float complex *)devMat->cM);
+				    (int *) devMat->diag,(int *) devMat->rP, (float complex *)devMat->cM);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(float complex));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));
@@ -649,9 +658,9 @@ int psiCopyCooToElgDoubleComplex(int nr, int nc, int nza, int hacksz, int ldv, i
   if (i==0) i = writeRemoteBuffer((void*) irn, (void *) devMat->rS, devMat->rows*sizeof(int));
   if (i==0) i = writeRemoteBuffer((void*) idisp, (void *) devIdisp, (devMat->rows+1)*sizeof(int));
 
-  if (i==0) psi_cuda_z_CopyCooToElg(handle,nr,nc,nza,hacksz,ldv,nzm,
+  if (i==0) psi_cuda_z_CopyCooToElg(handle,nr,nc,nza,devMat->baseIndex,hacksz,ldv,nzm,
 				    (int *) devMat->rS,devIdisp,devJa,devVal,
-				    (int *) devMat->rP, (double complex *)devMat->cM);
+				    (int *) devMat->diag,(int *) devMat->rP, (double complex *)devMat->cM);
   // Ex updateFromHost function
   //i = writeRemoteBuffer((void*) val, (void *)devMat->cM, devMat->allocsize*sizeof(double complex));
   //if (i==0) i = writeRemoteBuffer((void*) ja, (void *)devMat->rP, devMat->allocsize*sizeof(int));

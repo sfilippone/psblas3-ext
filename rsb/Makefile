@@ -27,18 +27,13 @@ COBJS= rsb_int.o
 
 OBJS=$(COBJS) $(FOBJS)
 
-lib: cmp mcopy ilib copy
-
-cmp: $(OBJS) 
-	ar cur $(LIBNAME) $(OBJS)
-
-copy: cmp ilib
+lib: objs ilib 
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
-mcopy: cmp
+objs: $(OBJS) 
 	/bin/cp -p *$(.mod) $(MODDIR)
 
-ilib: cmp 
+ilib: objs
 	$(MAKE) -C impl LIBNAME=$(LIBNAME)
 
 clean: cclean iclean

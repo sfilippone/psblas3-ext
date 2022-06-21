@@ -177,7 +177,19 @@ int writeRemoteBuffer(void* hostSrc, void* buffer, int count)
 
 int readRemoteBuffer(void* hostDest, void* buffer, int count)
 {
-  cudaError_t err = cudaMemcpy(hostDest, buffer, count, cudaMemcpyDeviceToHost);
+
+  
+  cudaError_t err1;
+  cudaError_t err;
+#if 0 
+  {
+    err1      =cudaGetLastError();
+    fprintf(stderr,"CUDA Error prior to readRemoteBuffer: %s %d\n", 
+	  cudaGetErrorString(err1),err1);
+  }
+  
+#endif
+  err = cudaMemcpy(hostDest, buffer, count, cudaMemcpyDeviceToHost);
 
   if (err == cudaSuccess)
     return SPGPU_SUCCESS;	
