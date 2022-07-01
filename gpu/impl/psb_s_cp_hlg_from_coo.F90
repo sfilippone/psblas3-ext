@@ -72,7 +72,7 @@ subroutine psb_s_cp_hlg_from_coo(a,b,info)
     nr   = b%get_nrows()
     nc   = b%get_ncols()
     nza  = b%get_nzeros()
-    if (debug) write(0,*) 'Copying through GPU'
+    if (debug) write(0,*) 'Copying through GPU',nza
     call  psi_compute_hckoff_from_coo(a,noffs,isz,hksz,idisp,b,info)
     if (info /=0) then 
       write(0,*) ' Error from psi_compute_hckoff:',info, noffs,isz

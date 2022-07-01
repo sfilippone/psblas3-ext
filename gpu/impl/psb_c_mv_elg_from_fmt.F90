@@ -64,6 +64,7 @@ subroutine psb_c_mv_elg_from_fmt(a,b,info)
     nzm = size(b%ja,2)  
     m   = b%get_nrows()
     nc  = b%get_ncols()
+    nza = b%get_nzeros()
 #ifdef HAVE_SPGPU
     gpu_parms = FgetEllDeviceParams(m,nzm,nza,nc,spgpu_type_double,1)
     ld  = gpu_parms%pitch
