@@ -19,8 +19,8 @@ LDLIBS=$(PSBGPULDLIBS)
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG)$(MODDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
-          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) 
+FINCLUDES=$(FMFLAG)$(LIBDIR) $(FMFLAG)$(MODDIR) $(FMFLAG). \
+          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR)  $(PSBLAS_INCLUDES)
 
 DFSOBJS=df_sample.o data_input.o
 SFSOBJS=sf_sample.o data_input.o

@@ -1,4 +1,4 @@
-include ../../Make.inc
+include ../../../Make.inc
 #
 # Libraries used
 #
@@ -22,8 +22,8 @@ LDLIBS=$(PSBLDLIBS)
 # Compilers and such
 #
 CCOPT= -g
-FINCLUDES=$(FMFLAG)$(MODDIR) $(FMFLAG)$(LIBDIR) $(FMFLAG). $(FMFLAG)$(PSBINCDIR) \
-          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) 
+FINCLUDES=$(FMFLAG)$(MODDIR) $(FMFLAG)$(LIBDIR) $(FMFLAG). \
+          $(FMFLAG)$(MLDINCDIR) $(FMFLAG)$(AINVINCDIR) $(PSBLAS_INCLUDES) 
 
 
 EXEDIR=./runs
