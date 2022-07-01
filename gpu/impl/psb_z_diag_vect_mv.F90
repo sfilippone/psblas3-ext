@@ -80,6 +80,7 @@ subroutine psb_z_diag_vect_mv(alpha,a,x,beta,y,info,trans)
     call a%psb_z_dia_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
     call y%set_host()
   else
+    if (a%is_host()) call a%sync()    
     select type (xx => x) 
     type is (psb_z_vect_gpu)
       select type(yy => y) 
