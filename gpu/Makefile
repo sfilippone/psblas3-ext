@@ -114,9 +114,9 @@ psb_gpu_mod.o:  psb_gpu_env_mod.o psb_i_gpu_vect_mod.o\
 	psb_s_dnsg_mat_mod.o psb_d_dnsg_mat_mod.o \
 	psb_c_dnsg_mat_mod.o psb_z_dnsg_mat_mod.o 
 
-iobjs: objs
+iobjs: $(FOBJS)
 	$(MAKE) -C impl objs
-cudaobjs: objs
+cudaobjs: $(FOBJS)
 	$(MAKE) -C CUDA objs
 
 ilib: objs

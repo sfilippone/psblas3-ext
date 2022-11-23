@@ -81,6 +81,7 @@ subroutine psb_s_elg_vect_mv(alpha,a,x,beta,y,info,trans)
     call a%psb_s_ell_sparse_mat%spmm(alpha,x,beta,y,info,trans) 
     call y%set_host()
   else
+    if (a%is_host()) call a%sync()    
     select type (xx => x) 
     type is (psb_s_vect_gpu)
       select type(yy => y) 
