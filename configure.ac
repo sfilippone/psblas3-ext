@@ -114,7 +114,8 @@ if test ! -f "$pac_cv_status_file" ; then
   #AC_MSG_ERROR([Could not find an installation  in $LIBRSB_DIR.])
 else
   AC_MSG_RESULT([$LIBRSB_DIR])
-  RSBTARGET=rsbd;
+  RSBTARGETLIB=rsbd;
+  RSBTARGETOBJ=rsbobj;	
 fi
 
 dnl. $pac_cv_status_file
@@ -337,10 +338,11 @@ CUDA_VERSION="$pac_cv_cuda_version";
 CUDA_SHORT_VERSION=$(expr $pac_cv_cuda_version / 1000);
 PAC_CHECK_SPGPU()
 if test "x$pac_cv_have_spgpu" == "xyes" ; then 
-   GPUTARGET=gpud;
+   GPUTARGETOBJ=gpuobj;
+   GPUTARGETLIB=gpud;	
    EXTRALDLIBS="-lstdc++";
 fi
-AC_MSG_NOTICE([At this point GPUTARGET is $GPUTARGET])
+AC_MSG_NOTICE([At this point GPUTARGET is $GPUTARGETLIB $GPUTARGETOBJ])
 
 PAC_ARG_WITH_CUDACC()
 if test "x$pac_cv_cudacc" == "x"; then
@@ -361,7 +363,8 @@ fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then
   AC_MSG_NOTICE([For CUDA I need psb_ipk_ to be 4 bytes but it is $pac_cv_psblas_ipk,  disabling CUDA/SPGPU])
-  GPUTARGET="";
+  GPUTARGETLIB="";
+  GPUTARGETOBJ="";
   CUDEFINES="";
   CUDA_INCLUDES="";
   CUDA_LIBS="";
@@ -410,8 +413,10 @@ AC_SUBST(INSTALL_MODULESDIR)
 AC_SUBST(INSTALL_DOCSDIR)
 AC_SUBST(FDEFINES)
 AC_SUBST(CDEFINES)
-AC_SUBST(GPUTARGET)
-AC_SUBST(RSBTARGET)
+AC_SUBST(GPUTARGETLIB)
+AC_SUBST(GPUTARGETOBJ)
+AC_SUBST(RSBTARGETLIB)
+AC_SUBST(RSBTARGETOBJ)
 
 
 

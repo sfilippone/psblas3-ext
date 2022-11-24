@@ -1,14 +1,14 @@
-include ../../../Make.inc
+TOPDIR=../../..
+include $(TOPDIR)/Make.inc
 #
 # Libraries used
 #
-TOPDIR=../..
 LIBDIR=$(TOPDIR)/lib
 MODDIR=$(TOPDIR)/modules
 PSBLIBDIR=$(PSBLASDIR)/lib/
 PSBINCDIR=$(PSBLASDIR)/include
 PSBLAS_LIB= -L$(PSBLIBDIR) -lpsb_util -lpsb_krylov -lpsb_prec -lpsb_base \
-	 -lpsb_gpu -L$(LIBDIR) -lamd
+	 $(LGPU) $(LEXT)  -L$(LIBDIR) -lamd
 MLDLIBDIR=$(MLDDIR)/lib
 MLDINCDIR=$(MLDDIR)/include 
 MLDLIBS=-L$(MLDLIBDIR) -lmld_prec

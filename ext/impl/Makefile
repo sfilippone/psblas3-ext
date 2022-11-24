@@ -409,7 +409,9 @@ psb_d_dns_mat_impl.o \
 psb_c_dns_mat_impl.o \
 psb_z_dns_mat_impl.o 
 
-lib: $(OBJS)
+objs: $(OBJS)
+
+lib: objs
 	ar cur ../$(LIBNAME) $(OBJS)
 
 clean:

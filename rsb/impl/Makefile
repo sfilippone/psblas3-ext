@@ -21,7 +21,9 @@ psb_d_cp_rsb_from_coo.o \
 psb_d_mv_rsb_from_coo.o \
 psb_d_cp_rsb_to_coo.o psb_d_rsb_csmv.o
 
-lib: $(OBJS)
+objs: $(OBJS)
+
+lib: objs
 	ar cur ../$(LIBNAME) $(OBJS)
 
 clean:

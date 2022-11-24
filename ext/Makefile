@@ -43,7 +43,7 @@ lib: objs ilib
 	ar cur $(LIBNAME) $(OBJS)
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
-objs: $(OBJS)
+objs: $(OBJS) iobjs
 	/bin/cp -p *$(.mod) $(MODDIR)
 
 
@@ -70,6 +70,9 @@ psb_s_hll_mat_mod.o psb_c_hll_mat_mod.o psb_d_hll_mat_mod.o psb_z_hll_mat_mod.o:
 
 ilib: objs
 	$(MAKE) -C impl lib LIBNAME=$(LIBNAME)
+
+iobjs: $(OBJS)
+	$(MAKE) -C impl objs 
 
 clean: cclean iclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a

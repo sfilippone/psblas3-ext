@@ -30,11 +30,13 @@ OBJS=$(COBJS) $(FOBJS)
 lib: objs ilib 
 	/bin/cp -p $(LIBNAME) $(LIBDIR)
 
-objs: $(OBJS) 
+objs: $(OBJS) iobjs
 	/bin/cp -p *$(.mod) $(MODDIR)
 
-ilib: objs
-	$(MAKE) -C impl LIBNAME=$(LIBNAME)
+iobjs:
+	$(MAKE) -C impl objs
+ilib: iobjs
+	$(MAKE) -C impl lib LIBNAME=$(LIBNAME)
 
 clean: cclean iclean
 	/bin/rm -f  $(FOBJS) *$(.mod) *.a

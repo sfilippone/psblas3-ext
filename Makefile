@@ -1,21 +1,29 @@
 include Make.inc
 
-all: dirs $(TARGETS)
+all: objs dirs $(TARGETS)
 	@echo "====================================="
 	@echo "PSBLAS-GPU library Compilation Successful."
 
+objs: extobj $(OBJST)
 extd: dirs
 
 dirs:
 	(if test ! -d lib ; then mkdir lib; fi)
 	(if test ! -d include ; then mkdir include; fi; $(INSTALL_DATA) Make.inc  include/Make.inc.ext)
 	(if test ! -d modules ; then mkdir modules; fi;)	
-extd:
+extd: extobj
 	$(MAKE) -C ext lib LIBNAME=$(PSB_EXTLIBNAME)
-gpud: extd
+gpud: extd gpuobj
 	$(MAKE) -C gpu lib LIBNAME=$(PSB_GPULIBNAME)
-rsbd:
+rsbd: rsbobj
 	$(MAKE) -C rsb lib LIBNAME=$(PSB_RSBLIBNAME)
+extobj: 
+	$(MAKE) -C ext objs
+gpuobj: extobj
+	$(MAKE) -C gpu objs
+rsbobj:
+	$(MAKE) -C rsb objs
+
 
 install: all
 	(mkdir -p $(INSTALL_INCLUDEDIR) &&\
