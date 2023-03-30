@@ -36,7 +36,7 @@ dnl NOTE : There is no cross compilation support.
 ###############################################################################
 
 # NOTE: the literal for version (the second argument to AC_INIT should be a literal!)
-AC_INIT([PSBLAS_EXT],1.0, salvatore.filippone@uniroma2.it)
+AC_INIT([PSBLAS_EXT],[1.0],[salvatore.filippone@uniroma2.it])
 
 # VERSION is the file containing the PSBLAS version code
 # FIXME
@@ -122,13 +122,13 @@ dnl. $pac_cv_status_file
 dnl AC_MSG_NOTICE([Loaded $pac_cv_status_file $FC $MPIFC $BLACS_LIBS])
 dnl AM_INIT_AUTOMAKE
 dnl Specify required version of autoconf.
-AC_PREREQ(2.59)
+AC_PREREQ([2.71])
 #
 # Installation. 
 #
 #
 AC_PROG_INSTALL
-
+INSTALL="${INSTALL} -p"
 AC_MSG_CHECKING([where to install])
 case $prefix in  
    \/* )   eval "INSTALL_DIR=$prefix";;
@@ -247,7 +247,7 @@ dnl system's ranlib will be found, too
 
 AM_INIT_AUTOMAKE
 dnl Specify required version of autoconf.
-AC_PREREQ(2.59)
+AC_PREREQ([2.71])
 
 
 ###############################################################################
@@ -358,7 +358,8 @@ if test "x$pac_cv_cuda_version" != "xunknown"; then
    FDEFINES="$FDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"
    CDEFINES="$CDEFINES -DCUDA_SHORT_VERSION=${CUDA_SHORT_VERSION} -DCUDA_VERSION=${CUDA_VERSION}"    
 fi
-
+PAC_ARG_WITH_EXTRA_CUDA()
+EXTRA_CUDA="$pac_cv_extra_cuda";
 fi
 
 if test "x$pac_cv_psblas_ipk" != "x4"; then
@@ -390,6 +391,7 @@ AC_SUBST(CUDA_LIBS)
 AC_SUBST(CUDA_VERSION)
 AC_SUBST(CUDA_SHORT_VERSION)
 AC_SUBST(CUDEFINES)
+AC_SUBST(EXTRA_CUDA)
 AC_SUBST(LIBRSB_LIBS)
 AC_SUBST(LIBRSB_INCLUDES)
 AC_SUBST(LIBRSB_INCDIR)
@@ -425,8 +427,9 @@ AC_SUBST(RSBTARGETOBJ)
 # the following files will be created by Automake
 
 AC_CONFIG_FILES([Make.inc])
-AC_OUTPUT()
-#AC_OUTPUT(Make.inc Makefile)
+AC_OUTPUT
+#AC_CONFIG_FILES([Make.inc Makefile])
+AC_OUTPUT
 ###############################################################################
 
 dnl Please note that brackets around variable identifiers are absolutely needed for compatibility..
