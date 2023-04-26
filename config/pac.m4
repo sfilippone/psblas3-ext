@@ -1865,6 +1865,26 @@ AC_HELP_STRING([--with-cudacc], [A comma-separated list of CCs to compile to, fo
 [pac_cv_cudacc=$withval],
 [pac_cv_cudacc=''])
 ])
+dnl @synopsis PAC_ARG_WITH_CUDACC
+dnl
+dnl Test for --with-cudacc="set_of_cc".
+dnl 
+dnl Defines the CC to compile for
+dnl
+dnl
+dnl Example use:
+dnl
+dnl PAC_ARG_WITH_EXTRA_CUDA
+dnl 
+dnl @author Salvatore Filippone <salvatore.filippone@uniroma2.it>
+dnl
+AC_DEFUN([PAC_ARG_WITH_EXTRA_CUDA],
+[
+AC_ARG_WITH(extra-cuda,
+AC_HELP_STRING([--with-extra-cuda], [Extra options for NVCC]),
+[pac_cv_extra_cuda=$withval],
+[pac_cv_extra_cuda=''])
+])
 
 AC_DEFUN(PAC_ARG_WITH_LIBRSB,
 	 [SAVE_LIBS="$LIBS"
