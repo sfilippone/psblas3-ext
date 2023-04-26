@@ -42,8 +42,8 @@ subroutine  psb_s_ell_trim(a)
 
   call psb_erractionsave(err_act)
   info = psb_success_
-  m    = a%get_nrows()
-  nzm  = maxval(a%irn(1:m))
+  m    = max(1_psb_ipk_,a%get_nrows())
+  nzm  = max(1_psb_ipk_,maxval(a%irn(1:m)))
   
   call psb_realloc(m,a%irn,info)
   if (info == psb_success_) call psb_realloc(m,a%idiag,info)
