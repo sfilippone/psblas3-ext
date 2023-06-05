@@ -1,6 +1,6 @@
 include Make.inc
 
-all: objs dirs $(TARGETS)
+all: dirs objs $(TARGETS)
 	@echo "====================================="
 	@echo "PSBLAS-GPU library Compilation Successful."
 
