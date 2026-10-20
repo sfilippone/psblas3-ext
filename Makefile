@@ -17,11 +17,11 @@ gpud: extd gpuobj
 	$(MAKE) -C gpu lib LIBNAME=$(PSB_GPULIBNAME)
 rsbd: rsbobj
 	$(MAKE) -C rsb lib LIBNAME=$(PSB_RSBLIBNAME)
-extobj: 
+extobj: dirs
 	$(MAKE) -C ext objs
 gpuobj: extobj
 	$(MAKE) -C gpu objs
-rsbobj:
+rsbobj: dirs
 	$(MAKE) -C rsb objs
 
 

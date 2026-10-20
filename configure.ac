@@ -245,7 +245,7 @@ dnl AM_MAINTAINER_MODE
 AC_PROG_RANLIB
 dnl system's ranlib will be found, too
 
-AM_INIT_AUTOMAKE
+dnl AM_INIT_AUTOMAKE
 dnl Specify required version of autoconf.
 AC_PREREQ([2.71])
 
